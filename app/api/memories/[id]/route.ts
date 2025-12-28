@@ -1,28 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { verifySession } from "@/lib/session";
+import { decryptContent } from "@/lib/encryption";
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
   try {
     const token = request.cookies.get("session")?.value;
 
     if (!token) {
-      return NextResponse.json(
-        { error: "Unauthorized - missing session token" },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Unauthorized - missing session token" }, { status: 401 });
     }
 
     const session = await verifySession(token);
 
     if (!session?.userId) {
-      return NextResponse.json(
-        { error: "Unauthorized - invalid session" },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Unauthorized - invalid session" }, { status: 401 });
     }
 
     const memoryId = parseInt(params.id);
@@ -49,37 +41,32 @@ export async function GET(
       return NextResponse.json({ error: "Memory not found" }, { status: 404 });
     }
 
-    return NextResponse.json({ memory });
+    // Decrypt the encrypted fields
+    const decryptedMemory = {
+      ...memory,
+      title: memory.title ? decryptContent(memory.title) : null,
+      content: decryptContent(memory.content),
+    };
+
+    return NextResponse.json({ memory: decryptedMemory });
   } catch (error) {
     console.error("Error fetching memory:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch memory" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to fetch memory" }, { status: 500 });
   }
 }
 
-export async function PUT(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
   try {
     const token = request.cookies.get("session")?.value;
 
     if (!token) {
-      return NextResponse.json(
-        { error: "Unauthorized - missing session token" },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Unauthorized - missing session token" }, { status: 401 });
     }
 
     const session = await verifySession(token);
 
     if (!session?.userId) {
-      return NextResponse.json(
-        { error: "Unauthorized - invalid session" },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Unauthorized - invalid session" }, { status: 401 });
     }
 
     const memoryId = parseInt(params.id);
@@ -92,10 +79,7 @@ export async function PUT(
     const { title, content } = body;
 
     if (!content) {
-      return NextResponse.json(
-        { error: "Content is required" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Content is required" }, { status: 400 });
     }
 
     // Verify memory belongs to user
@@ -124,34 +108,22 @@ export async function PUT(
     });
   } catch (error) {
     console.error("Error updating memory:", error);
-    return NextResponse.json(
-      { error: "Failed to update memory" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to update memory" }, { status: 500 });
   }
 }
 
-export async function DELETE(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
   try {
     const token = request.cookies.get("session")?.value;
 
     if (!token) {
-      return NextResponse.json(
-        { error: "Unauthorized - missing session token" },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Unauthorized - missing session token" }, { status: 401 });
     }
 
     const session = await verifySession(token);
 
     if (!session?.userId) {
-      return NextResponse.json(
-        { error: "Unauthorized - invalid session" },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Unauthorized - invalid session" }, { status: 401 });
     }
 
     const memoryId = parseInt(params.id);
@@ -181,9 +153,6 @@ export async function DELETE(
     });
   } catch (error) {
     console.error("Error deleting memory:", error);
-    return NextResponse.json(
-      { error: "Failed to delete memory" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to delete memory" }, { status: 500 });
   }
 }
