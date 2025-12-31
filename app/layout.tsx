@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
-import { Analytics } from "@vercel/analytics/next";
 import { Toaster } from "sonner";
 import { LenisScroll } from "@/components/lenis-scroll";
 
@@ -29,9 +28,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body
-        className={`${inter.variable} ${jetbrainsMono.variable} antialiased overflow-x-hidden`}
-      >
+      <body className={`${inter.variable} ${jetbrainsMono.variable} antialiased overflow-x-hidden`}>
         <LenisScroll />
         <Providers>
           {children}

@@ -5,35 +5,12 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useRouter, useSearchParams } from "next/navigation";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  InputOTP,
-  InputOTPGroup,
-  InputOTPSlot,
-} from "@/components/ui/input-otp";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { toast } from "sonner";
 import { Suspense } from "react";
 
@@ -108,9 +85,7 @@ function LoginForm() {
 
       if (response.ok) {
         const cookies = document.cookie.split(";");
-        const sessionCookie = cookies.find((cookie) =>
-          cookie.trim().startsWith("session=")
-        );
+        const sessionCookie = cookies.find((cookie) => cookie.trim().startsWith("session="));
         const token = sessionCookie ? sessionCookie.split("=")[1] : null;
 
         toast.success("Login successful!");
@@ -136,9 +111,7 @@ function LoginForm() {
     <Card className="min-w-sm mx-auto shadow-xl rounded-xl p-4">
       <CardHeader className="text-center">
         <CardTitle className="text-2xl font-bold">Welcome Back</CardTitle>
-        <CardDescription>
-          Enter your phone number and PIN to sign in
-        </CardDescription>
+        <CardDescription>Enter your phone number and PIN to sign in</CardDescription>
       </CardHeader>
       <CardContent>
         <Form {...form}>
@@ -150,10 +123,7 @@ function LoginForm() {
                   control={form.control}
                   name="countryCode"
                   render={({ field }) => (
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                    >
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
                         <SelectTrigger className="w-24">
                           <SelectValue placeholder="Select a country" />
@@ -175,11 +145,7 @@ function LoginForm() {
                     render={({ field }) => (
                       <FormItem>
                         <FormControl>
-                          <Input
-                            placeholder="123123123"
-                            {...field}
-                            maxLength={11}
-                          />
+                          <Input placeholder="123456789" {...field} maxLength={11} className="placeholder:text-muted-foreground/50" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -196,11 +162,7 @@ function LoginForm() {
                 <FormItem>
                   <FormLabel>6-Digit PIN</FormLabel>
                   <FormControl>
-                    <InputOTP
-                      maxLength={6}
-                      value={field.value}
-                      onChange={field.onChange}
-                    >
+                    <InputOTP maxLength={6} value={field.value} onChange={field.onChange}>
                       <InputOTPGroup className="gap-1">
                         <InputOTPSlot index={0} />
                         <InputOTPSlot index={1} />
@@ -237,8 +199,7 @@ export default function LoginPage() {
               <CardDescription>Loading...</CardDescription>
             </CardHeader>
           </Card>
-        }
-      >
+        }>
         <LoginForm />
       </Suspense>
     </div>
