@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { IconChartBar, IconDashboard, IconFolder, IconHelp, IconInnerShadowTop, IconListDetails, IconLogout, IconSettings, IconUsers } from "@tabler/icons-react";
+import { IconChartBar, IconDashboard, IconHelp, IconInnerShadowTop, IconListDetails, IconLogout, IconSettings, IconUsers } from "@tabler/icons-react";
 
 import { NavMain } from "@/components/nav-main";
 import { NavSecondary } from "@/components/nav-secondary";
@@ -61,9 +61,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton asChild className="data-[slot=sidebar-menu-button]:!p-1.5">
+            <SidebarMenuButton asChild className="data-[slot=sidebar-menu-button]:p-1.5!">
               <Link href="/dashboard">
-                <IconInnerShadowTop className="!size-5" />
+                <IconInnerShadowTop className="size-5!" />
                 <span className="text-base font-semibold">Lofy Assistant</span>
               </Link>
             </SidebarMenuButton>
