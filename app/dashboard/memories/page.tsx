@@ -1,7 +1,7 @@
 import { AppSidebar } from "@/components/app-sidebar";
 import { SiteHeader } from "@/components/site-header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
-import { MemoryGrid } from "@/components/dashboard/memory-grid";
+import { MemoryGrid } from "@/components/dashboard/memories/memory-grid";
 import { Brain } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 

@@ -1,7 +1,7 @@
 import { AppSidebar } from "@/components/app-sidebar";
 import { SiteHeader } from "@/components/site-header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
-import { ReminderList } from "@/components/dashboard/reminder-list";
+import { ReminderList } from "@/components/dashboard/reminders/reminder-list";
 import { BellRing } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 

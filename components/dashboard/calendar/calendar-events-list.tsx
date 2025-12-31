@@ -6,7 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, Clock, Loader2 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
-import { CalendarEventDialog } from "@/components/dashboard/calendar-event-dialog";
+import { CalendarEventDialog } from "@/components/dashboard/calendar/calendar-event-dialog";
 import {
   Select,
   SelectContent,

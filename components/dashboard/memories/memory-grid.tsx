@@ -5,7 +5,7 @@ import { format } from "date-fns";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Loader2, Search, Calendar } from "lucide-react";
-import { MemoryDetailModal } from "@/components/dashboard/memory-detail-modal";
+import { MemoryDetailModal } from "@/components/dashboard/memories/memory-detail-modal";
 
 interface Memory {
   id: number;

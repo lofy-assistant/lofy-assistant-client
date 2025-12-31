@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Plus, Bell, Clock, Loader2 } from "lucide-react";
-import { ReminderFormDialog } from "@/components/dashboard/reminder-form-dialog";
+import { ReminderFormDialog } from "@/components/dashboard/reminders/reminder-form-dialog";
 import { format } from "date-fns";
 import { Separator } from "@/components/ui/separator";
 
