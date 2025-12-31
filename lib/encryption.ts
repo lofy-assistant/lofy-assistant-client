@@ -13,20 +13,32 @@ export function hash(data: string): string {
 /**
  * Decrypt content that was encrypted using Fernet encryption.
  * @param encryptedContent The encrypted content string.
- * @returns The decrypted content string.
+ * @returns The decrypted content string, or the original content if decryption fails.
  */
 export function decryptContent(encryptedContent: string): string {
+  // Return empty string if content is null or empty
+  if (!encryptedContent || encryptedContent.trim() === "") {
+    return encryptedContent || "";
+  }
+
   const encryptionKey = process.env.ENCRYPTION_KEY;
 
   if (!encryptionKey) {
     throw new Error("ENCRYPTION_KEY environment variable is not set");
   }
 
-  const secret = new fernet.Secret(encryptionKey);
-  const token = new fernet.Token({
-    secret: secret,
-    ttl: 0, // Disable TTL check to match Python behavior
-  });
+  try {
+    const secret = new fernet.Secret(encryptionKey);
+    const token = new fernet.Token({
+      secret: secret,
+      ttl: 0, // Disable TTL check to match Python behavior
+    });
 
-  return token.decode(encryptedContent);
+    return token.decode(encryptedContent);
+  } catch (error) {
+    // If decryption fails, the content might already be decrypted or corrupted
+    // Log the error for debugging but return the original content
+    console.warn("Failed to decrypt content, returning as-is:", error instanceof Error ? error.message : String(error));
+    return encryptedContent;
+  }
 }

@@ -45,12 +45,25 @@ export async function GET(request: NextRequest) {
     });
 
     // Decrypt the encrypted fields for each memory
-    const decryptedMemories = memories.map((memory: { id: number; title: string | null; content: string; created_at: Date; updated_at: Date }) => ({
-      ...memory,
-      // Not sure if the title needs to be decrypted or not
-      title: memory.title ? decryptContent(memory.title) : null,
-      content: decryptContent(memory.content),
-    }));
+    // Handle decryption errors gracefully - some memories might have invalid encrypted data
+    const decryptedMemories = memories.map((memory: { id: number; title: string | null; content: string; created_at: Date; updated_at: Date }) => {
+      try {
+        return {
+          ...memory,
+          title: memory.title ? decryptContent(memory.title) : null,
+          content: decryptContent(memory.content),
+        };
+      } catch (error) {
+        // If decryption fails for a specific memory, log it but continue with other memories
+        console.error(`Failed to decrypt memory ${memory.id}:`, error);
+        // Return the memory as-is (might already be decrypted or corrupted)
+        return {
+          ...memory,
+          title: memory.title,
+          content: memory.content,
+        };
+      }
+    });
 
     return NextResponse.json({
       memories: decryptedMemories,

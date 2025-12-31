@@ -42,11 +42,23 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
     }
 
     // Decrypt the encrypted fields
-    const decryptedMemory = {
-      ...memory,
-      title: memory.title ? decryptContent(memory.title) : null,
-      content: decryptContent(memory.content),
-    };
+    // Handle decryption errors gracefully
+    let decryptedMemory;
+    try {
+      decryptedMemory = {
+        ...memory,
+        title: memory.title ? decryptContent(memory.title) : null,
+        content: decryptContent(memory.content),
+      };
+    } catch (error) {
+      // If decryption fails, log it but return the memory as-is
+      console.error(`Failed to decrypt memory ${memory.id}:`, error);
+      decryptedMemory = {
+        ...memory,
+        title: memory.title,
+        content: memory.content,
+      };
+    }
 
     return NextResponse.json({ memory: decryptedMemory });
   } catch (error) {
