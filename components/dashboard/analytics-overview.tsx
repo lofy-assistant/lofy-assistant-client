@@ -120,14 +120,6 @@ export function AnalyticsOverview() {
       color: "text-orange-500",
       bgColor: "bg-orange-500/10",
     },
-    {
-      title: "Feedbacks",
-      value: data.overview.totalFeedbacks,
-      change: data.activity.thisWeek.feedbacks,
-      icon: MessageSquare,
-      color: "text-green-500",
-      bgColor: "bg-green-500/10",
-    },
   ];
 
   return (

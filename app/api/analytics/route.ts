@@ -29,20 +29,15 @@ export async function GET(request: NextRequest) {
       totalMemories,
       totalReminders,
       totalEvents,
-      totalFeedbacks,
       activeReminders,
       upcomingEvents,
-      recentMemories,
-      feedbacksByTag,
       thisWeekMemories,
       thisWeekEvents,
-      thisWeekFeedbacks,
     ] = await Promise.all([
       // Total counts
       prisma.memories.count({ where: { user_id: userId } }),
       prisma.reminders.count({ where: { user_id: userId } }),
       prisma.calendar_events.count({ where: { user_id: userId } }),
-      prisma.feedbacks.count({ where: { user_id: userId } }),
 
       // Active/upcoming
       prisma.reminders.count({
@@ -57,26 +52,6 @@ export async function GET(request: NextRequest) {
           user_id: userId,
           start_time: { gte: new Date() },
         },
-      }),
-
-      // Recent activity
-      prisma.memories.findMany({
-        where: { user_id: userId },
-        orderBy: { created_at: "desc" },
-        take: 5,
-        select: {
-          id: true,
-          title: true,
-          content: true,
-          created_at: true,
-        },
-      }),
-
-      // Feedback breakdown
-      prisma.feedbacks.groupBy({
-        by: ["tag"],
-        where: { user_id: userId },
-        _count: { tag: true },
       }),
 
       // This week's activity
@@ -96,14 +71,6 @@ export async function GET(request: NextRequest) {
           },
         },
       }),
-      prisma.feedbacks.count({
-        where: {
-          user_id: userId,
-          created_at: {
-            gte: new Date(new Date().setDate(new Date().getDate() - 7)),
-          },
-        },
-      }),
     ]);
 
     return NextResponse.json({
@@ -111,7 +78,6 @@ export async function GET(request: NextRequest) {
         totalMemories,
         totalReminders,
         totalEvents,
-        totalFeedbacks,
         activeReminders,
         upcomingEvents,
       },
@@ -119,19 +85,8 @@ export async function GET(request: NextRequest) {
         thisWeek: {
           memories: thisWeekMemories,
           events: thisWeekEvents,
-          feedbacks: thisWeekFeedbacks,
         },
       },
-      recentMemories: recentMemories.map((memory) => ({
-        id: memory.id,
-        title: memory.title || "Untitled",
-        preview: memory.content.substring(0, 100),
-        createdAt: memory.created_at,
-      })),
-      feedbacksByTag: feedbacksByTag.map((item) => ({
-        tag: item.tag,
-        count: item._count.tag,
-      })),
     });
   } catch (error) {
     console.error("Error fetching analytics:", error);
