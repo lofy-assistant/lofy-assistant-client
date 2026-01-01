@@ -3,6 +3,7 @@ import { SectionCards } from "@/components/section-cards";
 import { SiteHeader } from "@/components/site-header";
 import { Separator } from "@/components/ui/separator";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { AnalyticsOverview } from "@/components/dashboard/analytics-overview";
 
 export default function Page() {
   return (
@@ -25,7 +26,7 @@ export default function Page() {
                 </div>
                 <p className="mb-6 text-muted-foreground">Here&apos;s a quick overview of your activities.</p>
                 <Separator className="mb-6" />
-                <SectionCards />
+                <AnalyticsOverview />
               </div>
             </div>
           </div>
