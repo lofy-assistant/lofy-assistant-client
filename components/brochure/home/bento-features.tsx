@@ -54,7 +54,7 @@ const items = [
     className: "lg:col-span-5 md:col-span-5",
   },
   {
-    title: "Flexible Reminders",
+    title: "Unlimited Reminders",
     description: "Tailor reminders to any specific task or calendar event.",
     header: <Skeleton />,
     icon: <IconClock12 className="h-6 w-6 text-neutral-500" />,

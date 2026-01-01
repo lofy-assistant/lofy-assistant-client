@@ -101,33 +101,27 @@ export default function Navigation({
   introItems = [
     {
       title: "Smart Calendar",
-      href: "/smart-calendar",
+      href: "/features/smart-calendar",
       description: "Organize your schedule",
       icon: Calendar,
     },
     {
-      title: "Flexible Reminder",
-      href: "/flexible-reminder",
+      title: "Unlimited Reminders",
+      href: "/features/unlimited-reminders",
       description: "Never miss tasks",
       icon: Bell,
     },
     {
       title: "Save To Memory",
-      href: "/save-to-memory",
+      href: "/features/save-to-memory",
       description: "Store important info",
       icon: Brain,
     },
     {
       title: "Centralized Tasks",
-      href: "/centralized-tasks",
+      href: "/features/centralized-task",
       description: "Manage everything",
       icon: ListChecks,
-    },
-    {
-      title: "Voice Content Extraction",
-      href: "/voice-content-extraction",
-      description: "Capture content easily",
-      icon: Mic,
     },
   ],
 }: NavigationProps) {
