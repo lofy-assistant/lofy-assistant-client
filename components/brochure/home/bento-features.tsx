@@ -1,6 +1,7 @@
 "use client";
 import React from "react";
 import { BentoGrid, BentoGridItem } from "@/components/ui/bento-grid";
+import { Badge } from "@/components/ui/badge";
 import {
   IconListCheck,
   IconCalendarWeek,
@@ -11,18 +12,39 @@ import {
 
 export function BentoFeatures() {
   return (
-    <BentoGrid className="max-w-7xl mx-auto md:auto-rows-[22rem]">
-      {items.map((item, i) => (
-        <BentoGridItem
-          key={i}
-          title={item.title}
-          description={item.description}
-          header={item.header}
-          icon={item.icon}
-          className={item.className}
-        />
-      ))}
-    </BentoGrid>
+    <section className="relative py-24 overflow-hidden bg-background">
+      <div className="max-w-7xl mx-auto px-8">
+        <div className="mb-20 text-center">
+          <Badge
+            variant="secondary"
+            className="mb-6 text-blue-700 bg-blue-100 border-blue-200 hover:bg-blue-100"
+          >
+            <span>💡</span>
+            <span>Powerful Features</span>
+          </Badge>
+          <h2 className="mb-6 py-1 text-5xl font-bold text-transparent bg-linear-to-r from-gray-900 to-gray-700 bg-clip-text">
+            Your Personal Assistant AI Agent
+          </h2>
+          <p className="max-w-4xl mx-auto leading-relaxed text-gray-600 text-md lg:text-lg">
+            Lofy is an agentic AI personal assistant that integrates
+            seamlessly into your daily life, understanding context and reasoning
+            to boost your productivity with intelligent automation.
+          </p>
+        </div>
+        <BentoGrid className="md:auto-rows-[22rem]">
+          {items.map((item, i) => (
+            <BentoGridItem
+              key={i}
+              title={item.title}
+              description={item.description}
+              header={item.header}
+              icon={item.icon}
+              className={item.className}
+            />
+          ))}
+        </BentoGrid>
+      </div>
+    </section>
   );
 }
 
@@ -48,7 +70,7 @@ const items = [
   {
     title: "Save To Memory",
     description:
-      "Build a searchable archive of your mind. Capture ideas, notes, and fleeting thoughts the moment they strike.",
+      "Build a searchable archive of your mind. Capture ideas, and fleeting thoughts the moment they strike.",
     header: <Skeleton />,
     icon: <IconBrain className="h-6 w-6 text-neutral-500" />,
     className: "lg:col-span-3 md:col-span-4",
