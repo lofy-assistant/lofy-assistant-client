@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardTitle } from "@/components/ui/card";
 import { BentoFeatures } from "@/components/brochure/bento-features";
 import Testimonials from "@/components/brochure/testimonials";
+import { WavyBackground } from "@/components/ui/wavy-background";
 
 export default function Home() {
   return (
@@ -260,7 +261,9 @@ export default function Home() {
       </section> */}
       {/* Testimonials Section */}
       <section className="relative py-24 overflow-hidden bg-accent">
-        <Testimonials />
+        <WavyBackground className="max-w-7xl mx-auto pb-40">
+          <Testimonials />
+        </WavyBackground>
       </section>
 
       {/* Benefits Section */}
