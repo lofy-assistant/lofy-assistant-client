@@ -16,7 +16,7 @@ const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<"input">>(
           "file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground",
 
           // Placeholder & Selection
-          "placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground",
+          "placeholder:text-muted-foreground/60 selection:bg-primary selection:text-primary-foreground",
 
           // Interactive States (Focus & Disabled)
           "focus-visible:border-ring focus-visible:ring-ring focus-visible:ring-[1px]",

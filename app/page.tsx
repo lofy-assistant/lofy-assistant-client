@@ -259,7 +259,7 @@ export default function Home() {
         </div>
       </section> */}
       {/* Testimonials Section */}
-      <section className="relative py-24 overflow-hidden bg-linear-to-br from-gray-700 via-emerald-800 to-indigo-900">
+      <section className="relative py-24 overflow-hidden bg-accent">
         <Testimonials />
       </section>
 
