@@ -76,10 +76,6 @@ export default function HowItWorks() {
     <section className="relative py-24 overflow-hidden bg-background">
       <div className="max-w-7xl mx-auto px-8">
         <div className="mb-16 text-center">
-          <div className="inline-block px-4 py-2 mb-6 text-sm font-medium border rounded-full bg-emerald-50 text-emerald-700 border-emerald-200">
-            <span>🎯</span>
-            <span className="ml-2">How It Works</span>
-          </div>
           <h2 className="mb-6 text-5xl font-bold text-transparent bg-linear-to-r from-gray-900 to-gray-700 bg-clip-text">
             Simple Conversations, Powerful Results
           </h2>
