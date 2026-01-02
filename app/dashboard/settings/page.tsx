@@ -6,7 +6,6 @@ import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ProfileSettings } from "@/components/dashboard/settings/profile-settings";
 import { SecuritySettings } from "@/components/dashboard/settings/security-settings";
-import { DataManagementSettings } from "@/components/dashboard/settings/data-management-settings";
 import { AboutSettings } from "@/components/dashboard/settings/about-settings";
 
 export default function SettingsPage() {
