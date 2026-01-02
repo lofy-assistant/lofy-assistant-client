@@ -1,17 +1,25 @@
-import { CloudTasksClient } from "@google-cloud/tasks";
-
 interface TaskData {
   reminder_id: number;
   message: string;
   phone_number?: string;
 }
 
-// Initialize Cloud Tasks client
-const client = new CloudTasksClient();
-
 const projectId = process.env.GCP_PROJECT_ID || "";
 const location = process.env.GCP_LOCATION || "us-central1";
 const serviceUrl = process.env.GCP_SERVICE_URL || "";
+
+// Lazy load CloudTasksClient to avoid bundling issues in serverless
+let clientPromise: any = null;
+
+async function getClient() {
+  if (!clientPromise) {
+    clientPromise = (async () => {
+      const { CloudTasksClient } = await import("@google-cloud/tasks");
+      return new CloudTasksClient();
+    })();
+  }
+  return clientPromise;
+}
 
 /**
  * Delete a cloud task by task ID
@@ -23,6 +31,7 @@ export async function deleteCloudTask(
   taskId: string
 ): Promise<void> {
   try {
+    const client = await getClient();
     const queuePath = client.queuePath(projectId, location, queueId);
     const taskName = `${queuePath}/tasks/${taskId}`;
 
@@ -56,6 +65,7 @@ export async function enqueueCloudTask(
   scheduleTime: Date
 ): Promise<void> {
   try {
+    const client = await getClient();
     const queuePath = client.queuePath(projectId, location, queueId);
 
     const url = `${serviceUrl}${endpointPath}`;
