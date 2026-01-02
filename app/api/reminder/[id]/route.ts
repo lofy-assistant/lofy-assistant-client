@@ -41,8 +41,8 @@ export async function PUT(
             },
         })
 
-        // If reminder_time or message was provided in the update, reschedule the cloud task
-        if ((reminder_time || message) && status !== "cancelled") {
+        // If reminder_time was provided in the update, reschedule the cloud task
+        if ((reminder_time)) {
             try {
                 // Get user's phone number for the task
                 const user = await prisma.users.findUnique({
