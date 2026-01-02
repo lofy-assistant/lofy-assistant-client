@@ -42,43 +42,49 @@ export async function PUT(
         })
 
         // If reminder_time was provided in the update, reschedule the cloud task
-        if ((reminder_time)) {
-            try {
-                // Get user's phone number for the task
-                const user = await prisma.users.findUnique({
-                    where: { id: session.userId },
-                    select: { encrypted_phone: true }
-                })
+        if (reminder_time) {
+            console.log(`Starting cloud task rescheduling for reminder ${updatedReminder.id}`)
+            
+            // Get user's phone number for the task
+            const user = await prisma.users.findUnique({
+                where: { id: session.userId },
+                select: { encrypted_phone: true }
+            })
 
-                if (user?.encrypted_phone) {
+            if (!user?.encrypted_phone) {
+                console.warn(`No phone number found for user ${session.userId}, skipping cloud task`)
+            } else {
+                try {
                     const phoneNumber = decryptContent(user.encrypted_phone)
+                    const taskId = String(updatedReminder.id)
 
-                    // Delete existing task first to avoid duplicates
-                    await deleteCloudTask("reminder-queue", String(updatedReminder.id))
+                    // Step 1: Delete existing task first to avoid duplicates
+                    console.log(`Deleting existing cloud task: ${taskId}`)
+                    await deleteCloudTask("reminder-queue", taskId)
+                    console.log(`Successfully deleted cloud task: ${taskId}`)
 
-                    // Create new task with updated schedule and message
+                    // Step 2: Create new task with updated schedule and message
                     const data = {
                         reminder_id: updatedReminder.id,
                         message: updatedReminder.message,
                         phone_number: phoneNumber,
                     }
 
+                    console.log(`Creating new cloud task: ${taskId} for time: ${updatedReminder.reminder_time}`)
                     await enqueueCloudTask(
                         "/worker/send-reminder",
                         "reminder-queue",
-                        String(updatedReminder.id),
+                        taskId,
                         data,
                         new Date(updatedReminder.reminder_time)
                     )
-
-                    console.log(`Rescheduled cloud task for reminder ${updatedReminder.id}`)
-                } else {
-                    console.warn(`No phone number found for user ${session.userId}, skipping cloud task`)
+                    console.log(`Successfully rescheduled cloud task for reminder ${updatedReminder.id}`)
+                } catch (taskError) {
+                    console.error(`Error rescheduling cloud task for reminder ${updatedReminder.id}:`, taskError)
+                    console.error(`Error details:`, JSON.stringify(taskError, null, 2))
+                    // Don't fail the entire request if cloud task update fails
+                    // The reminder is still updated in the database
                 }
-            } catch (taskError) {
-                console.error("Error rescheduling cloud task:", taskError)
-                // Don't fail the entire request if cloud task update fails
-                // The reminder is still updated in the database
             }
         }
 
