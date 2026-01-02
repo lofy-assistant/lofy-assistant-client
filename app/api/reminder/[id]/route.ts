@@ -21,7 +21,18 @@ export async function PUT(
 
         const reminderId = parseInt(params.id)
         const body = await request.json()
-        const { message, reminder_time, status } = body
+        const { message, reminder_time } = body
+
+        // Validation
+        if (message && (typeof message !== 'string' || message.trim().length === 0)) {
+            return NextResponse.json({ error: "Message is required" }, { status: 400 })
+        }
+        if (message && message.length > 500) {
+            return NextResponse.json({ error: "Message must be 500 characters or less" }, { status: 400 })
+        }
+        if (reminder_time && new Date(reminder_time) <= new Date()) {
+            return NextResponse.json({ error: "Reminder time must be in the future" }, { status: 400 })
+        }
 
         const reminder = await prisma.reminders.findUnique({
             where: { id: reminderId },
@@ -37,7 +48,6 @@ export async function PUT(
             data: {
                 message,
                 reminder_time: reminder_time ? new Date(reminder_time) : undefined,
-                status,
             },
         })
 

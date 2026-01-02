@@ -41,28 +41,34 @@ export function ReminderFormDialog({
   const [loading, setLoading] = useState(false)
   const [deleting, setDeleting] = useState(false)
 
-  // Convert UTC to GMT+8 for display
-  const utcToGMT8 = (utcDate: string) => {
+  // Convert UTC to local datetime string for datetime-local input
+  const utcToLocal = (utcDate: string) => {
     const date = new Date(utcDate)
-    // Add 8 hours to convert UTC to GMT+8
-    date.setHours(date.getHours() + 8)
-    return date.toISOString().slice(0, 16)
+    const offset = date.getTimezoneOffset() * 60000
+    const localDate = new Date(date.getTime() - offset)
+    return localDate.toISOString().slice(0, 16)
+  }
+
+  // Convert datetime-local input to UTC ISO string
+  const localToUTC = (localDateTime: string) => {
+    return new Date(localDateTime).toISOString()
   }
 
   useEffect(() => {
     if (reminder) {
       setFormData({
         message: reminder.message,
-        reminder_time: utcToGMT8(reminder.reminder_time),
+        reminder_time: utcToLocal(reminder.reminder_time),
         status: reminder.status,
       })
     } else {
-      // Default to current date/time for new reminders in GMT+8
+      // Default to current date/time for new reminders
       const now = new Date()
-      now.setHours(now.getHours() + 8)
+      const offset = now.getTimezoneOffset() * 60000
+      const localDate = new Date(now.getTime() - offset)
       setFormData({
         message: "",
-        reminder_time: now.toISOString().slice(0, 16),
+        reminder_time: localDate.toISOString().slice(0, 16),
         status: "pending",
       })
     }
@@ -80,8 +86,8 @@ export function ReminderFormDialog({
         method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          ...formData,
-          reminder_time: formData.reminder_time,
+          message: formData.message,
+          reminder_time: localToUTC(formData.reminder_time),
         }),
       })
 
@@ -154,8 +160,9 @@ export function ReminderFormDialog({
               value={formData.reminder_time}
               min={(() => {
                 const now = new Date()
-                now.setHours(now.getHours() + 8)
-                return now.toISOString().slice(0, 16)
+                const offset = now.getTimezoneOffset() * 60000
+                const localDate = new Date(now.getTime() - offset)
+                return localDate.toISOString().slice(0, 16)
               })()}
               onChange={(e) =>
                 setFormData({ ...formData, reminder_time: e.target.value })
