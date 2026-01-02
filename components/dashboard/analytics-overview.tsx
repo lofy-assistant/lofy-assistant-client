@@ -125,24 +125,23 @@ export function AnalyticsOverview() {
   return (
     <div className="space-y-6">
       {/* Stats Grid */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {stats.map((stat) => (
           <Card className="pt-2" key={stat.title}>
-            <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-              <CardTitle className="text-sm font-medium">
-                {stat.title}
-              </CardTitle>
+            <CardHeader className="flex flex-row items-center space-y-0">
               <div className={`p-2 rounded-full ${stat.bgColor}`}>
                 <stat.icon className={`w-4 h-4 ${stat.color}`} />
               </div>
+              <CardTitle className="text-sm font-medium">
+                {stat.title}
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{stat.value}</div>
               <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
                 {stat.change !== undefined && (
                   <span className="flex items-center gap-1">
-                    <TrendingUp className="w-3 h-3" />
-                    +{stat.change} this week
+                    <TrendingUp className="w-3 h-3" />+{stat.change} this week
                   </span>
                 )}
                 {stat.upcoming !== undefined && (
@@ -161,9 +160,8 @@ export function AnalyticsOverview() {
         ))}
       </div>
 
-      {/* Secondary Info Grid */}      
+      {/* Secondary Info Grid */}
       <div className="grid gap-4 md:grid-cols-2">
-     
         {/* <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base">

@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { verifySession } from "@/lib/session"
+import { deleteCloudTask, enqueueCloudTask } from "@/lib/cloud-tasks"
+import { decryptContent } from "@/lib/encryption"
 
 export async function PUT(
     request: NextRequest,
@@ -29,6 +31,9 @@ export async function PUT(
             return NextResponse.json({ error: "Reminder not found" }, { status: 404 })
         }
 
+        // Track if reminder_time was updated
+        const reminderTimeUpdated = reminder_time && new Date(reminder_time).getTime() !== reminder.reminder_time.getTime()
+
         const updatedReminder = await prisma.reminders.update({
             where: { id: reminderId },
             data: {
@@ -37,6 +42,45 @@ export async function PUT(
                 status,
             },
         })
+
+        // If reminder_time was updated, reschedule the cloud task
+        if (reminderTimeUpdated && process.env.NODE_ENV !== "development") {
+            try {
+                // Delete existing task first to avoid duplicates
+                await deleteCloudTask("reminder-queue", String(reminder.id))
+
+                // Get user's phone number for the task
+                const user = await prisma.users.findUnique({
+                    where: { id: session.userId },
+                    select: { encrypted_phone: true }
+                })
+
+                if (user?.encrypted_phone) {
+                    const phoneNumber = decryptContent(user.encrypted_phone)
+
+                    // Create new task with updated schedule
+                    const data = {
+                        reminder_id: updatedReminder.id,
+                        message: updatedReminder.message,
+                        phone_number: phoneNumber,
+                    }
+
+                    await enqueueCloudTask(
+                        "/worker/send-reminder",
+                        "reminder-queue",
+                        String(updatedReminder.id),
+                        data,
+                        new Date(reminder_time)
+                    )
+
+                    console.log(`Rescheduled cloud task for reminder ${updatedReminder.id}`)
+                }
+            } catch (taskError) {
+                console.error("Error rescheduling cloud task:", taskError)
+                // Don't fail the entire request if cloud task update fails
+                // The reminder is still updated in the database
+            }
+        }
 
         return NextResponse.json({ reminder: updatedReminder })
     } catch (error) {
