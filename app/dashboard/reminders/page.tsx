@@ -1,3 +1,6 @@
+import { redirect } from "next/navigation";
+import { cookies } from "next/headers";
+import { verifySession } from "@/lib/session";
 import { AppSidebar } from "@/components/app-sidebar";
 import { SiteHeader } from "@/components/site-header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
@@ -5,7 +8,29 @@ import { ReminderList } from "@/components/dashboard/reminders/reminder-list";
 import { BellRing } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 
-export default function RemindersPage() {
+export default async function RemindersPage({
+  searchParams,
+}: {
+  searchParams: { phone?: string };
+}) {
+  const cookieStore = await cookies();
+  const sessionToken = cookieStore.get("session")?.value;
+
+  // Check if user is logged in and has query parameters
+  if (sessionToken && searchParams.phone) {
+    const session = await verifySession(sessionToken);
+    
+    if (session) {
+      // User is authenticated, redirect to clean URL without query params
+      redirect("/dashboard/reminders");
+    }
+  }
+
+  // If not logged in but has phone parameter, redirect to login
+  if (!sessionToken && searchParams.phone) {
+    redirect(`/login?redirect=${encodeURIComponent("/dashboard/reminders")}&phone=${searchParams.phone}`);
+  }
+
   return (
     <SidebarProvider
       style={

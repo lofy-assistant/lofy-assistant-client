@@ -44,24 +44,31 @@ function LoginForm() {
     },
   });
 
-  // Pre-fill phone number from redirect URL if present
+  // Pre-fill phone number from URL query params if present
   useEffect(() => {
-    const redirect = searchParams.get("redirect");
-    if (redirect) {
-      try {
-        const redirectUrl = new URL(redirect, window.location.origin);
-        const phone = redirectUrl.searchParams.get("phone");
+    // First, check for direct phone parameter in URL
+    let phone = searchParams.get("phone");
 
-        if (phone) {
-          const countryCode = phone.slice(0, 2);
-          const phoneNumber = phone.slice(2);
-
-          form.setValue("countryCode", countryCode);
-          form.setValue("phoneNumber", phoneNumber);
+    // If not found, check inside redirect URL
+    if (!phone) {
+      const redirect = searchParams.get("redirect");
+      if (redirect) {
+        try {
+          const redirectUrl = new URL(redirect, window.location.origin);
+          phone = redirectUrl.searchParams.get("phone");
+        } catch (error) {
+          console.error("Error parsing redirect URL:", error);
         }
-      } catch (error) {
-        console.error("Error parsing redirect URL:", error);
       }
+    }
+
+    // Auto-fill phone number if found
+    if (phone && phone.length >= 10) {
+      const countryCode = phone.slice(0, 2);
+      const phoneNumber = phone.slice(2);
+
+      form.setValue("countryCode", countryCode);
+      form.setValue("phoneNumber", phoneNumber);
     }
   }, [searchParams, form]);
 
