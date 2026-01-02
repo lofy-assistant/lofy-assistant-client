@@ -31,9 +31,7 @@ export async function PUT(
             return NextResponse.json({ error: "Reminder not found" }, { status: 404 })
         }
 
-        // Track if reminder_time was updated
-        const reminderTimeUpdated = reminder_time && new Date(reminder_time).getTime() !== reminder.reminder_time.getTime()
-
+        // Update the reminder in database first
         const updatedReminder = await prisma.reminders.update({
             where: { id: reminderId },
             data: {
@@ -43,12 +41,9 @@ export async function PUT(
             },
         })
 
-        // If reminder_time was updated, reschedule the cloud task
-        if (reminderTimeUpdated && process.env.NODE_ENV !== "development") {
+        // If reminder_time or message was provided in the update, reschedule the cloud task
+        if ((reminder_time || message) && status !== "cancelled") {
             try {
-                // Delete existing task first to avoid duplicates
-                await deleteCloudTask("reminder-queue", String(reminder.id))
-
                 // Get user's phone number for the task
                 const user = await prisma.users.findUnique({
                     where: { id: session.userId },
@@ -58,7 +53,10 @@ export async function PUT(
                 if (user?.encrypted_phone) {
                     const phoneNumber = decryptContent(user.encrypted_phone)
 
-                    // Create new task with updated schedule
+                    // Delete existing task first to avoid duplicates
+                    await deleteCloudTask("reminder-queue", String(updatedReminder.id))
+
+                    // Create new task with updated schedule and message
                     const data = {
                         reminder_id: updatedReminder.id,
                         message: updatedReminder.message,
@@ -70,10 +68,12 @@ export async function PUT(
                         "reminder-queue",
                         String(updatedReminder.id),
                         data,
-                        new Date(reminder_time)
+                        new Date(updatedReminder.reminder_time)
                     )
 
                     console.log(`Rescheduled cloud task for reminder ${updatedReminder.id}`)
+                } else {
+                    console.warn(`No phone number found for user ${session.userId}, skipping cloud task`)
                 }
             } catch (taskError) {
                 console.error("Error rescheduling cloud task:", taskError)
@@ -114,9 +114,19 @@ export async function DELETE(
             return NextResponse.json({ error: "Reminder not found" }, { status: 404 })
         }
 
+        // Delete the reminder from database
         await prisma.reminders.delete({
             where: { id: reminderId },
         })
+
+        // Delete the associated cloud task
+        try {
+            await deleteCloudTask("reminder-queue", String(reminderId))
+            console.log(`Deleted cloud task for reminder ${reminderId}`)
+        } catch (taskError) {
+            console.error("Error deleting cloud task:", taskError)
+            // Don't fail the entire request if cloud task deletion fails
+        }
 
         return NextResponse.json({ success: true })
     } catch (error) {
