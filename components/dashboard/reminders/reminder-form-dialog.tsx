@@ -11,13 +11,7 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
+import { Badge } from "@/components/ui/badge"
 
 interface Reminder {
   id: number
@@ -55,14 +49,6 @@ export function ReminderFormDialog({
     return date.toISOString().slice(0, 16)
   }
 
-  // Convert GMT+8 input to UTC for submission
-  const gmt8ToUTC = (localDateTime: string) => {
-    const date = new Date(localDateTime)
-    // Subtract 8 hours to convert GMT+8 to UTC
-    date.setHours(date.getHours() - 8)
-    return date.toISOString()
-  }
-
   useEffect(() => {
     if (reminder) {
       setFormData({
@@ -95,7 +81,7 @@ export function ReminderFormDialog({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...formData,
-          reminder_time: gmt8ToUTC(formData.reminder_time),
+          reminder_time: formData.reminder_time,
         }),
       })
 
@@ -161,7 +147,7 @@ export function ReminderFormDialog({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="reminder_time">Reminder Time (GMT+8)</Label>
+            <Label htmlFor="reminder_time">Reminder Time</Label>
             <Input
               id="reminder_time"
               type="datetime-local"
@@ -180,21 +166,15 @@ export function ReminderFormDialog({
 
           <div className="space-y-2">
             <Label htmlFor="status">Status</Label>
-            <Select
-              value={formData.status}
-              onValueChange={(value) =>
-                setFormData({ ...formData, status: value })
-              }
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="pending">Pending</SelectItem>
-                <SelectItem value="completed">Completed</SelectItem>
-                <SelectItem value="cancelled">Cancelled</SelectItem>
-              </SelectContent>
-            </Select>
+            <div className="flex items-center h-10">
+              <Badge variant={
+                formData.status === "completed" ? "default" :
+                formData.status === "cancelled" ? "destructive" :
+                "secondary"
+              }>
+                {formData.status.charAt(0).toUpperCase() + formData.status.slice(1)}
+              </Badge>
+            </div>
           </div>
 
           <div className="flex justify-between gap-2">
