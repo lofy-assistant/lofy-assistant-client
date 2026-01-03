@@ -71,12 +71,11 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
       console.log(`Updated ${calendarEvents.length} calendar event(s) to reference new reminder ${newReminder.id}`);
     }
 
-    // Step 5: Cancel old reminder - Set status to "cancelled"
-    await prisma.reminders.update({
+    // Step 5: Delete old reminder
+    await prisma.reminders.delete({
       where: { id: oldReminderId },
-      data: { status: "cancelled" },
     });
-    console.log(`Cancelled old reminder ${oldReminderId}`);
+    console.log(`Deleted old reminder ${oldReminderId}`);
 
     // Step 6: Delete old cloud task - handle errors gracefully
     try {
