@@ -8,6 +8,53 @@ const projectId = process.env.GCP_PROJECT_ID || "";
 const location = process.env.GCP_LOCATION || "asia-southeast1";
 const serviceUrl = process.env.GCP_SERVICE_URL || "";
 
+/**
+ * Get GCP credentials from environment variables
+ * Supports Vercel GCP integration (separate env vars) and fallback to JSON key
+ * @returns Configuration object with credentials and projectId, or empty object for local development
+ */
+export const getGCPCredentials = () => {
+  // For Vercel, use environment variables from GCP integration
+  if (process.env.GCP_PRIVATE_KEY) {
+    return {
+      credentials: {
+        client_email: process.env.GCP_SERVICE_ACCOUNT_EMAIL,
+        private_key: process.env.GCP_PRIVATE_KEY.replace(/\\n/g, "\n"), // Replace escaped newlines
+      },
+      projectId: process.env.GCP_PROJECT_ID,
+    };
+  }
+
+  // Fallback: Try parsing full JSON service account key (for manual setup)
+  const serviceAccountKey = process.env.GCP_SERVICE_ACCOUNT_KEY;
+  if (serviceAccountKey) {
+    try {
+      const credentials = JSON.parse(serviceAccountKey);
+      return {
+        credentials,
+        projectId: credentials.project_id || process.env.GCP_PROJECT_ID,
+      };
+    } catch (error) {
+      console.error("Failed to parse GCP_SERVICE_ACCOUNT_KEY:", error);
+      // If parsing fails, try base64 decoding
+      try {
+        const decoded = Buffer.from(serviceAccountKey, "base64").toString("utf-8");
+        const credentials = JSON.parse(decoded);
+        return {
+          credentials,
+          projectId: credentials.project_id || process.env.GCP_PROJECT_ID,
+        };
+      } catch (decodeError) {
+        console.error("Failed to decode GCP_SERVICE_ACCOUNT_KEY:", decodeError);
+        throw new Error("Invalid GCP_SERVICE_ACCOUNT_KEY format. Expected JSON string or base64-encoded JSON.");
+      }
+    }
+  }
+
+  // For local development, use gcloud CLI (returns empty object)
+  return {};
+};
+
 // Lazy load CloudTasksClient to avoid bundling issues in serverless
 let clientPromise: Promise<import("@google-cloud/tasks").CloudTasksClient> | null = null;
 
@@ -16,37 +63,26 @@ async function getClient(): Promise<import("@google-cloud/tasks").CloudTasksClie
     clientPromise = (async () => {
       const { CloudTasksClient } = await import("@google-cloud/tasks");
 
-      // Get credentials from environment variable
-      // GCP_SERVICE_ACCOUNT_KEY should be a JSON string of the service account key
-      const serviceAccountKey = process.env.GCP_SERVICE_ACCOUNT_KEY;
+      // Get credentials using the helper function
+      const credentialsConfig = getGCPCredentials();
 
-      // Define type for clientConfig instead of using 'any'
+      // Define type for clientConfig
       type ClientConfig = {
         projectId?: string;
-        credentials?: object;
+        credentials?:
+          | {
+              client_email?: string;
+              private_key?: string;
+            }
+          | object;
       };
 
       const clientConfig: ClientConfig = {
-        projectId: projectId || undefined,
+        projectId: credentialsConfig.projectId || projectId || undefined,
+        ...(Object.keys(credentialsConfig.credentials || {}).length > 0 && {
+          credentials: credentialsConfig.credentials,
+        }),
       };
-
-      if (serviceAccountKey) {
-        try {
-          // Parse the JSON credentials
-          const credentials = JSON.parse(serviceAccountKey);
-          Object.assign(clientConfig, { credentials });
-        } catch (error) {
-          console.error("Failed to parse GCP_SERVICE_ACCOUNT_KEY:", error);
-          // If parsing fails, try to use it as-is (might be base64 encoded)
-          try {
-            const decoded = Buffer.from(serviceAccountKey, "base64").toString("utf-8");
-            Object.assign(clientConfig, { credentials: JSON.parse(decoded) });
-          } catch (decodeError) {
-            console.error("Failed to decode GCP_SERVICE_ACCOUNT_KEY:", decodeError);
-            throw new Error("Invalid GCP_SERVICE_ACCOUNT_KEY format. Expected JSON string or base64-encoded JSON.");
-          }
-        }
-      }
 
       return new CloudTasksClient(clientConfig);
     })();
