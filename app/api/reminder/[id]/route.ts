@@ -30,11 +30,17 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     }
 
     // Validation
-    if (message && (typeof message !== "string" || message.trim().length === 0)) {
-      return NextResponse.json({ error: "Message cannot be empty" }, { status: 400 });
-    }
-    if (message && message.length > 500) {
-      return NextResponse.json({ error: "Message must be 500 characters or less" }, { status: 400 });
+    // Validate message if provided
+    if (message !== undefined) {
+      if (typeof message !== "string") {
+        return NextResponse.json({ error: "Message must be a string" }, { status: 400 });
+      }
+      if (message.trim().length === 0) {
+        return NextResponse.json({ error: "Message cannot be empty" }, { status: 400 });
+      }
+      if (message.length > 500) {
+        return NextResponse.json({ error: "Message must be 500 characters or less" }, { status: 400 });
+      }
     }
     if (!reminder_time) {
       return NextResponse.json({ error: "reminder_time is required" }, { status: 400 });
@@ -47,7 +53,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     // - Message: use new message if provided, else existing message
     // - Reminder time: use new reminder_time
     // - Status: copy from existing reminder
-    const newMessage = message || oldReminder.message;
+    const newMessage = message !== undefined ? message : oldReminder.message;
     const newReminder = await prisma.reminders.create({
       data: {
         user_id: session.userId,
