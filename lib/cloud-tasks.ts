@@ -9,13 +9,46 @@ const location = process.env.GCP_LOCATION || "asia-southeast1";
 const serviceUrl = process.env.GCP_SERVICE_URL || "";
 
 // Lazy load CloudTasksClient to avoid bundling issues in serverless
-let clientPromise: any = null;
+let clientPromise: Promise<import("@google-cloud/tasks").CloudTasksClient> | null = null;
 
-async function getClient() {
+async function getClient(): Promise<import("@google-cloud/tasks").CloudTasksClient> {
   if (!clientPromise) {
     clientPromise = (async () => {
       const { CloudTasksClient } = await import("@google-cloud/tasks");
-      return new CloudTasksClient();
+
+      // Get credentials from environment variable
+      // GCP_SERVICE_ACCOUNT_KEY should be a JSON string of the service account key
+      const serviceAccountKey = process.env.GCP_SERVICE_ACCOUNT_KEY;
+
+      // Define type for clientConfig instead of using 'any'
+      type ClientConfig = {
+        projectId?: string;
+        credentials?: object;
+      };
+
+      const clientConfig: ClientConfig = {
+        projectId: projectId || undefined,
+      };
+
+      if (serviceAccountKey) {
+        try {
+          // Parse the JSON credentials
+          const credentials = JSON.parse(serviceAccountKey);
+          Object.assign(clientConfig, { credentials });
+        } catch (error) {
+          console.error("Failed to parse GCP_SERVICE_ACCOUNT_KEY:", error);
+          // If parsing fails, try to use it as-is (might be base64 encoded)
+          try {
+            const decoded = Buffer.from(serviceAccountKey, "base64").toString("utf-8");
+            Object.assign(clientConfig, { credentials: JSON.parse(decoded) });
+          } catch (decodeError) {
+            console.error("Failed to decode GCP_SERVICE_ACCOUNT_KEY:", decodeError);
+            throw new Error("Invalid GCP_SERVICE_ACCOUNT_KEY format. Expected JSON string or base64-encoded JSON.");
+          }
+        }
+      }
+
+      return new CloudTasksClient(clientConfig);
     })();
   }
   return clientPromise;
@@ -27,10 +60,7 @@ async function getClient() {
  * @param queueId - The queue ID (e.g., "reminder-queue")
  * @param reminderId - The reminder ID to search for
  */
-export async function deleteCloudTask(
-  queueId: string,
-  reminderId: string
-): Promise<void> {
+export async function deleteCloudTask(queueId: string, reminderId: string): Promise<void> {
   try {
     const client = await getClient();
     const queuePath = client.queuePath(projectId, location, queueId);
@@ -44,14 +74,14 @@ export async function deleteCloudTask(
       if (task.httpRequest?.body) {
         try {
           // Decode the base64 body
-          const bodyString = Buffer.from(task.httpRequest.body as string, 'base64').toString('utf-8');
+          const bodyString = Buffer.from(task.httpRequest.body as string, "base64").toString("utf-8");
           const bodyData = JSON.parse(bodyString);
-          
+
           // Check if this task is for our reminder
           if (bodyData.reminder_id === parseInt(reminderId)) {
             tasksToDelete.push(task.name);
           }
-        } catch (parseError) {
+        } catch {
           // Skip tasks we can't parse
           continue;
         }
@@ -63,8 +93,8 @@ export async function deleteCloudTask(
       try {
         await client.deleteTask({ name: taskName });
         console.log(`Deleted cloud task: ${taskName} for reminder ${reminderId}`);
-      } catch (deleteError: any) {
-        if (deleteError.code === 5) {
+      } catch (deleteError: unknown) {
+        if (deleteError && typeof deleteError === "object" && "code" in deleteError && deleteError.code === 5) {
           // NOT_FOUND - task already deleted
           console.log(`Task ${taskName} not found, skipping`);
         } else {
@@ -76,7 +106,7 @@ export async function deleteCloudTask(
     if (tasksToDelete.length === 0) {
       console.log(`No cloud tasks found for reminder ${reminderId}`);
     }
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error(`Error deleting cloud tasks for reminder ${reminderId}:`, error);
     throw error;
   }
@@ -90,13 +120,7 @@ export async function deleteCloudTask(
  * @param bodyData - The data to send in the task payload
  * @param scheduleTime - The UTC time to schedule the task
  */
-export async function enqueueCloudTask(
-  endpointPath: string,
-  queueId: string,
-  taskId: string,
-  bodyData: TaskData,
-  scheduleTime: Date
-): Promise<void> {
+export async function enqueueCloudTask(endpointPath: string, queueId: string, taskId: string, bodyData: TaskData, scheduleTime: Date): Promise<void> {
   try {
     const client = await getClient();
     const queuePath = client.queuePath(projectId, location, queueId);
@@ -106,9 +130,9 @@ export async function enqueueCloudTask(
 
     // Don't specify the name - let GCP generate a unique name
     // We track by reminder_id in the payload instead
-    const task: any = {
+    const task = {
       httpRequest: {
-        httpMethod: "POST",
+        httpMethod: "POST" as const,
         url,
         headers: {
           "Content-Type": "application/json",
