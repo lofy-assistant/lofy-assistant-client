@@ -206,7 +206,7 @@ export function CalendarEventsList() {
                     {/* Date Section */}
                     <div className="flex flex-col items-center justify-center w-16 py-3 border-r sm:w-24 sm:py-4">
                       <Badge
-                        variant={isToday ? "default" : "outline"}
+                        variant={isToday ? "orange" : "default"}
                         className="mb-1 sm:mb-2 text-[10px] sm:text-xs"
                       >
                         {format(startDate, "EEE")}

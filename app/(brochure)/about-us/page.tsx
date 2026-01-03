@@ -114,11 +114,11 @@ export default function AboutUsPage() {
           </CardHeader>
           <CardContent>
             <div className="flex flex-wrap gap-2 mb-4">
-              <Badge variant="secondary">Innovation</Badge>
-              <Badge variant="secondary">Integrity</Badge>
-              <Badge variant="secondary">Collaboration</Badge>
-              <Badge variant="secondary">Excellence</Badge>
-              <Badge variant="secondary">Customer Focus</Badge>
+              <Badge variant="emerald">Innovation</Badge>
+              <Badge variant="indigo">Integrity</Badge>
+              <Badge variant="emerald">Collaboration</Badge>
+              <Badge variant="indigo">Excellence</Badge>
+              <Badge variant="emerald">Customer Focus</Badge>
             </div>
             <p className="text-muted-foreground">
               These core values guide everything we do, from product development

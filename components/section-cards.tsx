@@ -11,7 +11,7 @@ export function SectionCards() {
           <CardDescription>Upcoming Events</CardDescription>
           <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">$1,250.00</CardTitle>
           <CardAction>
-            <Badge variant="outline">
+            <Badge variant="default">
               <IconTrendingUp />
               +12.5%
             </Badge>
@@ -29,7 +29,7 @@ export function SectionCards() {
           <CardDescription>Upcoming Reminders</CardDescription>
           <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">1,234</CardTitle>
           <CardAction>
-            <Badge variant="outline">
+            <Badge variant="default">
               <IconTrendingDown />
               -20%
             </Badge>
@@ -47,7 +47,7 @@ export function SectionCards() {
           <CardDescription>Last Saved Memories</CardDescription>
           <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">45,678</CardTitle>
           <CardAction>
-            <Badge variant="outline">
+            <Badge variant="default">
               <IconTrendingUp />
               +12.5%
             </Badge>
@@ -65,7 +65,7 @@ export function SectionCards() {
           <CardDescription>Growth Rate</CardDescription>
           <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">4.5%</CardTitle>
           <CardAction>
-            <Badge variant="outline">
+            <Badge variant="default">
               <IconTrendingUp />
               +4.5%
             </Badge>

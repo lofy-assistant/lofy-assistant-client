@@ -54,7 +54,7 @@ const Features = () => {
         <div className="max-w-7xl mx-auto px-8">
           <div className="mb-16 text-center">
             <Badge
-              variant="secondary"
+              variant="indigo"
               className="mb-6 text-blue-700 bg-blue-100 border-blue-200 hover:bg-blue-100"
             >
               <span>💡</span>
@@ -82,7 +82,7 @@ const Features = () => {
                     </div>
                     <div className="flex-1">
                       <Badge
-                        variant="secondary"
+                        variant="indigo"
                         className="mb-3 text-xs text-emerald-700 bg-emerald-50 border-emerald-200"
                       >
                         {feature.badge}

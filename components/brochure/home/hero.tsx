@@ -22,7 +22,7 @@ export default function Hero() {
         <div className="relative z-10 self-center px-4 justify-self-start sm:px-6 md:px-8">
           <div className="space-y-2">
             <Badge
-              variant="secondary"
+              variant="default"
               className="px-4 py-2 transition-all duration-300 border border-white shadow-lg bg-linear-to-r from-emerald-400/30 to-indigo-500/40 backdrop-blur-md hover:scale-105"
             >
               <span className="text-xs text-transparent bg-linear-to-r from-emerald-800 to-indigo-800 bg-clip-text">

@@ -13,7 +13,7 @@ export default function FeatureHeader({ badge, title, description }: FeatureHead
     <div className="space-y-6 text-center">
       {badge && (
         <Badge
-          variant="secondary"
+          variant="default"
           className="px-4 py-2 text-emerald-700 bg-emerald-100 border-emerald-200 hover:bg-emerald-100"
         >
           <span>{badge}</span>

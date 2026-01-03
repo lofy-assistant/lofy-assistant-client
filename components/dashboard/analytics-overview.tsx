@@ -145,12 +145,12 @@ export function AnalyticsOverview() {
                   </span>
                 )}
                 {stat.upcoming !== undefined && (
-                  <Badge variant="secondary" className="text-xs">
+                  <Badge variant="indigo" className="text-xs">
                     {stat.upcoming} upcoming
                   </Badge>
                 )}
                 {stat.active !== undefined && (
-                  <Badge variant="secondary" className="text-xs">
+                  <Badge variant="indigo" className="text-xs">
                     {stat.active} active
                   </Badge>
                 )}
