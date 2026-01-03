@@ -149,6 +149,7 @@ export function ReminderFormDialog({
               }
               required
               rows={3}
+              disabled={formData.status === "completed"}
             />
           </div>
 
@@ -168,6 +169,7 @@ export function ReminderFormDialog({
                 setFormData({ ...formData, reminder_time: e.target.value })
               }
               required
+              disabled={formData.status === "completed"}
             />
           </div>
 
@@ -175,9 +177,9 @@ export function ReminderFormDialog({
             <Label htmlFor="status">Status</Label>
             <div className="flex items-center h-10">
               <Badge variant={
-                formData.status === "completed" ? "default" :
-                formData.status === "cancelled" ? "destructive" :
-                "secondary"
+                formData.status === "pending" ? "indigo" :
+                formData.status === "completed" ? "emerald" :
+                formData.status === "cancelled" ? "destructive" : "default"
               }>
                 {formData.status.charAt(0).toUpperCase() + formData.status.slice(1)}
               </Badge>
@@ -204,7 +206,7 @@ export function ReminderFormDialog({
               >
                 Cancel
               </Button>
-              <Button type="submit" disabled={loading || deleting}>
+              <Button type="submit" disabled={loading || deleting || formData.status === "completed"}>
                 {loading ? "Saving..." : reminder ? "Update" : "Create"}
               </Button>
             </div>

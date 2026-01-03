@@ -5,7 +5,7 @@ interface TaskData {
 }
 
 const projectId = process.env.GCP_PROJECT_ID || "";
-const location = process.env.GCP_LOCATION || "us-central1";
+const location = process.env.GCP_LOCATION || "asia-southeast1";
 const serviceUrl = process.env.GCP_SERVICE_URL || "";
 
 // Lazy load CloudTasksClient to avoid bundling issues in serverless
