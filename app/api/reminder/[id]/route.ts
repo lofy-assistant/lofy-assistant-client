@@ -69,9 +69,9 @@ export async function PUT(
                     const taskId = String(updatedReminder.id)
 
                     // Step 1: Delete existing task first to avoid duplicates
-                    console.log(`Deleting existing cloud task: ${taskId}`)
-                    await deleteCloudTask("reminder-queue", taskId)
-                    console.log(`Successfully deleted cloud task: ${taskId}`)
+                    console.log(`Deleting existing cloud task: ${updatedReminder.id}`)
+                    await deleteCloudTask("reminder-queue", updatedReminder.id)
+                    console.log(`Successfully deleted cloud task: ${updatedReminder.id}`)
 
                     // Step 2: Create new task with updated schedule and message
                     const data = {
@@ -137,7 +137,7 @@ export async function DELETE(
 
         // Delete the associated cloud task
         try {
-            await deleteCloudTask("reminder-queue", String(reminderId))
+            await deleteCloudTask("reminder-queue", reminderId)
             console.log(`Deleted cloud task for reminder ${reminderId}`)
         } catch (taskError) {
             console.error("Error deleting cloud task:", taskError)

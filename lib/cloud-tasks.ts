@@ -96,11 +96,12 @@ async function getClient(): Promise<import("@google-cloud/tasks").CloudTasksClie
  * @param queueId - The queue ID (e.g., "reminder-queue")
  * @param reminderId - The reminder ID to search for
  */
-export async function deleteCloudTask(queueId: string, reminderId: string): Promise<void> {
+export async function deleteCloudTask(queueId: string, reminderId: number): Promise<void> {
   try {
     const client = await getClient();
     const queuePath = client.queuePath(projectId, location, queueId);
 
+    console.log(`Searching for cloud tasks for reminder ${reminderId} in queue ${queueId}`);
     // List all tasks in the queue
     const [tasks] = await client.listTasks({ parent: queuePath });
 
@@ -114,7 +115,7 @@ export async function deleteCloudTask(queueId: string, reminderId: string): Prom
           const bodyData = JSON.parse(bodyString);
 
           // Check if this task is for our reminder
-          if (bodyData.reminder_id === parseInt(reminderId)) {
+          if (bodyData.reminder_id === reminderId) {
             tasksToDelete.push(task.name);
           }
         } catch {
