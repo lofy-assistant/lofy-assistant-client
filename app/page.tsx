@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import AppNavBar from "@/components/app-navbar";
 import Hero from "@/components/brochure/home/hero";
 import { BentoFeatures } from "@/components/brochure/home/bento-features";
