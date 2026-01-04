@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -15,6 +15,7 @@ import { toast } from "sonner";
 import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import { AuroraBackground } from "@/components/ui/aurora-background";
 import { motion } from "motion/react";
+import { Suspense } from "react";
 
 const formSchema = z.object({
   name: z.string().min(1, "Please enter your name"),
@@ -29,8 +30,9 @@ const formSchema = z.object({
 
 type FormData = z.infer<typeof formSchema>;
 
-export default function RegisterPage() {
+function RegisterForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [currentStep, setCurrentStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -47,6 +49,34 @@ export default function RegisterPage() {
       pin: "",
     },
   });
+
+  // Pre-fill phone number from URL query params if present
+  useEffect(() => {
+    // First, check for direct phone parameter in URL
+    let phone = searchParams.get("phone");
+
+    // If not found, check inside redirect URL
+    if (!phone) {
+      const redirect = searchParams.get("redirect");
+      if (redirect) {
+        try {
+          const redirectUrl = new URL(redirect, window.location.origin);
+          phone = redirectUrl.searchParams.get("phone");
+        } catch (error) {
+          console.error("Error parsing redirect URL:", error);
+        }
+      }
+    }
+
+    // Auto-fill phone number if found
+    if (phone && phone.length >= 10) {
+      const countryCode = phone.slice(0, 2);
+      const phoneNumber = phone.slice(2);
+
+      form.setValue("countryCode", countryCode);
+      form.setValue("phoneNumber", phoneNumber);
+    }
+  }, [searchParams, form]);
 
   const totalSteps = 3;
 
@@ -89,7 +119,10 @@ export default function RegisterPage() {
       }
 
       toast.success(data.isNewUser ? "Registration successful!" : "Profile completed successfully!");
-      router.push("/login");
+
+      // Redirect to the original destination if present, otherwise to login
+      const redirect = searchParams.get("redirect");
+      router.push(redirect || "/login");
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Registration failed");
     } finally {
@@ -339,5 +372,25 @@ export default function RegisterPage() {
         </div>
       </motion.div>
     </AuroraBackground>
+  );
+}
+
+export default function RegisterPage() {
+  return (
+    <Suspense
+      fallback={
+        <AuroraBackground>
+          <div className="min-h-screen flex items-center justify-center">
+            <Card className="min-w-sm mx-auto shadow-xl rounded-xl p-4">
+              <CardHeader className="space-y-1">
+                <CardTitle className="text-2xl font-bold text-center">Complete Your Profile</CardTitle>
+                <CardDescription className="text-center">Loading...</CardDescription>
+              </CardHeader>
+            </Card>
+          </div>
+        </AuroraBackground>
+      }>
+      <RegisterForm />
+    </Suspense>
   );
 }
