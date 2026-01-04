@@ -7,33 +7,10 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  InputOTP,
-  InputOTPGroup,
-  InputOTPSlot,
-} from "@/components/ui/input-otp";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { toast } from "sonner";
 import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import { AuroraBackground } from "@/components/ui/aurora-background";
@@ -111,16 +88,10 @@ export default function RegisterPage() {
         throw new Error(data.error || "Registration failed");
       }
 
-      toast.success(
-        data.isNewUser
-          ? "Registration successful!"
-          : "Profile completed successfully!"
-      );
+      toast.success(data.isNewUser ? "Registration successful!" : "Profile completed successfully!");
       router.push("/login");
     } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : "Registration failed"
-      );
+      toast.error(error instanceof Error ? error.message : "Registration failed");
     } finally {
       setIsLoading(false);
     }
@@ -136,25 +107,17 @@ export default function RegisterPage() {
           duration: 0.8,
           ease: "easeInOut",
         }}
-        className="relative flex flex-col gap-4 items-center justify-center px-4"
-      >
+        className="relative flex flex-col gap-4 items-center justify-center px-4">
         <div className="min-h-screen flex items-center justify-center">
           <Card className="min-w-sm mx-auto shadow-xl rounded-xl p-4">
             <CardHeader className="space-y-1">
-              <CardTitle className="text-2xl font-bold text-center">
-                Complete Your Profile
-              </CardTitle>
+              <CardTitle className="text-2xl font-bold text-center">Complete Your Profile</CardTitle>
               <CardDescription className="text-center">
                 Step {currentStep} of {totalSteps}
               </CardDescription>
               <div className="flex gap-2 mt-4">
                 {Array.from({ length: totalSteps }).map((_, index) => (
-                  <div
-                    key={index}
-                    className={`h-2 flex-1 rounded-full transition-all ${
-                      index + 1 <= currentStep ? "bg-primary" : "bg-muted"
-                    }`}
-                  />
+                  <div key={index} className={`h-2 flex-1 rounded-full transition-all ${index + 1 <= currentStep ? "bg-primary" : "bg-muted"}`} />
                 ))}
               </div>
             </CardHeader>
@@ -184,11 +147,7 @@ export default function RegisterPage() {
                           <FormItem>
                             <FormLabel>Email Address</FormLabel>
                             <FormControl>
-                              <Input
-                                type="email"
-                                placeholder="john@example.com"
-                                {...field}
-                              />
+                              <Input type="email" placeholder="john@example.com" {...field} />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -205,10 +164,7 @@ export default function RegisterPage() {
                                 control={form.control}
                                 name="countryCode"
                                 render={({ field }) => (
-                                  <Select
-                                    onValueChange={field.onChange}
-                                    defaultValue={field.value}
-                                  >
+                                  <Select onValueChange={field.onChange} defaultValue={field.value}>
                                     <FormControl>
                                       <SelectTrigger className="w-24">
                                         <SelectValue />
@@ -219,6 +175,7 @@ export default function RegisterPage() {
                                       <SelectItem value="1">+1</SelectItem>
                                       <SelectItem value="44">+44</SelectItem>
                                       <SelectItem value="65">+65</SelectItem>
+                                      <SelectItem value="91">+91</SelectItem>
                                     </SelectContent>
                                   </Select>
                                 )}
@@ -229,16 +186,7 @@ export default function RegisterPage() {
                                   name="phoneNumber"
                                   render={({ field }) => (
                                     <FormControl>
-                                      <Input
-                                        type="tel"
-                                        placeholder="123456789"
-                                        {...field}
-                                        onChange={(e) =>
-                                          field.onChange(
-                                            e.target.value.replace(/\D/g, "")
-                                          )
-                                        }
-                                      />
+                                      <Input type="tel" placeholder="123456789" {...field} onChange={(e) => field.onChange(e.target.value.replace(/\D/g, ""))} />
                                     </FormControl>
                                   )}
                                 />
@@ -259,13 +207,8 @@ export default function RegisterPage() {
                         name="question1"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>
-                              What is your professional background?
-                            </FormLabel>
-                            <Select
-                              onValueChange={field.onChange}
-                              defaultValue={field.value}
-                            >
+                            <FormLabel>What is your professional background?</FormLabel>
+                            <Select onValueChange={field.onChange} defaultValue={field.value}>
                               <FormControl>
                                 <SelectTrigger>
                                   <SelectValue placeholder="Select an option" />
@@ -273,15 +216,9 @@ export default function RegisterPage() {
                               </FormControl>
                               <SelectContent>
                                 <SelectItem value="student">Student</SelectItem>
-                                <SelectItem value="full-time">
-                                  Employed Full-Time
-                                </SelectItem>
-                                <SelectItem value="part-time">
-                                  Employed Part-Time
-                                </SelectItem>
-                                <SelectItem value="self-employed">
-                                  Self-employed
-                                </SelectItem>
+                                <SelectItem value="full-time">Employed Full-Time</SelectItem>
+                                <SelectItem value="part-time">Employed Part-Time</SelectItem>
+                                <SelectItem value="self-employed">Self-employed</SelectItem>
                                 <SelectItem value="neet">NEET</SelectItem>
                                 <SelectItem value="other">Other</SelectItem>
                               </SelectContent>
@@ -296,31 +233,18 @@ export default function RegisterPage() {
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>Where did you know Lofy from?</FormLabel>
-                            <Select
-                              onValueChange={field.onChange}
-                              defaultValue={field.value}
-                            >
+                            <Select onValueChange={field.onChange} defaultValue={field.value}>
                               <FormControl>
                                 <SelectTrigger>
                                   <SelectValue placeholder="Select an option" />
                                 </SelectTrigger>
                               </FormControl>
                               <SelectContent>
-                                <SelectItem value="social-media">
-                                  Social Media
-                                </SelectItem>
-                                <SelectItem value="search-engine">
-                                  Search Engine
-                                </SelectItem>
-                                <SelectItem value="friend-colleague">
-                                  Friend or Colleague
-                                </SelectItem>
-                                <SelectItem value="online-advertisement">
-                                  Online Advertisement
-                                </SelectItem>
-                                <SelectItem value="article-blog">
-                                  Article or Blog
-                                </SelectItem>
+                                <SelectItem value="social-media">Social Media</SelectItem>
+                                <SelectItem value="search-engine">Search Engine</SelectItem>
+                                <SelectItem value="friend-colleague">Friend or Colleague</SelectItem>
+                                <SelectItem value="online-advertisement">Online Advertisement</SelectItem>
+                                <SelectItem value="article-blog">Article or Blog</SelectItem>
                                 <SelectItem value="other">Other</SelectItem>
                               </SelectContent>
                             </Select>
@@ -333,9 +257,7 @@ export default function RegisterPage() {
                         name="question3"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>
-                              Tell Lofy more about yourself. (optional)
-                            </FormLabel>
+                            <FormLabel>Tell Lofy more about yourself. (optional)</FormLabel>
                             <FormControl>
                               <textarea
                                 className="flex min-h-[120px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
@@ -359,12 +281,8 @@ export default function RegisterPage() {
                         render={({ field }) => (
                           <FormItem>
                             <div className="text-center space-y-2">
-                              <FormLabel className="text-lg">
-                                Create Your 6-Digit PIN
-                              </FormLabel>
-                              <p className="text-sm text-muted-foreground">
-                                This PIN will be used to secure your account
-                              </p>
+                              <FormLabel className="text-lg">Create Your 6-Digit PIN</FormLabel>
+                              <p className="text-sm text-muted-foreground">This PIN will be used to secure your account</p>
                             </div>
                             <FormControl>
                               <div className="flex justify-center">
@@ -389,21 +307,12 @@ export default function RegisterPage() {
 
                   {/* Navigation Buttons */}
                   <div className="flex justify-between pt-4">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={handleBack}
-                      disabled={currentStep === 1 || isLoading}
-                    >
+                    <Button type="button" variant="outline" onClick={handleBack} disabled={currentStep === 1 || isLoading}>
                       <ChevronLeft className="mr-2 h-4 w-4" />
                       Back
                     </Button>
                     {currentStep < totalSteps ? (
-                      <Button
-                        type="button"
-                        onClick={handleNext}
-                        disabled={isLoading}
-                      >
+                      <Button type="button" onClick={handleNext} disabled={isLoading}>
                         Next
                         <ChevronRight className="ml-2 h-4 w-4" />
                       </Button>
