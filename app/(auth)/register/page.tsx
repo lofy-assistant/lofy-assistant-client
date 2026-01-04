@@ -177,6 +177,7 @@ export default function RegisterPage() {
                                       <SelectItem value="65">+65</SelectItem>
                                       <SelectItem value="91">+91</SelectItem>
                                       <SelectItem value="632">+632</SelectItem>
+                                      <SelectItem value="351">+351</SelectItem>
                                     </SelectContent>
                                   </Select>
                                 )}
