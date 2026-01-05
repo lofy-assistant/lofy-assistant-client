@@ -218,6 +218,15 @@ function LoginForm() {
             <Button type="submit" className="w-full" disabled={isLoading}>
               {isLoading ? "Signing in..." : "Sign In"}
             </Button>
+
+            <div className="flex flex-col gap-2 mt-4">
+              <Button type="button" variant="outline" className="w-full" onClick={() => router.push("/register")}>
+                Create Account
+              </Button>
+              <Button type="button" variant="ghost" className="w-full text-sm" onClick={() => router.push("/forgot-pin")}>
+                Forgot PIN?
+              </Button>
+            </div>
           </form>
         </Form>
       </CardContent>

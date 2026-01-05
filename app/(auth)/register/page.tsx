@@ -399,6 +399,16 @@ function RegisterForm() {
                       </Button>
                     )}
                   </div>
+
+                  {/* Login Link */}
+                  <div className="text-center pt-4 border-t mt-4">
+                    <p className="text-sm text-muted-foreground">
+                      Already have an account?{" "}
+                      <Button type="button" variant="link" className="p-0 h-auto font-semibold" onClick={() => router.push("/login")}>
+                        Sign In
+                      </Button>
+                    </p>
+                  </div>
                 </CardContent>
               </form>
             </Form>
