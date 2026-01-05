@@ -26,13 +26,13 @@ import {
 interface ComponentItem {
   title: string;
   href: string;
-  description: string;
+  description?: string;
 }
 
 interface IntroItem {
   title: string;
   href: string;
-  description: string;
+  description?: string;
   icon?: LucideIcon;
 }
 
@@ -59,7 +59,7 @@ export default function Navigation({
       content: "default",
     },
     {
-      title: "Use Cases",
+      title: "Resources",
       content: "components",
     },
     {
@@ -67,36 +67,7 @@ export default function Navigation({
       isLink: true,
       href: "/pricing",
     },
-    {
-      title: "About Us",
-      isLink: true,
-      href: "/about-us",
-    },
-  ],
-  components = [
-    {
-      title: "Individuals",
-      href: "/use-cases",
-      description:
-        "A modal dialog that interrupts the user with important content and expects a response.",
-    },
-    {
-      title: "Businesses",
-      href: "/use-cases",
-      description:
-        "For sighted users to preview content available behind a link.",
-    },
-    {
-      title: "Freelancers",
-      href: "/use-cases",
-      description:
-        "Displays an indicator showing the completion progress of a task, typically displayed as a progress bar.",
-    },
-    {
-      title: "Students",
-      href: "/use-cases",
-      description: "Visually or semantically separates content.",
-    },
+
   ],
   introItems = [
     {
@@ -122,6 +93,17 @@ export default function Navigation({
       href: "/features/centralized-task",
       description: "Manage everything",
       icon: ListChecks,
+    },
+  ],
+  components = [
+    {
+      title: "Guides",
+      href: "/resources/guides",
+    },
+    {
+      title: "About Us",
+      href: "/resources/about-us",
+      
     },
   ],
 }: NavigationProps) {

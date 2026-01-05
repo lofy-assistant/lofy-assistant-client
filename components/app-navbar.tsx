@@ -59,8 +59,8 @@ export default function AppNavbar({
   homeUrl = "/",
   mobileLinks = [
     { text: "Features", href: "/features" },
+    { text: "Resources", href: "/resources" },
     { text: "Pricing", href: "/pricing" },
-    { text: "About Us", href: "/about-us" },
   ],
   actions = [
     {
