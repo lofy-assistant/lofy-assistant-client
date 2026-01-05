@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import { parsePhoneNumber } from "libphonenumber-js";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -16,12 +17,20 @@ import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import { AuroraBackground } from "@/components/ui/aurora-background";
 import { motion } from "motion/react";
 import { Suspense } from "react";
+import { getCountriesWithMalaysiaFirst } from "@/lib/countries";
 
 const formSchema = z.object({
   name: z.string().min(1, "Please enter your name"),
   email: z.string().email("Please enter a valid email"),
-  countryCode: z.string().min(1),
-  phoneNumber: z.string().min(8, "Please enter a valid phone number"),
+  dialCode: z.string().min(1),
+  phoneNumber: z
+    .string()
+    .min(1, "Please enter a phone number")
+    .refine((value) => {
+      // Only validate if we have a value
+      if (!value) return false;
+      return /^\d+$/.test(value);
+    }, "Phone number must contain only digits"),
   question1: z.string().min(1, "Please answer question 1"),
   question2: z.string().min(1, "Please answer question 2"),
   question3: z.string().optional(),
@@ -35,13 +44,23 @@ function RegisterForm() {
   const searchParams = useSearchParams();
   const [currentStep, setCurrentStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
+  const [countrySearch, setCountrySearch] = useState("");
+  const allCountries = getCountriesWithMalaysiaFirst();
+
+  // Filter countries based on search (by name or dial code)
+  const filteredCountries = countrySearch
+    ? allCountries.filter((country) => {
+        const searchLower = countrySearch.toLowerCase();
+        return country.name.toLowerCase().includes(searchLower) || country.dialCode.includes(countrySearch);
+      })
+    : allCountries;
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: "",
       email: "",
-      countryCode: "60",
+      dialCode: "60",
       phoneNumber: "",
       question1: "",
       question2: "",
@@ -52,10 +71,8 @@ function RegisterForm() {
 
   // Pre-fill phone number from URL query params if present
   useEffect(() => {
-    // First, check for direct phone parameter in URL
     let phone = searchParams.get("phone");
 
-    // If not found, check inside redirect URL
     if (!phone) {
       const redirect = searchParams.get("redirect");
       if (redirect) {
@@ -68,15 +85,24 @@ function RegisterForm() {
       }
     }
 
-    // Auto-fill phone number if found
     if (phone && phone.length >= 10) {
-      const countryCode = phone.slice(0, 2);
-      const phoneNumber = phone.slice(2);
+      try {
+        // Phone parameter never has +, so add it for parsing
+        const parsedPhone = parsePhoneNumber(`+${phone}`);
 
-      form.setValue("countryCode", countryCode);
-      form.setValue("phoneNumber", phoneNumber);
+        if (parsedPhone && parsedPhone.country) {
+          // Find the country by its code to get the dial code
+          const country = allCountries.find((c) => c.code === parsedPhone.country);
+          if (country) {
+            form.setValue("dialCode", country.dialCode);
+            form.setValue("phoneNumber", parsedPhone.nationalNumber);
+          }
+        }
+      } catch (error) {
+        console.error("Error parsing phone number:", error);
+      }
     }
-  }, [searchParams, form]);
+  }, [searchParams, form, allCountries]);
 
   const totalSteps = 3;
 
@@ -102,7 +128,8 @@ function RegisterForm() {
   const onSubmit = async (formData: FormData) => {
     setIsLoading(true);
     try {
-      const fullPhoneNumber = `${formData.countryCode}${formData.phoneNumber}`;
+      // Combine dial code + national number (e.g., "91" + "9789497050" = "919789497050")
+      const fullPhoneNumber = `${formData.dialCode}${formData.phoneNumber}`;
 
       const response = await fetch("/api/auth/register", {
         method: "POST",
@@ -195,28 +222,33 @@ function RegisterForm() {
                             <div className="flex items-start gap-2">
                               <FormField
                                 control={form.control}
-                                name="countryCode"
-                                render={({ field }) => (
-                                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                    <FormControl>
-                                      <SelectTrigger className="w-24">
-                                        <SelectValue />
-                                      </SelectTrigger>
-                                    </FormControl>
-                                    <SelectContent>
-                                      <SelectItem value="60">+60</SelectItem>
-                                      <SelectItem value="1">+1</SelectItem>
-                                      <SelectItem value="44">+44</SelectItem>
-                                      <SelectItem value="65">+65</SelectItem>
-                                      <SelectItem value="91">+91</SelectItem>
-                                      <SelectItem value="632">+632</SelectItem>
-                                      <SelectItem value="351">+351</SelectItem>
-                                      <SelectItem value="233">+233</SelectItem>
-                                      <SelectItem value="234">+234</SelectItem>
-                                      <SelectItem value="32">+32</SelectItem>
-                                    </SelectContent>
-                                  </Select>
-                                )}
+                                name="dialCode"
+                                render={({ field }) => {
+                                  const selectedCountry = allCountries.find((c) => c.dialCode === field.value);
+                                  return (
+                                    <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value} onOpenChange={(open) => !open && setCountrySearch("")}>
+                                      <FormControl>
+                                        <SelectTrigger className="w-32">
+                                          <SelectValue>{selectedCountry ? `${selectedCountry.flag} +${selectedCountry.dialCode}` : "+60"}</SelectValue>
+                                        </SelectTrigger>
+                                      </FormControl>
+                                      <SelectContent className="max-h-[300px]">
+                                        <div className="px-2 py-2 sticky top-0 bg-background border-b">
+                                          <Input placeholder="Search by name or code..." value={countrySearch} onChange={(e) => setCountrySearch(e.target.value)} className="h-8" onKeyDown={(e) => e.stopPropagation()} />
+                                        </div>
+                                        {filteredCountries.length > 0 ? (
+                                          filteredCountries.map((country) => (
+                                            <SelectItem key={country.dialCode} value={country.dialCode}>
+                                              {country.flag} +{country.dialCode} {country.name}
+                                            </SelectItem>
+                                          ))
+                                        ) : (
+                                          <div className="px-2 py-6 text-center text-sm text-muted-foreground">No countries found</div>
+                                        )}
+                                      </SelectContent>
+                                    </Select>
+                                  );
+                                }}
                               />
                               <div className="flex-1 space-y-1">
                                 <FormField
@@ -246,7 +278,7 @@ function RegisterForm() {
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>What is your professional background?</FormLabel>
-                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value}>
                               <FormControl>
                                 <SelectTrigger>
                                   <SelectValue placeholder="Select an option" />
@@ -271,7 +303,7 @@ function RegisterForm() {
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>Where did you know Lofy from?</FormLabel>
-                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value}>
                               <FormControl>
                                 <SelectTrigger>
                                   <SelectValue placeholder="Select an option" />

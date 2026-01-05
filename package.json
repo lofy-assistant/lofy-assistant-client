@@ -53,6 +53,7 @@
     "input-otp": "^1.4.2",
     "jose": "^6.1.2",
     "jsonwebtoken": "^9.0.2",
+    "libphonenumber-js": "^1.12.33",
     "lru-cache": "^11.2.2",
     "lucide-react": "^0.546.0",
     "mongodb": "^6.21.0",

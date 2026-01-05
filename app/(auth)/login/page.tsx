@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import { parsePhoneNumber } from "libphonenumber-js";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -13,14 +14,14 @@ import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { toast } from "sonner";
 import { Suspense } from "react";
+import { getCountriesWithMalaysiaFirst } from "@/lib/countries";
 
 const loginSchema = z.object({
-  countryCode: z.string().min(1, "Country code is required"),
+  dialCode: z.string().min(1, "Dial code is required"),
   phoneNumber: z
     .string()
-    .min(8, "Phone number must be valid")
-    .max(15, "Phone number must be valid")
-    .regex(/^\d{8,15}$/, "Phone number must contain only digits"),
+    .min(1, "Phone number is required")
+    .refine((value) => /^\d+$/.test(value), "Phone number must contain only digits"),
   pin: z
     .string()
     .min(6, "PIN must be 6 digits")
@@ -34,11 +35,21 @@ function LoginForm() {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
+  const [countrySearch, setCountrySearch] = useState("");
+  const allCountries = getCountriesWithMalaysiaFirst();
+
+  // Filter countries based on search (by name or dial code)
+  const filteredCountries = countrySearch
+    ? allCountries.filter((country) => {
+        const searchLower = countrySearch.toLowerCase();
+        return country.name.toLowerCase().includes(searchLower) || country.dialCode.includes(countrySearch);
+      })
+    : allCountries;
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      countryCode: "60",
+      dialCode: "60",
       phoneNumber: "",
       pin: "",
     },
@@ -46,10 +57,8 @@ function LoginForm() {
 
   // Pre-fill phone number from URL query params if present
   useEffect(() => {
-    // First, check for direct phone parameter in URL
     let phone = searchParams.get("phone");
 
-    // If not found, check inside redirect URL
     if (!phone) {
       const redirect = searchParams.get("redirect");
       if (redirect) {
@@ -62,20 +71,30 @@ function LoginForm() {
       }
     }
 
-    // Auto-fill phone number if found
     if (phone && phone.length >= 10) {
-      const countryCode = phone.slice(0, 2);
-      const phoneNumber = phone.slice(2);
+      try {
+        // Phone parameter never has +, so add it for parsing
+        const parsedPhone = parsePhoneNumber(`+${phone}`);
 
-      form.setValue("countryCode", countryCode);
-      form.setValue("phoneNumber", phoneNumber);
+        if (parsedPhone && parsedPhone.country) {
+          // Find the country by its code to get the dial code
+          const country = allCountries.find((c) => c.code === parsedPhone.country);
+          if (country) {
+            form.setValue("dialCode", country.dialCode);
+            form.setValue("phoneNumber", parsedPhone.nationalNumber);
+          }
+        }
+      } catch (error) {
+        console.error("Error parsing phone number:", error);
+      }
     }
-  }, [searchParams, form]);
+  }, [searchParams, form, allCountries]);
 
   const onSubmit = async (data: LoginFormValues) => {
     setIsLoading(true);
     try {
-      const phoneNumber = `${data.countryCode}${data.phoneNumber}`;
+      // Combine dial code + national number (e.g., "91" + "9789497050" = "919789497050")
+      const phoneNumber = `${data.dialCode}${data.phoneNumber}`;
 
       const response = await fetch("/api/auth/login", {
         method: "POST",
@@ -128,28 +147,33 @@ function LoginForm() {
               <div className="flex items-start gap-2">
                 <FormField
                   control={form.control}
-                  name="countryCode"
-                  render={({ field }) => (
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger className="w-24">
-                          <SelectValue placeholder="Select a country" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="60">+60</SelectItem>
-                        <SelectItem value="1">+1</SelectItem>
-                        <SelectItem value="44">+44</SelectItem>
-                        <SelectItem value="65">+65</SelectItem>
-                        <SelectItem value="91">+91</SelectItem>
-                        <SelectItem value="632">+632</SelectItem>
-                        <SelectItem value="351">+351</SelectItem>
-                        <SelectItem value="233">+233</SelectItem>
-                        <SelectItem value="234">+234</SelectItem>
-                        <SelectItem value="32">+32</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  )}
+                  name="dialCode"
+                  render={({ field }) => {
+                    const selectedCountry = allCountries.find((c) => c.dialCode === field.value);
+                    return (
+                      <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value} onOpenChange={(open) => !open && setCountrySearch("")}>
+                        <FormControl>
+                          <SelectTrigger className="w-32">
+                            <SelectValue>{selectedCountry ? `${selectedCountry.flag} +${selectedCountry.dialCode}` : "+60"}</SelectValue>
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent className="max-h-[300px]">
+                          <div className="px-2 py-2 sticky top-0 bg-background border-b">
+                            <Input placeholder="Search by name or code..." value={countrySearch} onChange={(e) => setCountrySearch(e.target.value)} className="h-8" onKeyDown={(e) => e.stopPropagation()} />
+                          </div>
+                          {filteredCountries.length > 0 ? (
+                            filteredCountries.map((country) => (
+                              <SelectItem key={country.dialCode} value={country.dialCode}>
+                                {country.flag} +{country.dialCode} {country.name}
+                              </SelectItem>
+                            ))
+                          ) : (
+                            <div className="px-2 py-6 text-center text-sm text-muted-foreground">No countries found</div>
+                          )}
+                        </SelectContent>
+                      </Select>
+                    );
+                  }}
                 />
                 <div className="flex-1">
                   <FormField

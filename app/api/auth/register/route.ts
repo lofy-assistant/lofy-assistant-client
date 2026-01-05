@@ -1,27 +1,27 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { Prisma } from "@/lib/generated/prisma";
 import { randomUUID } from "crypto";
+import { parsePhoneNumber, isValidPhoneNumber } from "libphonenumber-js";
 
-export const runtime = 'nodejs'
+export const runtime = "nodejs";
 
 async function hashData(data: string): Promise<string> {
-  const encoder = new TextEncoder()
-  const encodedData = encoder.encode(data)
-  const hashBuffer = await crypto.subtle.digest("SHA-256", encodedData)
-  const hashArray = Array.from(new Uint8Array(hashBuffer))
-  return hashArray.map(b => b.toString(16).padStart(2, "0")).join("")
+  const encoder = new TextEncoder();
+  const encodedData = encoder.encode(data);
+  const hashBuffer = await crypto.subtle.digest("SHA-256", encodedData);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 
 async function hashPhone(phone: string): Promise<string> {
-  const normalizedPhone = phone.replace(/\D/g, "")
-  return hashData(normalizedPhone)
+  const normalizedPhone = phone.replace(/\D/g, "");
+  return hashData(normalizedPhone);
 }
 
 async function encryptPhone(phone: string): Promise<string> {
   // Simple base64 encoding - replace with proper encryption if needed
-  const normalizedPhone = phone.replace(/\D/g, "")
-  return Buffer.from(normalizedPhone).toString('base64')
+  const normalizedPhone = phone.replace(/\D/g, "");
+  return Buffer.from(normalizedPhone).toString("base64");
 }
 
 export async function POST(request: NextRequest) {
@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
       email,
       question1,
       question2,
-      question3
+      question3,
     }: {
       phone?: string;
       phoneNumber?: string;
@@ -50,16 +50,29 @@ export async function POST(request: NextRequest) {
     // Handle both 'phone' and 'phoneNumber' fields
     const phoneValue = phone || phoneNumber;
 
-    // Normalize phone: remove all non-digits including '+'
-    const normalizedPhone = phoneValue?.replace(/\D/g, "") || "";
-
-    if (!normalizedPhone || !pin || !name) {
+    if (!phoneValue || !pin || !name) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
-    // Validate phone format
-    const phoneRegex = /^[0-9]{10,15}$/;
-    if (!phoneRegex.test(normalizedPhone)) {
+    // Validate and parse phone number using libphonenumber-js
+    // Phone comes in as dial code + national number (e.g., "919789497050")
+    let normalizedPhone: string;
+    try {
+      const phoneWithPlus = `+${phoneValue}`;
+
+      if (!isValidPhoneNumber(phoneWithPlus)) {
+        return NextResponse.json({ error: "Invalid phone number format" }, { status: 400 });
+      }
+
+      const parsedPhone = parsePhoneNumber(phoneWithPlus);
+      if (!parsedPhone) {
+        return NextResponse.json({ error: "Invalid phone number format" }, { status: 400 });
+      }
+
+      // Get the E.164 format without the + and store as normalized phone
+      normalizedPhone = parsedPhone.number.slice(1);
+    } catch (error) {
+      console.error("Phone parsing error:", error);
       return NextResponse.json({ error: "Invalid phone number format" }, { status: 400 });
     }
 
@@ -88,20 +101,23 @@ export async function POST(request: NextRequest) {
     const hashedPin = await hashData(pin);
 
     // Prepare metadata with onboarding answers if provided
-    const metadata = (question1 || question2 || question3) ? {
-      onboarding: {
-        question1: question1 || "",
-        question2: question2 || "",
-        question3: question3 || "",
-        completedAt: new Date().toISOString()
-      }
-    } : null;
+    const metadata =
+      question1 || question2 || question3
+        ? {
+            onboarding: {
+              question1: question1 || "",
+              question2: question2 || "",
+              question3: question3 || "",
+              completedAt: new Date().toISOString(),
+            },
+          }
+        : null;
 
     if (existingUser) {
       // Check if email is being changed and if it's already taken by another user
       if (email && email !== existingUser.email) {
         const emailExists = await prisma.users.findUnique({
-          where: { email: email }
+          where: { email: email },
         });
         if (emailExists && emailExists.id !== existingUser.id) {
           return NextResponse.json({ error: "Email already in use" }, { status: 409 });
@@ -122,15 +138,12 @@ export async function POST(request: NextRequest) {
         data: updateData,
       });
 
-      return NextResponse.json(
-        { success: true, message: "Profile completed successfully", userId: updatedUser.id, isNewUser: false },
-        { status: 200 }
-      );
+      return NextResponse.json({ success: true, message: "Profile completed successfully", userId: updatedUser.id, isNewUser: false }, { status: 200 });
     } else {
       // Check if email already exists
       if (email) {
         const emailExists = await prisma.users.findUnique({
-          where: { email: email }
+          where: { email: email },
         });
         if (emailExists) {
           return NextResponse.json({ error: "Email already in use" }, { status: 409 });
@@ -151,10 +164,7 @@ export async function POST(request: NextRequest) {
         },
       });
 
-      return NextResponse.json(
-        { success: true, message: "User registered successfully", userId: user.id, isNewUser: true },
-        { status: 201 }
-      );
+      return NextResponse.json({ success: true, message: "User registered successfully", userId: user.id, isNewUser: true }, { status: 201 });
     }
   } catch (error) {
     console.error("Registration error:", error);
