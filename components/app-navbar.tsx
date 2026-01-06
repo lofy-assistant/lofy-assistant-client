@@ -6,11 +6,7 @@ import Image from "next/image";
 import { cn } from "@/lib/utils";
 
 import { Button, buttonVariants } from "@/components/ui/button";
-import {
-  NavbarCenter,
-  Navbar as NavbarComponent,
-  NavbarLeft,
-} from "@/components/ui/navbar";
+import { NavbarCenter, Navbar as NavbarComponent, NavbarLeft } from "@/components/ui/navbar";
 import Navigation from "@/components/ui/navigation";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
@@ -22,13 +18,7 @@ interface NavbarLink {
 interface NavbarActionProps {
   text: string;
   href: string;
-  variant?:
-    | "default"
-    | "destructive"
-    | "outline"
-    | "secondary"
-    | "ghost"
-    | "link";
+  variant?: "default" | "destructive" | "outline" | "secondary" | "ghost" | "link";
   icon?: ReactNode;
   iconRight?: ReactNode;
   isButton?: boolean;
@@ -46,16 +36,8 @@ interface NavbarProps {
 }
 
 export default function AppNavbar({
-  logo = (
-    <Image
-      src="/logo.png"
-      alt="Logo"
-      width={32}
-      height={32}
-      className="size-8"
-    />
-  ),
-  name = "Lofy",
+  logo = <Image src="/logo.png" alt="Logo" width={32} height={32} className="size-8" />,
+  name = "Lofy AI",
   homeUrl = "/",
   mobileLinks = [
     { text: "Features", href: "/features" },
@@ -85,10 +67,7 @@ export default function AppNavbar({
       <div className="relative mx-auto max-w-7xl">
         <NavbarComponent>
           <NavbarLeft>
-            <Link
-              href={homeUrl}
-              className="flex items-center gap-2 text-xl font-bold"
-            >
+            <Link href={homeUrl} className="flex items-center gap-2 text-xl font-bold">
               {logo}
               {name}
             </Link>
@@ -105,39 +84,23 @@ export default function AppNavbar({
                   </Link>
                 </Button>
               ) : (
-                <Link
-                  key={index}
-                  href={action.href}
-                  className="hidden text-sm md:block"
-                >
+                <Link key={index} href={action.href} className="hidden text-sm md:block">
                   {action.text}
                 </Link>
               )
             )}
             <Sheet>
-              <SheetTrigger
-                className={cn(
-                  buttonVariants({ variant: "ghost", size: "icon" }),
-                  "shrink-0 md:hidden"
-                )}
-              >
+              <SheetTrigger className={cn(buttonVariants({ variant: "ghost", size: "icon" }), "shrink-0 md:hidden")}>
                 <Menu className="size-5" />
                 <span className="sr-only">Toggle navigation menu</span>
               </SheetTrigger>
               <SheetContent side="right">
                 <nav className="grid gap-6 text-lg font-medium">
-                  <Link
-                    href={homeUrl}
-                    className="flex items-center gap-2 text-xl font-bold"
-                  >
+                  <Link href={homeUrl} className="flex items-center gap-2 text-xl font-bold">
                     {name}
                   </Link>
                   {mobileLinks.map((link, index) => (
-                    <Link
-                      key={index}
-                      href={link.href}
-                      className="text-muted-foreground hover:text-foreground"
-                    >
+                    <Link key={index} href={link.href} className="text-muted-foreground hover:text-foreground">
                       {link.text}
                     </Link>
                   ))}
