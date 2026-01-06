@@ -9,7 +9,7 @@ export default function Footer() {
         <div className="grid grid-cols-1 gap-8 md:grid-cols-4">
           {/* Brand */}
           <div className="space-y-4">
-            <h3 className="text-2xl font-bold text-transparent bg-linear-to-r from-emerald-600 to-indigo-600 bg-clip-text">Lofy</h3>
+            <h3 className="text-2xl font-bold text-transparent bg-linear-to-r from-emerald-600 to-indigo-600 bg-clip-text">Lofy AI</h3>
             <p className="text-sm text-muted-foreground">Your AI-powered personal assistant that gets things done.</p>
           </div>
 
