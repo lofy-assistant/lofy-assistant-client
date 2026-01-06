@@ -17,7 +17,7 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Lofy Assistant",
+  title: "Lofy AI",
   description: "Your personal AI assistant",
 };
 
