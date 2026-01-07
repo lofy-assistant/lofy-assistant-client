@@ -51,26 +51,21 @@ export default function ForgotPinPage() {
     try {
       // Combine dial code + national number (e.g., "60" + "123456789" = "60123456789")
       const phoneNumber = `${data.dialCode}${data.phoneNumber}`;
-      const message = "Heres the pin reset link https://lofy-ai.com/reset-pin";
 
-      const response = await fetch(
-        "https://production-lofy-assistant-core-394446919605.asia-southeast1.run.app/whatsapp/send-message",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            message,
-            phone_number: phoneNumber,
-          }),
-        }
-      );
+      const response = await fetch("/api/auth/forgot-pin", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          phone: phoneNumber,
+        }),
+      });
 
       const result = await response.json();
 
       if (!response.ok) {
-        throw new Error(result.detail || "Failed to send reset link");
+        throw new Error(result.error || "Failed to send reset link");
       }
 
       toast.success("PIN reset link sent to your WhatsApp!");

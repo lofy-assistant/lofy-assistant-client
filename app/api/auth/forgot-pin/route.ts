@@ -50,14 +50,14 @@ export async function POST(request: NextRequest) {
 
     // Generate reset token
     const resetToken = await hashData(`${phoneValue}-${user.id}-reset`);
-    const resetLink = `${process.env.NEXT_PUBLIC_APP_URL || "https://lofy-ai.com"}/reset-pin?token=${resetToken}&phone=${phoneValue}`;
+    const resetLink = `https://lofy-ai.com/reset-pin?token=${resetToken}&phone=${phoneValue}`;
 
     // Send reset link via WhatsApp
     const message = `Here's your PIN reset link: ${resetLink}\n\nThis link will expire in 15 minutes.`;
     
     try {
       const whatsappResponse = await fetch(
-        "https://production-lofy-assistant-core-394446919605.asia-southeast1.run.app/whatsapp/send-message",
+        `${process.env.FASTAPI_URL}/whatsapp/send-message`,
         {
           method: "POST",
           headers: {
