@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { randomUUID } from "crypto";
 import { parsePhoneNumber, isValidPhoneNumber } from "libphonenumber-js";
+import crypto from "crypto";
 
 export const runtime = "nodejs";
 
@@ -19,9 +20,33 @@ async function hashPhone(phone: string): Promise<string> {
 }
 
 async function encryptPhone(phone: string): Promise<string> {
-  // Simple base64 encoding - replace with proper encryption if needed
   const normalizedPhone = phone.replace(/\D/g, "");
-  return Buffer.from(normalizedPhone).toString("base64");
+  
+  // Get encryption key from environment variable
+  const encryptionKey = process.env.ENCRYPTION_KEY;
+  if (!encryptionKey) {
+    throw new Error("ENCRYPTION_KEY environment variable is not set");
+  }
+  
+  // Derive a 32-byte key from the encryption key
+  const key = crypto.createHash("sha256").update(encryptionKey).digest();
+  
+  // Generate a random 12-byte IV for GCM mode
+  const iv = crypto.randomBytes(12);
+  
+  // Create cipher using AES-256-GCM
+  const cipher = crypto.createCipheriv("aes-256-gcm", key, iv);
+  
+  // Encrypt the phone number
+  let encrypted = cipher.update(normalizedPhone, "utf8", "hex");
+  encrypted += cipher.final("hex");
+  
+  // Get the authentication tag
+  const authTag = cipher.getAuthTag();
+  
+  // Combine IV + authTag + encrypted data, all in hex format
+  // Format: iv(24 chars):authTag(32 chars):encrypted
+  return `${iv.toString("hex")}:${authTag.toString("hex")}:${encrypted}`;
 }
 
 export async function POST(request: NextRequest) {
