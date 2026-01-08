@@ -139,7 +139,7 @@ export function PhoneNumberInput({
                       onFocus={() => setIsOpen(true)}
                       onKeyDown={handleKeyDown}
                       disabled={disabled}
-                      className="min-w-[10rem]"
+                      className="w-[7rem]"
                     />
                     {selectedCountry && !searchValue && (
                       <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none text-sm">
