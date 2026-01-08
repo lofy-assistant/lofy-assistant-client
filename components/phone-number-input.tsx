@@ -149,7 +149,8 @@ export function PhoneNumberInput({
                     {isOpen && (
                       <div
                         ref={dropdownRef}
-                        className="absolute z-50 w-full mt-1 bg-popover border rounded-md shadow-md max-h-[300px] overflow-y-auto"
+                        className="absolute z-50 w-full min-w-[20rem] mt-1 bg-popover border rounded-md shadow-md"
+                        style={{ maxHeight: '300px', overflowY: 'auto' }}
                       >
                         {filteredCountries.length > 0 ? (
                           filteredCountries.map((country, index) => (
