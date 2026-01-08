@@ -41,6 +41,7 @@ export function ReminderList() {
   const [selectedYear, setSelectedYear] = useState<string>(
     currentDate.getFullYear().toString()
   );
+  const [selectedStatus, setSelectedStatus] = useState<string>("pending");
 
   const fetchReminders = async () => {
     try {
@@ -48,6 +49,7 @@ export function ReminderList() {
       const params = new URLSearchParams({
         month: selectedMonth,
         year: selectedYear,
+        status: selectedStatus,
       });
 
       const response = await fetch(`/api/reminder?${params.toString()}`, {
@@ -83,7 +85,7 @@ export function ReminderList() {
 
   useEffect(() => {
     fetchReminders();
-  }, [selectedMonth, selectedYear]);
+  }, [selectedMonth, selectedYear, selectedStatus]);
 
   const handleReminderClick = (reminder: Reminder) => {
     setEditingReminder(reminder);
@@ -185,6 +187,15 @@ export function ReminderList() {
                     {year}
                   </SelectItem>
                 ))}
+              </SelectContent>
+            </Select>
+            <Select value={selectedStatus} onValueChange={setSelectedStatus}>
+              <SelectTrigger className="w-full sm:w-[120px]">
+                <SelectValue placeholder="Select status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="pending">Pending</SelectItem>
+                <SelectItem value="completed">Completed</SelectItem>
               </SelectContent>
             </Select>
           </div>

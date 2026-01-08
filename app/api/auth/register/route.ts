@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { randomUUID } from "crypto";
 import { parsePhoneNumber, isValidPhoneNumber } from "libphonenumber-js";
-import crypto from "crypto";
 
 export const runtime = "nodejs";
 
@@ -19,34 +18,43 @@ async function hashPhone(phone: string): Promise<string> {
   return hashData(normalizedPhone);
 }
 
-async function encryptPhone(phone: string): Promise<string> {
+async function encryptPhoneViaAPI(phone: string): Promise<string> {
   const normalizedPhone = phone.replace(/\D/g, "");
   
-  // Get encryption key from environment variable
-  const encryptionKey = process.env.ENCRYPTION_KEY;
-  if (!encryptionKey) {
-    throw new Error("ENCRYPTION_KEY environment variable is not set");
+  const fastApiUrl = process.env.FASTAPI_URL;
+  if (!fastApiUrl) {
+    console.error("FASTAPI_URL environment variable is not set");
+    throw new Error("FASTAPI_URL environment variable is not set");
   }
   
-  // Derive a 32-byte key from the encryption key
-  const key = crypto.createHash("sha256").update(encryptionKey).digest();
-  
-  // Generate a random 12-byte IV for GCM mode
-  const iv = crypto.randomBytes(12);
-  
-  // Create cipher using AES-256-GCM
-  const cipher = crypto.createCipheriv("aes-256-gcm", key, iv);
-  
-  // Encrypt the phone number
-  let encrypted = cipher.update(normalizedPhone, "utf8", "hex");
-  encrypted += cipher.final("hex");
-  
-  // Get the authentication tag
-  const authTag = cipher.getAuthTag();
-  
-  // Combine IV + authTag + encrypted data, all in hex format
-  // Format: iv(24 chars):authTag(32 chars):encrypted
-  return `${iv.toString("hex")}:${authTag.toString("hex")}:${encrypted}`;
+  try {
+    const response = await fetch(`${fastApiUrl}/encryption`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ phone_number: normalizedPhone }),
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      console.error("FastAPI encryption failed:", errorData);
+      throw new Error(errorData.error || `Failed to encrypt phone number: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    const encryptedPhone = data.encrypted_phone || data.encryptedPhone || data.encrypted;
+    
+    if (!encryptedPhone) {
+      console.error("No encrypted phone in response:", data);
+      throw new Error("Invalid response from encryption service");
+    }
+    
+    return encryptedPhone;
+  } catch (error) {
+    console.error("Error calling encryption API:", error);
+    throw error;
+  }
 }
 
 export async function POST(request: NextRequest) {
@@ -115,7 +123,7 @@ export async function POST(request: NextRequest) {
     }
 
     const hashedPhone = await hashPhone(normalizedPhone);
-    const encryptedPhone = await encryptPhone(normalizedPhone);
+    const encryptedPhone = await encryptPhoneViaAPI(normalizedPhone);
 
     // Check for existing user by hashed_phone
     const existingUser = await prisma.users.findFirst({

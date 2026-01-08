@@ -8,13 +8,12 @@ import { parsePhoneNumber } from "libphonenumber-js";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { toast } from "sonner";
 import { Suspense } from "react";
 import { getCountriesWithMalaysiaFirst } from "@/lib/countries";
+import { PhoneNumberInput } from "@/components/phone-number-input";
 
 const loginSchema = z.object({
   dialCode: z.string().min(1, "Dial code is required"),
@@ -35,16 +34,7 @@ function LoginForm() {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [countrySearch, setCountrySearch] = useState("");
   const allCountries = getCountriesWithMalaysiaFirst();
-
-  // Filter countries based on search (by name or dial code)
-  const filteredCountries = countrySearch
-    ? allCountries.filter((country) => {
-        const searchLower = countrySearch.toLowerCase();
-        return country.name.toLowerCase().includes(searchLower) || country.dialCode.includes(countrySearch);
-      })
-    : allCountries;
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -142,55 +132,13 @@ function LoginForm() {
       <CardContent>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <FormItem>
-              <FormLabel>Phone Number</FormLabel>
-              <div className="flex items-start gap-2">
-                <FormField
-                  control={form.control}
-                  name="dialCode"
-                  render={({ field }) => {
-                    const selectedCountry = allCountries.find((c) => c.dialCode === field.value);
-                    return (
-                      <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value} onOpenChange={(open) => !open && setCountrySearch("")}>
-                        <FormControl>
-                          <SelectTrigger className="w-32">
-                            <SelectValue>{selectedCountry ? `${selectedCountry.flag} +${selectedCountry.dialCode}` : "+60"}</SelectValue>
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent className="max-h-[300px]">
-                          <div className="px-2 py-2 sticky top-0 bg-background border-b">
-                            <Input placeholder="Search by name or code..." value={countrySearch} onChange={(e) => setCountrySearch(e.target.value)} className="h-8" onKeyDown={(e) => e.stopPropagation()} />
-                          </div>
-                          {filteredCountries.length > 0 ? (
-                            filteredCountries.map((country) => (
-                              <SelectItem key={country.dialCode} value={country.dialCode}>
-                                {country.flag} +{country.dialCode} {country.name}
-                              </SelectItem>
-                            ))
-                          ) : (
-                            <div className="px-2 py-6 text-center text-sm text-muted-foreground">No countries found</div>
-                          )}
-                        </SelectContent>
-                      </Select>
-                    );
-                  }}
-                />
-                <div className="flex-1">
-                  <FormField
-                    control={form.control}
-                    name="phoneNumber"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormControl>
-                          <Input placeholder="123456789" {...field} maxLength={11} className="placeholder:text-muted-foreground/50" />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-              </div>
-            </FormItem>
+            <PhoneNumberInput
+              control={form.control}
+              dialCodeName="dialCode"
+              phoneNumberName="phoneNumber"
+              label="Phone Number"
+              phonePlaceholder="123456789"
+            />
 
             <FormField
               control={form.control}

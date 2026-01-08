@@ -64,24 +64,29 @@ const countryNames: Record<string, string> = {
 // Get all available countries with their dial codes
 export function getAllCountries(): Country[] {
   const countryCodes = getCountries();
-  const countries: Country[] = [];
+  const dialCodeMap = new Map<string, Country>();
 
   for (const code of countryCodes) {
     try {
       const dialCode = getCountryCallingCode(code);
-      countries.push({
-        dialCode,
-        name: countryNames[code] || code,
-        flag: countryCodeToFlag(code),
-        code, // Keep for internal use with libphonenumber-js
-      });
+      
+      // Only add if this dial code hasn't been added yet
+      // This ensures one country per unique calling code
+      if (!dialCodeMap.has(dialCode)) {
+        dialCodeMap.set(dialCode, {
+          dialCode,
+          name: countryNames[code] || code,
+          flag: countryCodeToFlag(code),
+          code, // Keep for internal use with libphonenumber-js
+        });
+      }
     } catch {
       // Skip countries that don't have calling codes
       continue;
     }
   }
 
-  return countries.sort((a, b) => a.name.localeCompare(b.name));
+  return Array.from(dialCodeMap.values()).sort((a, b) => a.name.localeCompare(b.name));
 }
 
 // Get countries with Malaysia first, then alphabetical

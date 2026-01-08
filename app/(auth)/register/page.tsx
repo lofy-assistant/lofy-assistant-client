@@ -41,6 +41,7 @@ import { AuroraBackground } from "@/components/ui/aurora-background";
 import { motion } from "motion/react";
 import { Suspense } from "react";
 import { getCountriesWithMalaysiaFirst } from "@/lib/countries";
+import { PhoneNumberInput } from "@/components/phone-number-input";
 
 const formSchema = z.object({
   name: z.string().min(1, "Please enter your name"),
@@ -67,19 +68,7 @@ function RegisterForm() {
   const searchParams = useSearchParams();
   const [currentStep, setCurrentStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
-  const [countrySearch, setCountrySearch] = useState("");
   const allCountries = getCountriesWithMalaysiaFirst();
-
-  // Filter countries based on search (by name or dial code)
-  const filteredCountries = countrySearch
-    ? allCountries.filter((country) => {
-        const searchLower = countrySearch.toLowerCase();
-        return (
-          country.name.toLowerCase().includes(searchLower) ||
-          country.dialCode.includes(countrySearch)
-        );
-      })
-    : allCountries;
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -248,94 +237,12 @@ function RegisterForm() {
                       </FormItem>
                     )}
                   />
-                  <FormField
+                  <PhoneNumberInput
                     control={form.control}
-                    name="phoneNumber"
-                    render={() => (
-                      <FormItem>
-                        <FormLabel>Phone Number</FormLabel>
-                        <div className="flex items-start gap-2">
-                          <FormField
-                            control={form.control}
-                            name="dialCode"
-                            render={({ field }) => {
-                              const selectedCountry = allCountries.find(
-                                (c) => c.dialCode === field.value
-                              );
-                              return (
-                                <Select
-                                  onValueChange={field.onChange}
-                                  value={field.value}
-                                  defaultValue={field.value}
-                                  onOpenChange={(open) =>
-                                    !open && setCountrySearch("")
-                                  }
-                                >
-                                  <FormControl>
-                                    <SelectTrigger className="w-32">
-                                      <SelectValue>
-                                        {selectedCountry
-                                          ? `${selectedCountry.flag} +${selectedCountry.dialCode}`
-                                          : "+60"}
-                                      </SelectValue>
-                                    </SelectTrigger>
-                                  </FormControl>
-                                  <SelectContent className="max-h-[300px]">
-                                    <div className="px-2 py-2 sticky top-0 bg-background border-b">
-                                      <Input
-                                        placeholder="Search by name or code..."
-                                        value={countrySearch}
-                                        onChange={(e) =>
-                                          setCountrySearch(e.target.value)
-                                        }
-                                        className="h-8"
-                                        onKeyDown={(e) => e.stopPropagation()}
-                                      />
-                                    </div>
-                                    {filteredCountries.length > 0 ? (
-                                      filteredCountries.map((country) => (
-                                        <SelectItem
-                                          key={country.dialCode}
-                                          value={country.dialCode}
-                                        >
-                                          {country.flag} +{country.dialCode}{" "}
-                                          {country.name}
-                                        </SelectItem>
-                                      ))
-                                    ) : (
-                                      <div className="px-2 py-6 text-center text-sm text-muted-foreground">
-                                        No countries found
-                                      </div>
-                                    )}
-                                  </SelectContent>
-                                </Select>
-                              );
-                            }}
-                          />
-                          <div className="flex-1 space-y-1">
-                            <FormField
-                              control={form.control}
-                              name="phoneNumber"
-                              render={({ field }) => (
-                                <FormControl>
-                                  <Input
-                                    type="tel"
-                                    placeholder="123456789"
-                                    {...field}
-                                    onChange={(e) =>
-                                      field.onChange(
-                                        e.target.value.replace(/\D/g, "")
-                                      )
-                                    }
-                                  />
-                                </FormControl>
-                              )}
-                            />
-                            <FormMessage />
-                          </div>
-                        </div>
-                      </FormItem>
-                    )}
+                    dialCodeName="dialCode"
+                    phoneNumberName="phoneNumber"
+                    label="Phone Number"
+                    phonePlaceholder="123456789"
                   />
                 </div>
               )}

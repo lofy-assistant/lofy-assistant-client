@@ -40,12 +40,14 @@ export async function GET(request: NextRequest) {
         const { searchParams } = new URL(request.url);
         const month = searchParams.get("month");
         const year = searchParams.get("year");
+        const status = searchParams.get("status") || "pending";
 
         const dateFilter = buildDateFilter(month, year);
 
         const reminders = await prisma.reminders.findMany({
             where: {
                 user_id: session.userId,
+                status,
                 ...dateFilter,
             },
             orderBy: { reminder_time: "asc" },
