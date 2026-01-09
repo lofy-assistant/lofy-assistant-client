@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Calendar, Clock, Loader2 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { CalendarEventDialog } from "@/components/dashboard/calendar/calendar-event-dialog";
+import { CalendarEventFormDialog } from "@/components/dashboard/calendar/calendar-event-form-dialog";
 import {
   Select,
   SelectContent,
@@ -14,6 +15,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Plus } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface CalendarEvent {
   id: number;
@@ -32,6 +36,7 @@ export function CalendarEventsList() {
     null
   );
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [isFormDialogOpen, setIsFormDialogOpen] = useState(false);
 
   // Filter state
   const currentDate = new Date();
@@ -41,6 +46,7 @@ export function CalendarEventsList() {
   const [selectedYear, setSelectedYear] = useState<string>(
     currentDate.getFullYear().toString()
   );
+  const [showPastEvents, setShowPastEvents] = useState(false);
 
   const fetchEvents = useCallback(async () => {
     try {
@@ -93,6 +99,11 @@ export function CalendarEventsList() {
     fetchEvents();
   };
 
+  const handleFormDialogClose = () => {
+    setIsFormDialogOpen(false);
+    fetchEvents();
+  };
+
   // Generate month options
   const months = [
     { value: "1", label: "January" },
@@ -112,6 +123,14 @@ export function CalendarEventsList() {
   // Generate year options (current year ± 2 years)
   const currentYear = new Date().getFullYear();
   const years = Array.from({ length: 5 }, (_, i) => currentYear - 2 + i);
+
+  // Filter out past events if showPastEvents is false
+  const filteredEvents = events.filter((event) => {
+    if (showPastEvents) return true;
+    const eventEndTime = new Date(event.end_time);
+    const now = new Date();
+    return eventEndTime >= now;
+  });
 
   if (loading) {
     return (
@@ -172,23 +191,46 @@ export function CalendarEventsList() {
               </SelectContent>
             </Select>
           </div>
+          <div className="flex items-center gap-2">
+            <Checkbox
+              id="show-past-events"
+              checked={showPastEvents}
+              onCheckedChange={(checked) => setShowPastEvents(checked as boolean)}
+            />
+            <label
+              htmlFor="show-past-events"
+              className="text-sm cursor-pointer select-none"
+            >
+              Show past events
+            </label>
+          </div>
+          <div className="w-full sm:w-auto sm:ml-auto">
+            <Button
+              onClick={() => setIsFormDialogOpen(true)}
+              className="w-full sm:w-auto"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Add Event
+            </Button>
+          </div>
         </CardContent>
       </Card>
 
       {/* Events List */}
-      {events.length === 0 ? (
+      {filteredEvents.length === 0 ? (
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12">
             <Calendar className="w-12 h-12 mb-4 text-muted-foreground" />
             <p className="px-4 text-center text-muted-foreground">
-              No calendar events found for{" "}
-              {months[parseInt(selectedMonth) - 1]?.label} {selectedYear}
+              {events.length === 0 
+                ? `No calendar events found for ${months[parseInt(selectedMonth) - 1]?.label} ${selectedYear}`
+                : "No upcoming events. Check 'Show past events' to see all events."}
             </p>
           </CardContent>
         </Card>
       ) : (
         <div className="grid gap-3 sm:gap-4">
-          {events.map((event) => {
+          {filteredEvents.map((event) => {
             const startDate = new Date(event.start_time);
             const endDate = new Date(event.end_time);
             const isToday =
@@ -257,6 +299,12 @@ export function CalendarEventsList() {
             open={dialogOpen}
             onOpenChange={setDialogOpen}
             onUpdate={handleUpdate}
+          />
+
+          <CalendarEventFormDialog
+            open={isFormDialogOpen}
+            onOpenChange={setIsFormDialogOpen}
+            onClose={handleFormDialogClose}
           />
         </div>
       )}

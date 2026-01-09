@@ -1,11 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { verifySession } from "@/lib/session";
+import { deleteCloudTask, enqueueCloudTask } from "@/lib/cloud-tasks";
 
 export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
   try {
-    //TODO: For updating the calendar event, we need to update the reminder as well. Which we also need to update in Cloud Tasks.
-    //If this is not implemented, it will still send old reminders to users.
     const token = request.cookies.get("session")?.value;
     if (!token) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -28,15 +27,62 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
       return NextResponse.json({ error: "Event not found" }, { status: 404 });
     }
 
+    const newStartTime = new Date(start_time);
+    const startTimeChanged = event.start_time.getTime() !== newStartTime.getTime();
+
+    // Update the calendar event
     const updatedEvent = await prisma.calendar_events.update({
       where: { id: eventId },
       data: {
         title,
         description,
-        start_time: new Date(start_time),
+        start_time: newStartTime,
         end_time: new Date(end_time),
       },
     });
+
+    // Update the reminder if start time changed and reminder exists
+    if (startTimeChanged && event.reminder_id) {
+      // Calculate new reminder time: 30 minutes before start time
+      const newReminderTime = new Date(newStartTime.getTime() - 30 * 60 * 1000);
+
+      // Update the reminder in database
+      await prisma.reminders.update({
+        where: { id: event.reminder_id },
+        data: {
+          reminder_time: newReminderTime,
+        },
+      });
+
+      // Update Cloud Tasks: delete old task and create new one
+      try {
+        // Delete the old cloud task
+        await deleteCloudTask("reminder-queue", event.reminder_id);
+
+        // Get user's phone number for the reminder
+        const user = await prisma.users.findUnique({
+          where: { id: session.userId },
+        });
+
+        if (user) {
+          // Enqueue new cloud task with updated time
+          await enqueueCloudTask(
+            "/api/worker/send-reminder",
+            "reminder-queue",
+            event.reminder_id.toString(),
+            {
+              reminder_id: event.reminder_id,
+              message: `Reminder: ${title} starts in 30 minutes`,
+              phone_number: user.encrypted_phone,
+            },
+            newReminderTime
+          );
+        }
+      } catch (cloudTaskError) {
+        console.error("Error updating cloud task:", cloudTaskError);
+        // Don't fail the request if cloud task update fails
+      }
+    }
 
     return NextResponse.json({ event: updatedEvent });
   } catch (error) {
