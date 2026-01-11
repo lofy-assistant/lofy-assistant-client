@@ -10,9 +10,9 @@ const badgeVariants = cva(
     variants: {
       variant: {
         default: "text-foreground",
-        emerald: "border-transparent bg-emerald-400 text-foreground",
-        indigo: "border-transparent bg-indigo-400 text-foreground",
-        orange: "border-transparent bg-orange-400 text-foreground",
+        emerald: "border-transparent bg-emerald-400/90 text-foreground",
+        indigo: "border-transparent bg-indigo-400/90 text-foreground",
+        orange: "border-transparent bg-orange-400/90 text-foreground",
         destructive:
           "border-transparent bg-destructive text-foreground focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/60",
       },

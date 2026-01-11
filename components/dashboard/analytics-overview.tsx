@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -44,6 +45,7 @@ interface AnalyticsData {
 export function AnalyticsOverview() {
   const [data, setData] = useState<AnalyticsData | null>(null);
   const [loading, setLoading] = useState(true);
+  const router = useRouter();
 
   useEffect(() => {
     async function fetchAnalytics() {
@@ -102,6 +104,7 @@ export function AnalyticsOverview() {
       icon: Brain,
       color: "text-purple-500",
       bgColor: "bg-purple-500/10",
+      href: "/dashboard/memories",
     },
     {
       title: "Calendar Events",
@@ -111,6 +114,7 @@ export function AnalyticsOverview() {
       icon: Calendar,
       color: "text-blue-500",
       bgColor: "bg-blue-500/10",
+      href: "/dashboard/calendar",
     },
     {
       title: "Reminders",
@@ -119,6 +123,7 @@ export function AnalyticsOverview() {
       icon: Bell,
       color: "text-orange-500",
       bgColor: "bg-orange-500/10",
+      href: "/dashboard/reminders",
     },
   ];
 
@@ -127,7 +132,11 @@ export function AnalyticsOverview() {
       {/* Stats Grid */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {stats.map((stat) => (
-          <Card className="pt-2" key={stat.title}>
+          <Card 
+            className="pt-2 transition-all cursor-pointer hover:shadow-md active:scale-[0.98]"
+            key={stat.title}
+            onClick={() => router.push(stat.href)}
+          >
             <CardHeader className="flex flex-row items-center space-y-0">
               <div className={`p-2 rounded-full ${stat.bgColor}`}>
                 <stat.icon className={`w-4 h-4 ${stat.color}`} />
@@ -158,44 +167,6 @@ export function AnalyticsOverview() {
             </CardContent>
           </Card>
         ))}
-      </div>
-
-      {/* Secondary Info Grid */}
-      <div className="grid gap-4 md:grid-cols-2">
-        {/* <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <Clock className="w-4 h-4" />
-              Recent Memories
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {data.recentMemories.length > 0 ? (
-              <div className="space-y-3">
-                {data.recentMemories.map((memory) => (
-                  <div
-                    key={memory.id}
-                    className="p-3 border rounded-lg hover:bg-accent/50 transition-colors"
-                  >
-                    <h4 className="text-sm font-medium mb-1">
-                      {memory.title}
-                    </h4>
-                    <p className="text-xs text-muted-foreground line-clamp-2">
-                      {memory.preview}
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      {new Date(memory.createdAt).toLocaleDateString()}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-sm text-muted-foreground">
-                No memories yet. Start creating some!
-              </p>
-            )}
-          </CardContent>
-        </Card> */}
       </div>
     </div>
   );
