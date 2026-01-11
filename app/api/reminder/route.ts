@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { verifySession } from "@/lib/session";
+import { enqueueCloudTask } from "@/lib/cloud-tasks";
+import { decryptContent } from "@/lib/encryption";
 
 // Helper: build date filter if month/year provided
 const buildDateFilter = (month?: string | null, year?: string | null) => {
@@ -105,6 +107,37 @@ export async function POST(request: NextRequest) {
                 status,
             },
         });
+
+        // Create cloud task for the reminder
+        try {
+            const user = await prisma.users.findUnique({
+                where: { id: session.userId },
+                select: { encrypted_phone: true },
+            });
+
+            if (user?.encrypted_phone) {
+                const phoneNumber = decryptContent(user.encrypted_phone);
+                const taskData = {
+                    reminder_id: reminder.id,
+                    message: message,
+                    phone_number: phoneNumber,
+                };
+
+                await enqueueCloudTask(
+                    "/api/worker/send-reminder",
+                    "reminder-queue",
+                    reminder.id.toString(),
+                    taskData,
+                    new Date(reminder_time)
+                );
+                console.log(`Created cloud task for reminder ${reminder.id}`);
+            } else {
+                console.warn(`No phone number found for user ${session.userId}, skipping cloud task creation`);
+            }
+        } catch (taskError) {
+            console.error(`Error creating cloud task for reminder ${reminder.id}:`, taskError);
+            // Don't fail the request if cloud task creation fails
+        }
 
         return NextResponse.json({ reminder }, { status: 201 });
     } catch (error) {

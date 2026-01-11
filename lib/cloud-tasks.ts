@@ -91,61 +91,27 @@ async function getClient(): Promise<import("@google-cloud/tasks").CloudTasksClie
 }
 
 /**
- * Delete cloud tasks associated with a reminder ID
- * Since we let GCP auto-generate task names, we need to list tasks and find by reminder_id
+ * Delete cloud task by reminder ID
+ * Since task name is the reminder ID, we can directly delete it
  * @param queueId - The queue ID (e.g., "reminder-queue")
- * @param reminderId - The reminder ID to search for
+ * @param reminderId - The reminder ID (also the task ID)
  */
 export async function deleteCloudTask(queueId: string, reminderId: number): Promise<void> {
   try {
     const client = await getClient();
-    const queuePath = client.queuePath(projectId, location, queueId);
+    const taskName = client.taskPath(projectId, location, queueId, reminderId.toString());
 
-    console.log(`Searching for cloud tasks for reminder ${reminderId} in queue ${queueId}`);
-    // List all tasks in the queue
-    const [tasks] = await client.listTasks({ parent: queuePath });
-
-    // Find tasks that match this reminder_id
-    const tasksToDelete = [];
-    for (const task of tasks) {
-      if (task.httpRequest?.body) {
-        try {
-          // Decode the base64 body
-          const bodyString = Buffer.from(task.httpRequest.body as string, "base64").toString("utf-8");
-          const bodyData = JSON.parse(bodyString);
-
-          // Check if this task is for our reminder
-          if (bodyData.reminder_id === reminderId) {
-            tasksToDelete.push(task.name);
-          }
-        } catch {
-          // Skip tasks we can't parse
-          continue;
-        }
-      }
-    }
-
-    // Delete all matching tasks
-    for (const taskName of tasksToDelete) {
-      try {
-        await client.deleteTask({ name: taskName });
-        console.log(`Deleted cloud task: ${taskName} for reminder ${reminderId}`);
-      } catch (deleteError: unknown) {
-        if (deleteError && typeof deleteError === "object" && "code" in deleteError && deleteError.code === 5) {
-          // NOT_FOUND - task already deleted
-          console.log(`Task ${taskName} not found, skipping`);
-        } else {
-          throw deleteError;
-        }
-      }
-    }
-
-    if (tasksToDelete.length === 0) {
-      console.log(`No cloud tasks found for reminder ${reminderId}`);
-    }
+    console.log(`Deleting cloud task for reminder ${reminderId}`);
+    await client.deleteTask({ name: taskName });
+    console.log(`Deleted cloud task: ${taskName}`);
   } catch (error: unknown) {
-    console.error(`Error deleting cloud tasks for reminder ${reminderId}:`, error);
-    throw error;
+    if (error && typeof error === "object" && "code" in error && error.code === 5) {
+      // NOT_FOUND - task already deleted or never existed
+      console.log(`Task for reminder ${reminderId} not found, skipping`);
+    } else {
+      console.error(`Error deleting cloud task for reminder ${reminderId}:`, error);
+      throw error;
+    }
   }
 }
 
@@ -165,9 +131,10 @@ export async function enqueueCloudTask(endpointPath: string, queueId: string, ta
     const url = `${serviceUrl}${endpointPath}`;
     const payload = JSON.stringify(bodyData);
 
-    // Don't specify the name - let GCP generate a unique name
-    // We track by reminder_id in the payload instead
+    // Use reminder ID as the task name for easier tracking and deletion
+    const taskName = client.taskPath(projectId, location, queueId, taskId);
     const task = {
+      name: taskName,
       httpRequest: {
         httpMethod: "POST" as const,
         url,
