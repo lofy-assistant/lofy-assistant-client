@@ -2,6 +2,7 @@ import { AppSidebar } from "@/components/app-sidebar";
 import { SiteHeader } from "@/components/site-header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { IntegrationCard } from "@/components/dashboard/integrations/integration-card";
+import { ConnectMCP } from "@/components/dashboard/integrations/connect-mcp";
 import { IconPlug } from "@tabler/icons-react";
 import { Separator } from "@/components/ui/separator";
 
@@ -27,7 +28,12 @@ export default function IntegrationsPage() {
                 </div>
                 <p className="mb-6 text-muted-foreground">Connect multiple apps to your Lofy account</p>
                 <Separator className="mb-6" />
+
                 <IntegrationCard />
+
+                {/* <Separator className="my-8" />
+
+                <ConnectMCP /> */}
               </div>
             </div>
           </div>
