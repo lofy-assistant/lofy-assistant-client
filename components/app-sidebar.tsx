@@ -2,7 +2,8 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { IconChartBar, IconDashboard, IconHelp, IconInnerShadowTop, IconListDetails, IconLogout, IconSettings, IconUsers } from "@tabler/icons-react";
+import Image from "next/image";
+import { IconBellRinging, IconDashboard, IconHelp, IconCalendarWeek, IconLogout, IconSettings, IconBrain, IconPlug } from "@tabler/icons-react";
 
 import { NavMain } from "@/components/nav-main";
 import { NavSecondary } from "@/components/nav-secondary";
@@ -23,20 +24,25 @@ const data = {
     {
       title: "Calendar",
       url: "/dashboard/calendar",
-      icon: IconListDetails,
+      icon: IconCalendarWeek,
     },
     {
       title: "Reminders",
       url: "/dashboard/reminders",
-      icon: IconChartBar,
+      icon: IconBellRinging,
     },
     {
       title: "Memories",
       url: "/dashboard/memories",
-      icon: IconUsers,
+      icon: IconBrain,
     },
   ],
   navSecondary: [
+    {
+      title: "Integrations",
+      url: "/dashboard/integrations",
+      icon: IconPlug,
+    },
     {
       title: "Settings",
       url: "/dashboard/settings",
@@ -63,8 +69,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <SidebarMenuItem>
             <SidebarMenuButton asChild className="data-[slot=sidebar-menu-button]:p-1.5!">
               <Link href="/dashboard">
-                <IconInnerShadowTop className="size-5!" />
-                <span className="text-base font-semibold">Lofy Assistant</span>
+                <Image src="/logo.png" alt="Lofy AI Logo" width={20} height={20} className="size-8" />
+                <span className="text-base font-semibold">Lofy AI</span>
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
