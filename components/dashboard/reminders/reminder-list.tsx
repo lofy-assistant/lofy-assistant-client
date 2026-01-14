@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Plus, Bell, Clock, Loader2 } from "lucide-react";
+import { ReminderDialog } from "@/components/dashboard/reminders/reminder-dialog";
 import { ReminderFormDialog } from "@/components/dashboard/reminders/reminder-form-dialog";
 import { format } from "date-fns";
 import { Separator } from "@/components/ui/separator";
@@ -30,8 +31,9 @@ export function ReminderList() {
   const [reminders, setReminders] = useState<Reminder[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [editingReminder, setEditingReminder] = useState<Reminder | null>(null);
+  const [selectedReminder, setSelectedReminder] = useState<Reminder | null>(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [isFormDialogOpen, setIsFormDialogOpen] = useState(false);
 
   // Filter state
   const currentDate = new Date();
@@ -88,13 +90,16 @@ export function ReminderList() {
   }, [selectedMonth, selectedYear, selectedStatus]);
 
   const handleReminderClick = (reminder: Reminder) => {
-    setEditingReminder(reminder);
-    setIsDialogOpen(true);
+    setSelectedReminder(reminder);
+    setDialogOpen(true);
   };
 
-  const handleDialogClose = () => {
-    setIsDialogOpen(false);
-    setEditingReminder(null);
+  const handleUpdate = () => {
+    fetchReminders();
+  };
+
+  const handleFormDialogClose = () => {
+    setIsFormDialogOpen(false);
     fetchReminders();
   };
 
@@ -201,7 +206,7 @@ export function ReminderList() {
           </div>
           <div className="w-full sm:w-auto sm:ml-auto">
             <Button
-              onClick={() => setIsDialogOpen(true)}
+              onClick={() => setIsFormDialogOpen(true)}
               className="w-full sm:w-auto"
             >
               <Plus className="w-4 h-4 mr-2" />
@@ -281,11 +286,17 @@ export function ReminderList() {
             );
           })}
 
+          <ReminderDialog
+            reminder={selectedReminder}
+            open={dialogOpen}
+            onOpenChange={setDialogOpen}
+            onUpdate={handleUpdate}
+          />
+
           <ReminderFormDialog
-            open={isDialogOpen}
-            onOpenChange={setIsDialogOpen}
-            onClose={handleDialogClose}
-            reminder={editingReminder}
+            open={isFormDialogOpen}
+            onOpenChange={setIsFormDialogOpen}
+            onClose={handleFormDialogClose}
           />
         </div>
       )}

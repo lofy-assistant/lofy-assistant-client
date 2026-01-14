@@ -11,43 +11,23 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { Badge } from "@/components/ui/badge"
-
-interface Reminder {
-  id: number
-  message: string
-  reminder_time: string
-  status: string
-}
 
 interface ReminderFormDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   onClose: () => void
-  reminder?: Reminder | null
 }
 
 export function ReminderFormDialog({
   open,
   onOpenChange,
   onClose,
-  reminder,
 }: ReminderFormDialogProps) {
   const [formData, setFormData] = useState({
     message: "",
     reminder_time: "",
-    status: "pending",
   })
   const [loading, setLoading] = useState(false)
-  const [deleting, setDeleting] = useState(false)
-
-  // Convert UTC to local datetime string for datetime-local input
-  const utcToLocal = (utcDate: string) => {
-    const date = new Date(utcDate)
-    const offset = date.getTimezoneOffset() * 60000
-    const localDate = new Date(date.getTime() - offset)
-    return localDate.toISOString().slice(0, 16)
-  }
 
   // Convert datetime-local input to UTC ISO string
   const localToUTC = (localDateTime: string) => {
@@ -55,13 +35,7 @@ export function ReminderFormDialog({
   }
 
   useEffect(() => {
-    if (reminder) {
-      setFormData({
-        message: reminder.message,
-        reminder_time: utcToLocal(reminder.reminder_time),
-        status: reminder.status,
-      })
-    } else {
+    if (open) {
       // Default to current date/time for new reminders
       const now = new Date()
       const offset = now.getTimezoneOffset() * 60000
@@ -69,22 +43,19 @@ export function ReminderFormDialog({
       setFormData({
         message: "",
         reminder_time: localDate.toISOString().slice(0, 16),
-        status: "pending",
       })
     }
-  }, [reminder])
+  }, [open])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
 
     try {
-      const url = reminder ? `/api/reminder/${reminder.id}` : "/api/reminder"
-      const method = reminder ? "PUT" : "POST"
-
-      const response = await fetch(url, {
-        method,
+      const response = await fetch("/api/reminder", {
+        method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({
           message: formData.message,
           reminder_time: localToUTC(formData.reminder_time),
@@ -103,40 +74,11 @@ export function ReminderFormDialog({
     }
   }
 
-  const handleDelete = async () => {
-    if (!reminder) return
-    
-    if (!confirm("Are you sure you want to delete this reminder?")) {
-      return
-    }
-
-    setDeleting(true)
-
-    try {
-      const response = await fetch(`/api/reminder/${reminder.id}`, {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-      })
-
-      if (response.ok) {
-        onClose()
-      } else {
-        console.error("Failed to delete reminder")
-      }
-    } catch (error) {
-      console.error("Error deleting reminder:", error)
-    } finally {
-      setDeleting(false)
-    }
-  }
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[525px]">
         <DialogHeader>
-          <DialogTitle>
-            {reminder ? "Edit Reminder" : "Create New Reminder"}
-          </DialogTitle>
+          <DialogTitle>Create New Reminder</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
@@ -149,7 +91,7 @@ export function ReminderFormDialog({
               }
               required
               rows={3}
-              disabled={formData.status === "completed"}
+              placeholder="Enter reminder message"
             />
           </div>
 
@@ -169,47 +111,21 @@ export function ReminderFormDialog({
                 setFormData({ ...formData, reminder_time: e.target.value })
               }
               required
-              disabled={formData.status === "completed"}
             />
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="status">Status</Label>
-            <div className="flex items-center h-10">
-              <Badge variant={
-                formData.status === "pending" ? "indigo" :
-                formData.status === "completed" ? "emerald" :
-                formData.status === "cancelled" ? "destructive" : "default"
-              }>
-                {formData.status.charAt(0).toUpperCase() + formData.status.slice(1)}
-              </Badge>
-            </div>
-          </div>
-
-          <div className="flex justify-between gap-2">
-            {reminder && (
-              <Button
-                type="button"
-                variant="destructive"
-                onClick={handleDelete}
-                disabled={deleting || loading}
-              >
-                {deleting ? "Deleting..." : "Delete"}
-              </Button>
-            )}
-            <div className="flex gap-2 ml-auto">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => onOpenChange(false)}
-                disabled={loading || deleting}
-              >
-                Cancel
-              </Button>
-              <Button type="submit" disabled={loading || deleting || formData.status === "completed"}>
-                {loading ? "Saving..." : reminder ? "Update" : "Create"}
-              </Button>
-            </div>
+          <div className="flex gap-2 justify-end">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+              disabled={loading}
+            >
+              Cancel
+            </Button>
+            <Button type="submit" disabled={loading}>
+              {loading ? "Creating..." : "Create"}
+            </Button>
           </div>
         </form>
       </DialogContent>
