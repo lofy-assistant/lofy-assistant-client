@@ -130,7 +130,7 @@ export function PhoneNumberInput({
                     <Input
                       ref={inputRef}
                       type="text"
-                      placeholder={selectedCountry ? `${selectedCountry.flag} +${selectedCountry.dialCode}` : "Search..."}
+                      placeholder={selectedCountry && !searchValue ? "" : "Search..."}
                       value={searchValue}
                       onChange={(e) => {
                         setSearchValue(e.target.value);
