@@ -25,7 +25,58 @@ export function IntegrationCard() {
     },
   ]);
 
-  const handleToggle = (id: string) => {
+  const handleToggle = async (id: string, currentEnabled: boolean) => {
+    // If turning on, redirect to Google authorization
+    if (!currentEnabled && id === "google-calendar") {
+      try {
+        const response = await fetch("/api/integration", {
+          method: "GET",
+          credentials: "include",
+          redirect: "manual", // Don't automatically follow redirects
+        });
+
+        // Check if response is a redirect (302, 307, etc.)
+        if (response.status === 302 || response.status === 307 || response.status === 301) {
+          const location = response.headers.get("location");
+          if (location) {
+            // Navigate to the Google OAuth URL
+            window.location.href = location;
+            return;
+          }
+        }
+
+        // If response is OK, check if it's a redirect response
+        if (response.ok) {
+          // Try to get redirect URL from response
+          const data = await response.json().catch(() => null);
+          if (data?.redirectUrl) {
+            window.location.href = data.redirectUrl;
+            return;
+          }
+        }
+
+        // Handle errors
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.error || "Failed to initiate authorization");
+        }
+      } catch (error) {
+        console.error("Failed to initiate Google authorization:", error);
+        setIntegrations((prev) =>
+          prev.map((integration) =>
+            integration.id === id
+              ? {
+                  ...integration,
+                  status: "error",
+                }
+              : integration
+          )
+        );
+      }
+      return;
+    }
+
+    // If turning off, just update local state
     setIntegrations((prev) =>
       prev.map((integration) =>
         integration.id === id
@@ -66,7 +117,7 @@ export function IntegrationCard() {
               </div>
               <div className="flex items-center gap-3">
                 {getStatusBadge(integration.status)}
-                <Switch checked={integration.enabled} onCheckedChange={() => handleToggle(integration.id)} />
+                <Switch checked={integration.enabled} onCheckedChange={() => handleToggle(integration.id, integration.enabled)} />
               </div>
             </div>
           </CardHeader>
