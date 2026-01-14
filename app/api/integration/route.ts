@@ -16,44 +16,44 @@ export async function GET(request: NextRequest) {
     }
 
     try {
-      // Build URL with query parameters instead of body
+      // Build URL with query parameters (GET requests don't have bodies)
       const params = new URLSearchParams({
         user_id: session.userId,
       });
-
-      // Optional: add redirect_url if you want to use it (though FastAPI doesn't use it currently)
-      const redirectUrl = `${process.env.NEXT_PUBLIC_APP_URL}/api/integration/callback`;
-      params.append("redirect_url", redirectUrl);
 
       const authorizeUrl = `${process.env.FASTAPI_URL}/google/authorize?${params.toString()}`;
 
       const integrationsResponse = await fetch(authorizeUrl, {
         method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        // Note: redirect: 'manual' to handle the redirect ourselves
+        // Use 'manual' redirect mode to handle the redirect ourselves
         redirect: "manual",
       });
 
+      // FastAPI returns a RedirectResponse (302/307) to Google's OAuth page
       if (integrationsResponse.status === 302 || integrationsResponse.status === 307) {
-        // FastAPI returned a redirect - get the Location header and redirect the user
         const location = integrationsResponse.headers.get("location");
         if (location) {
-          return NextResponse.redirect(location);
+          // Return JSON with redirect URL so client can handle it
+          return NextResponse.json({ redirectUrl: location });
         }
       }
 
+      // If not a redirect, something went wrong
       if (!integrationsResponse.ok) {
         const errorText = await integrationsResponse.text();
         throw new Error(`Failed to get authorization URL: ${errorText}`);
       }
 
-      // Fallback: if response is OK but not a redirect, return error
       return NextResponse.json({ error: "Unexpected response from authorization endpoint" }, { status: 500 });
     } catch (integrationError) {
       console.error("Integration API Error:", integrationError);
-      return NextResponse.json({ error: "Failed to initiate Google authorization", details: integrationError instanceof Error ? integrationError.message : "Unknown error" }, { status: 500 });
+      return NextResponse.json(
+        {
+          error: "Failed to initiate Google authorization",
+          details: integrationError instanceof Error ? integrationError.message : "Unknown error",
+        },
+        { status: 500 }
+      );
     }
   } catch (error) {
     console.error("Integration API Error:", error);

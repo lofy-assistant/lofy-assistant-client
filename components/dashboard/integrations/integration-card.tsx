@@ -35,21 +35,11 @@ export function IntegrationCard() {
           redirect: "manual", // Don't automatically follow redirects
         });
 
-        // Check if response is a redirect (302, 307, etc.)
-        if (response.status === 302 || response.status === 307 || response.status === 301) {
-          const location = response.headers.get("location");
-          if (location) {
-            // Navigate to the Google OAuth URL
-            window.location.href = location;
-            return;
-          }
-        }
-
-        // If response is OK, check if it's a redirect response
+        // Handle successful response - API returns JSON with redirectUrl
         if (response.ok) {
-          // Try to get redirect URL from response
-          const data = await response.json().catch(() => null);
+          const data = await response.json();
           if (data?.redirectUrl) {
+            // Navigate to the Google OAuth URL
             window.location.href = data.redirectUrl;
             return;
           }
