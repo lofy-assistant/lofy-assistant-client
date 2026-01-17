@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { verifySession } from "@/lib/session";
-import { deleteCloudTask, enqueueCloudTask } from "@/lib/cloud-tasks";
-import { decryptContent } from "@/lib/encryption";
 
 export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
   try {
@@ -83,45 +81,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     });
     console.log(`Deleted old reminder ${oldReminderId}`);
 
-    // Step 6: Delete old cloud task - handle errors gracefully
-    try {
-      await deleteCloudTask("reminder-queue", oldReminderId);
-      console.log(`Deleted cloud task for old reminder ${oldReminderId}`);
-    } catch (taskError) {
-      console.error(`Error deleting cloud task for reminder ${oldReminderId}:`, taskError);
-      // Don't fail the entire request if cloud task deletion fails
-    }
-
-    // Step 7: Create new cloud task with new reminder_id
-    try {
-      // Get user's phone number for the task
-      const user = await prisma.users.findUnique({
-        where: { id: session.userId },
-        select: { encrypted_phone: true },
-      });
-
-      if (user?.encrypted_phone) {
-        const phoneNumber = decryptContent(user.encrypted_phone);
-        const taskData = {
-          reminder_id: newReminder.id,
-          message: newMessage,
-          phone_number: phoneNumber,
-        };
-
-        console.log(`Creating new cloud task for reminder ${newReminder.id} scheduled for ${reminder_time}`);
-        await enqueueCloudTask("/worker/send-reminder", "reminder-queue", String(newReminder.id), taskData, new Date(reminder_time));
-        console.log(`Successfully created cloud task for reminder ${newReminder.id}`);
-      } else {
-        console.warn(`No phone number found for user ${session.userId}, skipping cloud task creation`);
-      }
-    } catch (taskError) {
-      console.error(`Error creating cloud task for reminder ${newReminder.id}:`, taskError);
-      console.error(`Error details:`, JSON.stringify(taskError, null, 2));
-      // Don't fail the entire request if cloud task creation fails
-      // The reminder is still created in the database
-    }
-
-    // Step 8: Return the new reminder (with new ID)
+    // Step 6: Return the new reminder (with new ID)
     return NextResponse.json({ reminder: newReminder });
   } catch (error) {
     console.error("Error updating reminder:", error);
@@ -155,15 +115,6 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
     await prisma.reminders.delete({
       where: { id: reminderId },
     });
-
-    // Delete the associated cloud task
-    try {
-      await deleteCloudTask("reminder-queue", reminderId);
-      console.log(`Deleted cloud task for reminder ${reminderId}`);
-    } catch (taskError) {
-      console.error("Error deleting cloud task:", taskError);
-      // Don't fail the entire request if cloud task deletion fails
-    }
 
     return NextResponse.json({ success: true });
   } catch (error) {

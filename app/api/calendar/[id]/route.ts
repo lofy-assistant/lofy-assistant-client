@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { verifySession } from "@/lib/session";
-import { deleteCloudTask, enqueueCloudTask } from "@/lib/cloud-tasks";
 
 export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
   try {
@@ -53,35 +52,6 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
           reminder_time: newReminderTime,
         },
       });
-
-      // Update Cloud Tasks: delete old task and create new one
-      try {
-        // Delete the old cloud task
-        await deleteCloudTask("reminder-queue", event.reminder_id);
-
-        // Get user's phone number for the reminder
-        const user = await prisma.users.findUnique({
-          where: { id: session.userId },
-        });
-
-        if (user) {
-          // Enqueue new cloud task with updated time
-          await enqueueCloudTask(
-            "/api/worker/send-reminder",
-            "reminder-queue",
-            event.reminder_id.toString(),
-            {
-              reminder_id: event.reminder_id,
-              message: `Reminder: ${title} starts in 30 minutes`,
-              phone_number: user.encrypted_phone,
-            },
-            newReminderTime
-          );
-        }
-      } catch (cloudTaskError) {
-        console.error("Error updating cloud task:", cloudTaskError);
-        // Don't fail the request if cloud task update fails
-      }
     }
 
     return NextResponse.json({ event: updatedEvent });

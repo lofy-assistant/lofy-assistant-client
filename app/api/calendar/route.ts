@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { verifySession } from "@/lib/session";
-import { enqueueCloudTask } from "@/lib/cloud-tasks";
 
 const buildDateFilter = (month?: string | null, year?: string | null) => {
     if (!month || !year) return {};
@@ -132,29 +131,6 @@ export async function POST(request: NextRequest) {
                 reminder_id: reminder.id,
             },
         });
-
-        // Enqueue Cloud Task for reminder
-        try {
-            const user = await prisma.users.findUnique({
-                where: { id: session.userId },
-            });
-
-            if (user) {
-                await enqueueCloudTask(
-                    "/api/worker/send-reminder",
-                    "reminder-queue",
-                    reminder.id.toString(),
-                    {
-                        reminder_id: reminder.id,
-                        message: `Reminder: ${title} starts in 30 minutes`,
-                        phone_number: user.encrypted_phone,
-                    },
-                    reminderTime
-                );
-            }
-        } catch (cloudTaskError) {
-            console.error("Error creating cloud task:", cloudTaskError);
-        }
 
         return NextResponse.json({ event }, { status: 201 });
     } catch (error) {
