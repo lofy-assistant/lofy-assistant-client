@@ -106,19 +106,7 @@ export async function POST(request: NextRequest) {
         const startTime = new Date(start_time);
         const endTime = new Date(end_time);
 
-        // Create reminder 30 minutes before start time
-        const reminderTime = new Date(startTime.getTime() - 30 * 60 * 1000);
-        
-        const reminder = await prisma.reminders.create({
-            data: {
-                user_id: session.userId,
-                message: `Reminder: ${title} starts in 30 minutes`,
-                reminder_time: reminderTime,
-                status: "pending",
-            },
-        });
-
-        // Create calendar event with reminder
+        // Create calendar event
         const event = await prisma.calendar_events.create({
             data: {
                 user_id: session.userId,
@@ -128,7 +116,6 @@ export async function POST(request: NextRequest) {
                 end_time: endTime,
                 timezone,
                 is_all_day,
-                reminder_id: reminder.id,
             },
         });
 

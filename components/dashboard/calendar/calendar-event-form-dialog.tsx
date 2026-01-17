@@ -87,6 +87,66 @@ export function CalendarEventFormDialog({
     }
   }, [event, open])
 
+  // Handle all-day checkbox change
+  const handleAllDayChange = (checked: boolean) => {
+    if (checked) {
+      // Set start time to 12:00 AM and end time to 11:59 PM on the same date
+      const startDate = formData.start_time.split('T')[0]
+      setFormData({
+        ...formData,
+        start_time: `${startDate}T00:00`,
+        end_time: `${startDate}T23:59`,
+        is_all_day: true,
+      })
+    } else {
+      setFormData({
+        ...formData,
+        is_all_day: false,
+      })
+    }
+  }
+
+  // Handle start time change
+  const handleStartTimeChange = (value: string) => {
+    if (formData.is_all_day) {
+      // If all day, only update the date and keep times fixed
+      const newDate = value.split('T')[0]
+      setFormData({
+        ...formData,
+        start_time: `${newDate}T00:00`,
+        end_time: `${newDate}T23:59`,
+      })
+    } else {
+      // Normal behavior: just update start time
+      setFormData({
+        ...formData,
+        start_time: value,
+      })
+    }
+  }
+
+  // Handle end time change
+  const handleEndTimeChange = (value: string) => {
+    if (formData.is_all_day) {
+      // If all day is checked, don't allow changing end time
+      return
+    }
+    
+    // Validate that end time is not before start time
+    const startDateTime = new Date(formData.start_time)
+    const endDateTime = new Date(value)
+    
+    if (endDateTime < startDateTime) {
+      // Don't update if end time is before start time
+      return
+    }
+    
+    setFormData({
+      ...formData,
+      end_time: value,
+    })
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
@@ -184,15 +244,28 @@ export function CalendarEventFormDialog({
             />
           </div>
 
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="is_all_day"
+              checked={formData.is_all_day}
+              onCheckedChange={handleAllDayChange}
+            />
+            <Label htmlFor="is_all_day" className="cursor-pointer">
+              All day event
+            </Label>
+          </div>
+
           <div className="space-y-2">
             <Label htmlFor="start_time">Start Time</Label>
             <Input
               id="start_time"
-              type="datetime-local"
-              value={formData.start_time}
-              onChange={(e) =>
-                setFormData({ ...formData, start_time: e.target.value })
-              }
+              type={formData.is_all_day ? "date" : "datetime-local"}
+              value={formData.is_all_day ? formData.start_time.split('T')[0] : formData.start_time}
+              onChange={(e) => handleStartTimeChange(
+                formData.is_all_day 
+                  ? `${e.target.value}T00:00` 
+                  : e.target.value
+              )}
               required
             />
           </div>
@@ -201,26 +274,18 @@ export function CalendarEventFormDialog({
             <Label htmlFor="end_time">End Time</Label>
             <Input
               id="end_time"
-              type="datetime-local"
-              value={formData.end_time}
-              onChange={(e) =>
-                setFormData({ ...formData, end_time: e.target.value })
-              }
+              type={formData.is_all_day ? "date" : "datetime-local"}
+              value={formData.is_all_day ? formData.end_time.split('T')[0] : formData.end_time}
+              onChange={(e) => handleEndTimeChange(e.target.value)}
+              disabled={formData.is_all_day}
               required
+              className={formData.is_all_day ? "cursor-not-allowed opacity-60" : ""}
             />
-          </div>
-
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              id="is_all_day"
-              checked={formData.is_all_day}
-              onCheckedChange={(checked) =>
-                setFormData({ ...formData, is_all_day: checked as boolean })
-              }
-            />
-            <Label htmlFor="is_all_day" className="cursor-pointer">
-              All day event
-            </Label>
+            {formData.is_all_day && (
+              <p className="text-xs text-muted-foreground">
+                End date is automatically set to match the start date for all-day events
+              </p>
+            )}
           </div>
 
           <div className="flex justify-between gap-2">

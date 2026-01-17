@@ -160,58 +160,65 @@ export function CalendarEventsList() {
     <div className="flex flex-col gap-4">
       {/* Filter Section */}
       <Card>
-        <CardContent className="flex flex-col items-start gap-3 p-3 sm:flex-row sm:items-center sm:gap-4 sm:p-4">
-          <div className="flex items-center gap-2">
-            <Calendar className="w-5 h-5 text-muted-foreground" />
-            <span className="text-sm font-medium">Filter by:</span>
-          </div>
-          <div className="flex w-full gap-2 sm:w-auto">
-            <Select value={selectedMonth} onValueChange={setSelectedMonth}>
-              <SelectTrigger className="w-full sm:w-[140px]">
-                <SelectValue placeholder="Select month" />
-              </SelectTrigger>
-              <SelectContent>
-                {months.map((month) => (
-                  <SelectItem key={month.value} value={month.value}>
-                    {month.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Select value={selectedYear} onValueChange={setSelectedYear}>
-              <SelectTrigger className="w-full sm:w-[100px]">
-                <SelectValue placeholder="Select year" />
-              </SelectTrigger>
-              <SelectContent>
-                {years.map((year) => (
-                  <SelectItem key={year} value={year.toString()}>
-                    {year}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="flex items-center gap-2">
-            <Checkbox
-              id="show-past-events"
-              checked={showPastEvents}
-              onCheckedChange={(checked) => setShowPastEvents(checked as boolean)}
-            />
-            <label
-              htmlFor="show-past-events"
-              className="text-sm cursor-pointer select-none"
-            >
-              Show past events
-            </label>
-          </div>
-          <div className="w-full sm:w-auto sm:ml-auto">
-            <Button
-              onClick={() => setIsFormDialogOpen(true)}
-              className="w-full sm:w-auto"
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              Add Event
-            </Button>
+        <CardContent className="p-3 sm:p-4">
+          <div className="flex flex-col gap-3">
+            {/* Top row: Filters */}
+            <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:gap-4">
+              <div className="flex items-center gap-2">
+                <Calendar className="w-5 h-5 text-muted-foreground" />
+                <span className="text-sm font-medium">Filter by:</span>
+              </div>
+              <div className="flex w-full gap-2 sm:w-auto">
+                <Select value={selectedMonth} onValueChange={setSelectedMonth}>
+                  <SelectTrigger className="w-full sm:w-[140px]">
+                    <SelectValue placeholder="Select month" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {months.map((month) => (
+                      <SelectItem key={month.value} value={month.value}>
+                        {month.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Select value={selectedYear} onValueChange={setSelectedYear}>
+                  <SelectTrigger className="w-full sm:w-[100px]">
+                    <SelectValue placeholder="Select year" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {years.map((year) => (
+                      <SelectItem key={year} value={year.toString()}>
+                        {year}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            
+            {/* Bottom row: Checkbox and Button */}
+            <div className="flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
+              <div className="flex items-center gap-2">
+                <Checkbox
+                  id="show-past-events"
+                  checked={showPastEvents}
+                  onCheckedChange={(checked) => setShowPastEvents(checked as boolean)}
+                />
+                <label
+                  htmlFor="show-past-events"
+                  className="text-sm cursor-pointer select-none"
+                >
+                  Show past events
+                </label>
+              </div>
+              <Button
+                onClick={() => setIsFormDialogOpen(true)}
+                className="w-full sm:w-auto"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Add Event
+              </Button>
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -293,21 +300,22 @@ export function CalendarEventsList() {
               </Card>
             );
           })}
-
-          <CalendarEventDialog
-            event={selectedEvent}
-            open={dialogOpen}
-            onOpenChange={setDialogOpen}
-            onUpdate={handleUpdate}
-          />
-
-          <CalendarEventFormDialog
-            open={isFormDialogOpen}
-            onOpenChange={setIsFormDialogOpen}
-            onClose={handleFormDialogClose}
-          />
         </div>
       )}
+
+      {/* Dialogs - Always rendered */}
+      <CalendarEventDialog
+        event={selectedEvent}
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        onUpdate={handleUpdate}
+      />
+
+      <CalendarEventFormDialog
+        open={isFormDialogOpen}
+        onOpenChange={setIsFormDialogOpen}
+        onClose={handleFormDialogClose}
+      />
     </div>
   );
 }
