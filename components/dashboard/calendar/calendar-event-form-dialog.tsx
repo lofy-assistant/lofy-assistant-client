@@ -12,6 +12,13 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Checkbox } from "@/components/ui/checkbox"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 
 interface CalendarEvent {
   id: number
@@ -21,6 +28,7 @@ interface CalendarEvent {
   end_time: string
   timezone: string
   is_all_day: boolean
+  recurrence: string | null
 }
 
 interface CalendarEventFormDialogProps {
@@ -43,6 +51,7 @@ export function CalendarEventFormDialog({
     end_time: "",
     timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
     is_all_day: false,
+    recurrence: "none",
   })
   const [loading, setLoading] = useState(false)
   const [deleting, setDeleting] = useState(false)
@@ -69,6 +78,7 @@ export function CalendarEventFormDialog({
         end_time: utcToLocal(event.end_time),
         timezone: event.timezone,
         is_all_day: event.is_all_day,
+        recurrence: event.recurrence || "none",
       })
     } else {
       // Default to current date/time for new events
@@ -83,6 +93,7 @@ export function CalendarEventFormDialog({
         end_time: localDateEnd.toISOString().slice(0, 16),
         timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
         is_all_day: false,
+        recurrence: "none",
       })
     }
   }, [event, open])
@@ -166,6 +177,7 @@ export function CalendarEventFormDialog({
           end_time: localToUTC(formData.end_time),
           timezone: formData.timezone,
           is_all_day: formData.is_all_day,
+          recurrence: formData.recurrence === "none" ? null : formData.recurrence,
         }),
       })
 
@@ -253,6 +265,27 @@ export function CalendarEventFormDialog({
             <Label htmlFor="is_all_day" className="cursor-pointer">
               All day event
             </Label>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="recurrence">Recurrence</Label>
+            <Select
+              value={formData.recurrence}
+              onValueChange={(value) =>
+                setFormData({ ...formData, recurrence: value })
+              }
+            >
+              <SelectTrigger id="recurrence">
+                <SelectValue placeholder="No recurrence" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">No recurrence</SelectItem>
+                <SelectItem value="RRULE:FREQ=DAILY">Daily</SelectItem>
+                <SelectItem value="RRULE:FREQ=WEEKLY">Weekly</SelectItem>
+                <SelectItem value="RRULE:FREQ=MONTHLY">Monthly</SelectItem>
+                <SelectItem value="RRULE:FREQ=YEARLY">Yearly</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="space-y-2">

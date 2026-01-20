@@ -1,4 +1,9 @@
 import { getCountries, getCountryCallingCode, CountryCode } from "libphonenumber-js";
+import countries from "i18n-iso-countries";
+import en from "i18n-iso-countries/langs/en.json";
+
+// Register English locale
+countries.registerLocale(en);
 
 export interface Country {
   dialCode: string; // Calling code (e.g., '1', '60', '91')
@@ -16,77 +21,29 @@ function countryCodeToFlag(countryCode: string): string {
     .join("");
 }
 
-// Country code to name mapping
-const countryNames: Record<string, string> = {
-  US: "United States",
-  MY: "Malaysia",
-  GB: "United Kingdom",
-  SG: "Singapore",
-  IN: "India",
-  PH: "Philippines",
-  PT: "Portugal",
-  GH: "Ghana",
-  NG: "Nigeria",
-  BE: "Belgium",
-  CA: "Canada",
-  AU: "Australia",
-  CN: "China",
-  JP: "Japan",
-  KR: "South Korea",
-  TH: "Thailand",
-  ID: "Indonesia",
-  VN: "Vietnam",
-  PK: "Pakistan",
-  BD: "Bangladesh",
-  TR: "Turkey",
-  SA: "Saudi Arabia",
-  AE: "United Arab Emirates",
-  EG: "Egypt",
-  ZA: "South Africa",
-  KE: "Kenya",
-  BR: "Brazil",
-  MX: "Mexico",
-  AR: "Argentina",
-  FR: "France",
-  DE: "Germany",
-  IT: "Italy",
-  ES: "Spain",
-  NL: "Netherlands",
-  SE: "Sweden",
-  NO: "Norway",
-  DK: "Denmark",
-  FI: "Finland",
-  PL: "Poland",
-  RU: "Russia",
-  NZ: "New Zealand",
-};
-
 // Get all available countries with their dial codes
 export function getAllCountries(): Country[] {
   const countryCodes = getCountries();
-  const dialCodeMap = new Map<string, Country>();
+  const allCountries: Country[] = [];
 
   for (const code of countryCodes) {
     try {
       const dialCode = getCountryCallingCode(code);
+      const name = countries.getName(code, "en") || code;
       
-      // Only add if this dial code hasn't been added yet
-      // This ensures one country per unique calling code
-      if (!dialCodeMap.has(dialCode)) {
-        dialCodeMap.set(dialCode, {
-          dialCode,
-          name: countryNames[code] || code,
-          flag: countryCodeToFlag(code),
-          code, // Keep for internal use with libphonenumber-js
-        });
-      }
+      allCountries.push({
+        dialCode,
+        name,
+        flag: countryCodeToFlag(code),
+        code, // Keep for internal use with libphonenumber-js
+      });
     } catch {
       // Skip countries that don't have calling codes
       continue;
     }
   }
 
-  return Array.from(dialCodeMap.values()).sort((a, b) => a.name.localeCompare(b.name));
+  return allCountries.sort((a, b) => a.name.localeCompare(b.name));
 }
 
 // Get countries with Malaysia first, then alphabetical

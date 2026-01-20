@@ -94,7 +94,15 @@ export async function POST(request: NextRequest) {
         }
 
         const body = await request.json();
-        const { title, description, start_time, end_time, timezone = "UTC", is_all_day = false } = body;
+        const { 
+            title, 
+            description, 
+            start_time, 
+            end_time, 
+            timezone = "UTC", 
+            is_all_day = false,
+            recurrence
+        } = body;
 
         if (!title || !start_time || !end_time) {
             return NextResponse.json(
@@ -106,16 +114,25 @@ export async function POST(request: NextRequest) {
         const startTime = new Date(start_time);
         const endTime = new Date(end_time);
 
+        // Validate that end time is after start time
+        if (endTime <= startTime) {
+            return NextResponse.json(
+                { error: "End time must be after start time" },
+                { status: 400 }
+            );
+        }
+
         // Create calendar event
         const event = await prisma.calendar_events.create({
             data: {
                 user_id: session.userId,
                 title,
-                description,
+                description: description || null,
                 start_time: startTime,
                 end_time: endTime,
                 timezone,
                 is_all_day,
+                recurrence: recurrence || null,
             },
         });
 
