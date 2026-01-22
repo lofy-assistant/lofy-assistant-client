@@ -1,5 +1,5 @@
 generator client {
-  provider = "prisma-client-js"
+  provider = "prisma-client"
   output   = "../lib/generated/prisma"
 }
 
@@ -8,7 +8,7 @@ datasource db {
 }
 
 model users {
-  id              String            @id @db.Uuid
+  id              String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   encrypted_phone String
   hashed_phone    String
   pin             String?
@@ -65,16 +65,18 @@ model calendar_events {
   end_time    DateTime   @db.Timestamptz(6)
   timezone    String
   is_all_day  Boolean    @default(false)
-  created_at  DateTime   @default(now()) @db.Timestamptz(6)
-  updated_at  DateTime   @updatedAt @db.Timestamptz(6)
-  reminder_id Int?
-  recurrence  String?
+  created_at      DateTime   @default(now()) @db.Timestamptz(6)
+  updated_at      DateTime   @updatedAt @db.Timestamptz(6)
+  reminder_id     Int?
+  recurrence      String? // RRULE format
+  next_recurrence DateTime?  @db.Timestamptz(6)
   reminders   reminders? @relation(fields: [reminder_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   user        users      @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
   @@index([user_id])
   @@index([start_time])
   @@index([end_time])
+  @@index([next_recurrence])
   @@map("calendar_events")
 }
 
@@ -86,11 +88,14 @@ model reminders {
   status          String
   created_at      DateTime          @default(now()) @db.Timestamptz(6)
   updated_at      DateTime          @updatedAt @db.Timestamptz(6)
+  recurrence      String? // RRULE format
+  next_recurrence DateTime?         @db.Timestamptz(6)
   calendar_events calendar_events[]
   user            users             @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
   @@index([user_id])
   @@index([reminder_time])
   @@index([status])
+  @@index([next_recurrence])
   @@map("reminders")
 }
