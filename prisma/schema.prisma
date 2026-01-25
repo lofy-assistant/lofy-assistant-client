@@ -22,6 +22,7 @@ model users {
   feedbacks       feedbacks[]
   memories        memories[]
   reminders       reminders[]
+  subscriptions   subscriptions[]
 
   @@index([email])
   @@map("users")
@@ -98,4 +99,20 @@ model reminders {
   @@index([status])
   @@index([next_recurrence])
   @@map("reminders")
+}
+
+model subscriptions {
+  id                   String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id              String   @db.Uuid
+  stripe_customer_id   String   @unique
+  stripe_price_id      String
+  subscription_status  String
+  current_period_end   DateTime @db.Timestamptz(6)
+  created_at           DateTime @default(now()) @db.Timestamptz(6)
+  updated_at           DateTime @updatedAt @db.Timestamptz(6)
+  user                 users    @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([user_id])
+  @@index([subscription_status])
+  @@map("subscriptions")
 }
