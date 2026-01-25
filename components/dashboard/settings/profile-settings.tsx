@@ -138,7 +138,7 @@ export function ProfileSettings() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="type">Type</Label>
+            <Label htmlFor="type">AI Persona</Label>
             <Select value={type} onValueChange={(value) => setType(value as "villain" | "angel")}>
               <SelectTrigger id="type">
                 <SelectValue placeholder="Select type" />
