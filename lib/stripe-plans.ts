@@ -3,7 +3,7 @@ export const plans = [
     link:
       process.env.NODE_ENV === "development"
         ? "https://buy.stripe.com/test_fZu14mdBh1aGdDxezX2VG01"
-        : "https://buy.stripe.com/8x27sNa1G6du5mJ1jCdEs03",
+        : "https://buy.stripe.com/fZueVf2zedFWbL71jCdEs04",
     priceId:
       process.env.NODE_ENV === "development"
         ? "price_1StO0RBSILEw5PUU1o2Xt1BT"
