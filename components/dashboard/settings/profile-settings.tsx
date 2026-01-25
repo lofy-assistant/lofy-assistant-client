@@ -14,12 +14,20 @@ import {
 import { toast } from "sonner";
 import { Loader2, User } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface UserProfile {
   id: string;
   name: string | null;
   email: string | null;
   created_at: string;
+  ai_persona: string | null;
 }
 
 export function ProfileSettings() {
@@ -27,6 +35,7 @@ export function ProfileSettings() {
   const [isSaving, setIsSaving] = useState(false);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [name, setName] = useState("");
+  const [type, setType] = useState<"villain" | "angel">("villain");
 
   useEffect(() => {
     fetchProfile();
@@ -40,6 +49,7 @@ export function ProfileSettings() {
       const data = await response.json();
       setProfile(data.user);
       setName(data.user.name || "");
+      setType((data.user.ai_persona as "villain" | "angel") || "villain");
     } catch (error) {
       toast.error("Failed to load profile");
       console.error(error);
@@ -58,7 +68,7 @@ export function ProfileSettings() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ name }),
+        body: JSON.stringify({ name, type }),
       });
 
       if (!response.ok) throw new Error("Failed to update profile");
@@ -125,6 +135,19 @@ export function ProfileSettings() {
             <p className="text-xs text-muted-foreground">
               Email cannot be changed
             </p>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="type">Type</Label>
+            <Select value={type} onValueChange={(value) => setType(value as "villain" | "angel")}>
+              <SelectTrigger id="type">
+                <SelectValue placeholder="Select type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="villain">Villain</SelectItem>
+                <SelectItem value="angel">Angel</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="space-y-2">

@@ -23,6 +23,7 @@ model users {
   memories        memories[]
   reminders       reminders[]
   subscriptions   subscriptions[]
+  ai_persona      String?           
 
   @@index([email])
   @@map("users")

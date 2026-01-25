@@ -29,6 +29,7 @@ export async function GET(request: NextRequest) {
         name: true,
         email: true,
         created_at: true,
+        ai_persona: true,
       },
     });
 
@@ -67,18 +68,35 @@ export async function PATCH(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { name } = body;
+    const { name, type } = body;
+
+    const updateData: { name?: string | null; ai_persona?: string | null } = {};
+    
+    if (name !== undefined) {
+      updateData.name = name || null;
+    }
+    
+    if (type !== undefined) {
+      // Validate type is either "villain" or "angel"
+      if (type === "villain" || type === "angel") {
+        updateData.ai_persona = type;
+      } else {
+        return NextResponse.json(
+          { error: "Invalid type. Must be 'villain' or 'angel'" },
+          { status: 400 }
+        );
+      }
+    }
 
     const updatedUser = await prisma.users.update({
       where: { id: session.userId },
-      data: {
-        name: name || null,
-      },
+      data: updateData,
       select: {
         id: true,
         name: true,
         email: true,
         created_at: true,
+        ai_persona: true,
       },
     });
 
