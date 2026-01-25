@@ -3,6 +3,7 @@ import Stripe from "stripe";
 import { cookies } from "next/headers";
 import { verifySession } from "@/lib/session";
 import { prisma } from "@/lib/prisma";
+import { plans } from "@/lib/stripe-plans";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
@@ -45,30 +46,27 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Define prices - you can create products in Stripe and replace these with price IDs
-    const amount = billingCycle === "monthly" ? 500 : 4500; // in cents
-    const interval = billingCycle === "monthly" ? "month" : "year";
+    // Find the plan based on billing cycle
+    const plan = plans.find((p) => p.billingCycle === billingCycle);
+
+    if (!plan) {
+      return NextResponse.json(
+        { error: "Invalid billing cycle" },
+        { status: 400 }
+      );
+    }
 
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 
                     process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 
                     "http://localhost:3000";
 
+    // Create checkout session using the plan's price ID
     const stripeSession = await stripe.checkout.sessions.create({
       mode: "subscription",
       payment_method_types: ["card"],
       line_items: [
         {
-          price_data: {
-            currency: "usd",
-            product_data: {
-              name: "Lofy Pro Plan",
-              description: "Everything you need to stay organized and productive",
-            },
-            unit_amount: amount,
-            recurring: {
-              interval: interval as "month" | "year",
-            },
-          },
+          price: plan.priceId,
           quantity: 1,
         },
       ],

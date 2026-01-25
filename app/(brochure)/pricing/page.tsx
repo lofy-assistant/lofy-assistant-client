@@ -6,14 +6,15 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Badge } from "@/components/ui/badge";
 import { Check } from "lucide-react";
 import { useState, useEffect } from "react";
+import { plans } from "@/lib/stripe-plans";
 
 export default function PricingPage() {
   const [billingCycle, setBillingCycle] = useState<"monthly" | "yearly">("monthly");
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-  const monthlyPrice = 5;
-  const yearlyPrice = 45;
-  const monthlySavings = (monthlyPrice * 12 - yearlyPrice).toFixed(0);
+  const monthlyPlan = plans.find((p) => p.billingCycle === "monthly")!;
+  const yearlyPlan = plans.find((p) => p.billingCycle === "yearly")!;
+  const monthlySavings = (monthlyPlan.price * 12 - yearlyPlan.price).toFixed(0);
 
   // WhatsApp configuration
   const whatsappNumber = "60178230685";
@@ -129,7 +130,7 @@ export default function PricingPage() {
               </CardDescription>
               <div className="mt-4">
                 <span className="text-5xl font-bold text-gray-900">
-                  ${billingCycle === "monthly" ? monthlyPrice : yearlyPrice}
+                  ${billingCycle === "monthly" ? monthlyPlan.price : yearlyPlan.price}
                 </span>
                 <span className="text-gray-600">
                   /{billingCycle === "monthly" ? "month" : "year"}
@@ -137,7 +138,7 @@ export default function PricingPage() {
               </div>
               {billingCycle === "yearly" && (
                 <p className="mt-2 text-sm text-gray-500">
-                  ${(yearlyPrice / 12).toFixed(2)} per month, billed annually
+                  ${(yearlyPlan.price / 12).toFixed(2)} per month, billed annually
                 </p>
               )}
               <div className="mt-3">
