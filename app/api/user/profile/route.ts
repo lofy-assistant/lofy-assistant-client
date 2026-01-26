@@ -77,12 +77,12 @@ export async function PATCH(request: NextRequest) {
     }
     
     if (type !== undefined) {
-      // Validate type is either "villain" or "angel"
-      if (type === "villain" || type === "angel") {
+      // Validate type is either "sassy" or "nice" or "sarcastic" or "mean"
+      if (type === "sassy" || type === "nice" || type === "sarcastic" || type === "mean") {
         updateData.ai_persona = type;
       } else {
         return NextResponse.json(
-          { error: "Invalid type. Must be 'villain' or 'angel'" },
+          { error: "Invalid type. Must be 'sassy' or 'nice' or 'sarcastic' or 'mean'" },
           { status: 400 }
         );
       }
