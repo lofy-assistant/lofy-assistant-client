@@ -8,7 +8,8 @@ export function BentoSmartCalendar() {
       {/* First Icon - Calendar */}
       <motion.div
         initial={{ opacity: 0, scale: 0.8 }}
-        animate={{ opacity: 1, scale: 1 }}
+        whileInView={{ opacity: 1, scale: 1 }}
+        viewport={{ once: true, margin: "-100px" }}
         transition={{ delay: 0, duration: 0.5 }}
         className="bg-white rounded-xl shadow-lg w-12 h-12 border border-gray-100 flex items-center justify-center"
       >
@@ -20,7 +21,8 @@ export function BentoSmartCalendar() {
       {/* Arrow to Triangle */}
       <motion.div
         initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
+        whileInView={{ opacity: 1 }}
+        viewport={{ once: true, margin: "-100px" }}
         transition={{ delay: 0.3, duration: 0.5 }}
         className="mx-4"
       >
@@ -44,7 +46,8 @@ export function BentoSmartCalendar() {
             fill="none"
             strokeLinecap="round"
             initial={{ pathLength: 0 }}
-            animate={{ pathLength: 1 }}
+            whileInView={{ pathLength: 1 }}
+            viewport={{ once: true, margin: "-100px" }}
             transition={{ delay: 0.3, duration: 0.8, ease: "easeInOut" }}
           />
           <motion.path
@@ -53,7 +56,8 @@ export function BentoSmartCalendar() {
             strokeWidth="3"
             strokeLinecap="round"
             initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true, margin: "-100px" }}
             transition={{ delay: 0.8, duration: 0.3 }}
           />
         </svg>
@@ -64,7 +68,8 @@ export function BentoSmartCalendar() {
         {/* Top Icon - Gmail */}
         <motion.div
           initial={{ opacity: 0, scale: 0.8, x: 15, y: 20 }}
-          animate={{ opacity: 1, scale: 1, x: 30, y: 0 }}
+          whileInView={{ opacity: 1, scale: 1, x: 30, y: 0 }}
+          viewport={{ once: true, margin: "-100px" }}
           transition={{ delay: 0.4, duration: 0.5 }}
           className="bg-white rounded-xl shadow-lg w-12 h-12 border border-gray-100 flex items-center justify-center mb-2"
         >
@@ -80,7 +85,8 @@ export function BentoSmartCalendar() {
         <div className="flex gap-2">
           <motion.div
             initial={{ opacity: 0, scale: 0.8, x: -20, y: -10 }}
-            animate={{ opacity: 1, scale: 1, x: 0, y: 0 }}
+            whileInView={{ opacity: 1, scale: 1, x: 0, y: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
             transition={{ delay: 0.6, duration: 0.5 }}
             className="bg-white rounded-xl shadow-lg w-12 h-12 border border-gray-100 flex items-center justify-center"
           >
@@ -95,7 +101,8 @@ export function BentoSmartCalendar() {
           {/* Bottom Right - Apple Mail */}
           <motion.div
             initial={{ opacity: 0, scale: 0.8, x: 20, y: -10 }}
-            animate={{ opacity: 1, scale: 1, x: 0, y: 0 }}
+            whileInView={{ opacity: 1, scale: 1, x: 0, y: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
             transition={{ delay: 0.8, duration: 0.5 }}
             className="bg-white rounded-xl shadow-lg w-12 h-12 border border-gray-100 flex items-center justify-center"
           >
@@ -112,7 +119,8 @@ export function BentoSmartCalendar() {
       {/* Arrow to Last Icon */}
       <motion.div
         initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
+        whileInView={{ opacity: 1 }}
+        viewport={{ once: true, margin: "-100px" }}
         transition={{ delay: 1.1, duration: 0.5 }}
         className="mx-4"
       >
@@ -136,7 +144,8 @@ export function BentoSmartCalendar() {
             fill="none"
             strokeLinecap="round"
             initial={{ pathLength: 0 }}
-            animate={{ pathLength: 1 }}
+            whileInView={{ pathLength: 1 }}
+            viewport={{ once: true, margin: "-100px" }}
             transition={{ delay: 1.1, duration: 0.8, ease: "easeInOut" }}
           />
           <motion.path
@@ -145,7 +154,8 @@ export function BentoSmartCalendar() {
             strokeWidth="3"
             strokeLinecap="round"
             initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true, margin: "-100px" }}
             transition={{ delay: 1.6, duration: 0.3 }}
           />
         </svg>
@@ -154,7 +164,8 @@ export function BentoSmartCalendar() {
       {/* Last Icon - Zap */}
       <motion.div
         initial={{ opacity: 0, scale: 0.8 }}
-        animate={{ opacity: 1, scale: 1 }}
+        whileInView={{ opacity: 1, scale: 1 }}
+        viewport={{ once: true, margin: "-100px" }}
         transition={{ delay: 1.2, duration: 0.5 }}
         className="bg-white rounded-xl shadow-lg w-12 h-12 border border-gray-100 flex items-center justify-center"
       >
