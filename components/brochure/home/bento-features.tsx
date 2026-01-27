@@ -2,6 +2,7 @@
 import React from "react";
 import { BentoGrid, BentoGridItem } from "@/components/ui/bento-grid";
 import { Badge } from "@/components/ui/badge";
+import { BentoSmartCalendar } from "./bento-smart-calendar";
 import {
   IconListCheck,
   IconCalendarWeek,
@@ -49,7 +50,7 @@ const items = [
     title: "Smart Calendar",
     description:
       "Instantly schedule meetings and create calendar events using simple, natural language input.",
-    header: <Skeleton />,
+    header: <BentoSmartCalendar />,
     icon: <IconCalendarWeek className="h-6 w-6 text-neutral-500" />,
     className: "lg:col-span-5 md:col-span-5",
   },

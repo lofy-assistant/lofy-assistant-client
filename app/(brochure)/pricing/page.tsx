@@ -80,11 +80,10 @@ export default function PricingPage() {
       <div className="px-4 py-16 mx-auto max-w-7xl sm:px-6 lg:px-8">
         <div className="mb-12 text-center">
           <h1 className="mb-4 text-4xl font-bold text-gray-900 sm:text-5xl">
-            Simple, Transparent Pricing
+            Pricing
           </h1>
           <p className="max-w-3xl mx-auto text-xl text-gray-600">
-            Choose the plan that best fits your needs and start boosting your
-            productivity today.
+            Try it free for 14 days — upgrade to continue.
           </p>
         </div>
 
@@ -115,7 +114,7 @@ export default function PricingPage() {
 
         {/* Pricing Card */}
         <div className="flex justify-center">
-          <Card className="w-full max-w-lg">
+          <Card className="w-full max-w-lg py-3">
             <CardHeader className="text-center">
               <div className="flex items-center justify-center mb-2">
                 <CardTitle className="text-2xl font-bold">Pro Plan</CardTitle>
@@ -162,19 +161,19 @@ export default function PricingPage() {
             <CardFooter>
               <Button
                 onClick={handleGetStarted}
-                className="w-full text-lg py-6 bg-indigo-600 hover:bg-indigo-700"
+                className="w-full text-lg py-6"
                 size="lg"
               >
-                Get Started for Free
+                Try Lofy for Free
               </Button>
             </CardFooter>
           </Card>
         </div>
 
         {/* Additional Info */}
-        <div className="mt-12 text-center">
+        <div className="mt-4 text-center">
           <p className="text-sm text-gray-500">
-            No credit card required for trial • Cancel anytime • Money-back guarantee
+            No credit card required for trial • Cancel anytime • Secure payments
           </p>
         </div>
       </div>
