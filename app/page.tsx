@@ -2,7 +2,7 @@
 
 import AppNavBar from "@/components/app-navbar";
 import Hero from "@/components/brochure/home/hero";
-import { BentoFeatures } from "@/components/brochure/home/bento-features";
+import { BentoFeatures } from "@/components/brochure/home/bento-features/bento-features-grid";
 import Testimonials from "@/components/brochure/home/testimonials";
 import HowItWorks from "@/components/brochure/home/how-it-works";
 import CTASection from "@/components/brochure/home/cta-section";

@@ -2,7 +2,7 @@ import { motion } from "motion/react";
 import { Calendar, Zap } from "lucide-react";
 import Image from "next/image";
 
-export function BentoSmartCalendar() {
+export function BentoCalendar() {
   return (
     <div className="flex items-center justify-center h-full px-4">
       {/* First Icon - Calendar */}
@@ -13,7 +13,7 @@ export function BentoSmartCalendar() {
         transition={{ delay: 0, duration: 0.5 }}
         className="bg-white rounded-xl shadow-lg w-12 h-12 border border-gray-100 flex items-center justify-center"
       >
-        <div className="bg-gradient-to-br from-emerald-500 to-indigo-600 p-2 rounded-lg">
+        <div className="bg-linear-to-br from-emerald-500 to-indigo-500 p-2 rounded-lg">
           <Calendar className="size-4 text-white" />
         </div>
       </motion.div>
@@ -169,7 +169,7 @@ export function BentoSmartCalendar() {
         transition={{ delay: 1.2, duration: 0.5 }}
         className="bg-white rounded-xl shadow-lg w-12 h-12 border border-gray-100 flex items-center justify-center"
       >
-        <div className="bg-gradient-to-br from-emerald-500 to-indigo-600 p-2 rounded-lg">
+        <div className="bg-linear-to-br from-emerald-500 to-indigo-500 p-2 rounded-lg">
           <Zap className="size-4 text-white" />
         </div>
       </motion.div>

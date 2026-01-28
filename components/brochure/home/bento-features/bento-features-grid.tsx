@@ -1,15 +1,10 @@
 "use client";
 import React from "react";
 import { BentoGrid, BentoGridItem } from "@/components/ui/bento-grid";
-import { Badge } from "@/components/ui/badge";
-import { BentoSmartCalendar } from "./bento-smart-calendar";
-import {
-  IconListCheck,
-  IconCalendarWeek,
-  IconClock12,
-  IconBrain,
-  IconVolume,
-} from "@tabler/icons-react";
+import { BentoCalendar } from "./bento-calendar";
+import { BentoReminder } from "./bento-reminder";
+import { BentoMemory } from "./bento-memory";
+import BentoPersona from "./bento-persona";
 
 export function BentoFeatures() {
   return (
@@ -32,7 +27,6 @@ export function BentoFeatures() {
               title={item.title}
               description={item.description}
               header={item.header}
-              icon={item.icon}
               className={item.className}
             />
           ))}
@@ -50,31 +44,27 @@ const items = [
     title: "Smart Calendar",
     description:
       "Instantly schedule meetings and create calendar events using simple, natural language input.",
-    header: <BentoSmartCalendar />,
-    icon: <IconCalendarWeek className="h-6 w-6 text-neutral-500" />,
+    header: <BentoCalendar />,
     className: "lg:col-span-5 md:col-span-5",
   },
   {
     title: "Unlimited Reminders",
     description: "Tailor reminders to any specific task or calendar event.",
-    header: <Skeleton />,
-    icon: <IconClock12 className="h-6 w-6 text-neutral-500" />,
+    header: <BentoReminder />,
     className: "lg:col-span-3 md:col-span-3",
   },
   {
     title: "Save To Memory",
     description:
       "Build a searchable archive of your mind. Capture ideas, and fleeting thoughts the moment they strike.",
-    header: <Skeleton />,
-    icon: <IconBrain className="h-6 w-6 text-neutral-500" />,
+    header: <BentoMemory />,
     className: "lg:col-span-4 md:col-span-4",
   },
   {
     title: "Centralized Task Management",
     description:
       "Command center for getting things done. Organize, assign, and plan your steps.",
-    header: <Skeleton />,
-    icon: <IconListCheck className="h-6 w-6 text-neutral-500" />,
+    header: <BentoPersona />,
     className: "lg:col-span-4 md:col-span-4",
   },
 ];

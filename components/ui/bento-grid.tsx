@@ -25,13 +25,11 @@ export const BentoGridItem = ({
   title,
   description,
   header,
-  icon,
 }: {
   className?: string;
   title?: string | React.ReactNode;
   description?: string | React.ReactNode;
   header?: React.ReactNode;
-  icon?: React.ReactNode;
 }) => {
   return (
     <div className={cn("group/bento row-span-1 relative h-full", className)}>
@@ -53,11 +51,6 @@ export const BentoGridItem = ({
                 </div>
               )}
               <div className="space-y-2">
-                {icon && (
-                  <div className="w-fit rounded-lg border border-gray-600 p-2">
-                    {icon}
-                  </div>
-                )}
                 <h3 className="font-sans text-lg font-semibold text-balance text-black md:text-xl dark:text-white">
                   {title}
                 </h3>
