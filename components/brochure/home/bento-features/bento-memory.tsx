@@ -1,49 +1,71 @@
-import { useMemo } from 'react';
-import { motion } from 'motion/react';
-import { Brain, Zap } from 'lucide-react';
+import { useMemo } from "react";
+import { motion } from "motion/react";
+import { Brain, Zap } from "lucide-react";
 
 export function BentoMemory() {
   // Generate random positions once
   const particles = useMemo(() => {
     return [...Array(12)].map(() => ({
-      initialX: (() => { const r = Math.random(); return r * 100; })(),
-      initialY: (() => { const r = Math.random(); return r * 100; })(),
-      targetX: (() => { const r = Math.random(); return r * 100; })(),
-      targetY: (() => { const r = Math.random(); return r * 100; })(),
-      duration: (() => { const r = Math.random(); return r * 4 + 3; })(),
-      delay: (() => { const r = Math.random(); return r * 2; })(),
+      initialX: (() => {
+        const r = Math.random();
+        return r * 100;
+      })(),
+      initialY: (() => {
+        const r = Math.random();
+        return r * 100;
+      })(),
+      targetX: (() => {
+        const r = Math.random();
+        return r * 100;
+      })(),
+      targetY: (() => {
+        const r = Math.random();
+        return r * 100;
+      })(),
+      duration: (() => {
+        const r = Math.random();
+        return r * 4 + 3;
+      })(),
+      delay: (() => {
+        const r = Math.random();
+        return r * 2;
+      })(),
     }));
   }, []);
 
-  const dataStreams = useMemo(() => {   
+  const dataStreams = useMemo(() => {
     return [...Array(5)].map((_, i) => ({
       delay: i * 0.3,
-      duration: 2 + (i * 0.2), // Use deterministic, stable duration
+      duration: 2 + i * 0.2, // Use deterministic, stable duration
     }));
   }, []);
 
   return (
-    <div className="relative w-full h-full aspect-[3/1] overflow-hidden flex items-center justify-center">
+    <div className="relative w-full h-full sm:aspect-3/1 aspect-2/1 overflow-hidden flex items-center justify-center">
       {/* Floating particles */}
       <div className="absolute inset-0">
         {particles.map((particle, i) => (
           <motion.div
             key={i}
-            className="absolute w-1.5 h-1.5 bg-emerald-400/40 rounded-full"
+            className={
+              i > 6
+                ? "absolute hidden sm:block w-1.5 h-1.5 bg-emerald-400/40 rounded-full"
+                : "absolute w-1.5 h-1.5 bg-emerald-400/40 rounded-full"
+            }
             initial={{
-              x: particle.initialX + '%',
-              y: particle.initialY + '%',
+              x: particle.initialX + "%",
+              y: particle.initialY + "%",
             }}
             animate={{
               x: [
-                particle.initialX + '%',
-                particle.targetX + '%',
-                particle.initialX + '%',
+                particle.initialX + "%",
+                particle.targetX + "%",
+                particle.initialX + "%",
               ],
               y: [
-                particle.initialY + '%',
-                particle.targetY + '%',
-                particle.initialY + '%',
+                particle.initialY + "%",
+                particle.targetY + "%",
+                particle.initialY + "%",
               ],
               opacity: [0.2, 0.6, 0.2],
               scale: [1, 1.5, 1],
@@ -51,7 +73,7 @@ export function BentoMemory() {
             transition={{
               duration: particle.duration,
               repeat: Infinity,
-              ease: 'easeInOut',
+              ease: "easeInOut",
               delay: particle.delay,
             }}
           />
@@ -86,29 +108,29 @@ export function BentoMemory() {
             <div key={`stream-${i}`} className="relative h-0.5 w-full">
               <motion.div
                 className="absolute h-full bg-gradient-to-r from-emerald-400 to-indigo-500"
-                initial={{ width: '0%', left: '0%' }}
+                initial={{ width: "0%", left: "0%" }}
                 animate={{
-                  width: ['0%', '100%', '0%'],
-                  left: ['0%', '0%', '100%'],
+                  width: ["0%", "100%", "0%"],
+                  left: ["0%", "0%", "100%"],
                 }}
                 transition={{
                   duration: stream.duration,
                   repeat: Infinity,
-                  ease: 'easeInOut',
+                  ease: "easeInOut",
                   delay: stream.delay,
                 }}
               />
               {/* Glowing dots moving along stream */}
               <motion.div
                 className="absolute w-2 h-2 bg-emerald-300 rounded-full shadow-lg shadow-emerald-400/50 -top-0.75"
-                initial={{ left: '0%' }}
+                initial={{ left: "0%" }}
                 animate={{
-                  left: ['0%', '100%'],
+                  left: ["0%", "100%"],
                 }}
                 transition={{
                   duration: stream.duration,
                   repeat: Infinity,
-                  ease: 'easeInOut',
+                  ease: "easeInOut",
                   delay: stream.delay,
                 }}
               />
@@ -125,7 +147,7 @@ export function BentoMemory() {
           transition={{
             duration: 2,
             repeat: Infinity,
-            ease: 'easeInOut',
+            ease: "easeInOut",
           }}
         >
           {/* Rotating ring */}
@@ -137,7 +159,7 @@ export function BentoMemory() {
             transition={{
               duration: 8,
               repeat: Infinity,
-              ease: 'linear',
+              ease: "linear",
             }}
           >
             <div className="w-full h-full border-2 border-dashed border-emerald-400/30 rounded-full" />
@@ -156,15 +178,18 @@ export function BentoMemory() {
               transition={{
                 duration: 2,
                 repeat: Infinity,
-                ease: 'easeOut',
+                ease: "easeOut",
                 delay: delay,
               }}
             />
           ))}
 
-          <div className="relative w-16 h-16 bg-gradient-to-br from-emerald-500 via-teal-500 to-indigo-600 rounded-full flex items-center justify-center shadow-xl">
-            <Brain className="w-8 h-8 text-white" strokeWidth={1.5} />
-            
+          <div className="relative w-12 h-12 sm:w-16 sm:h-16 bg-linear-to-br from-emerald-500 via-teal-500 to-indigo-600 rounded-full flex items-center justify-center shadow-xl">
+            <Brain
+              className="w-6 sm:w-8 h-6 sm:h-8 text-white"
+              strokeWidth={1.5}
+            />
+
             {/* Energy sparks */}
             {[0, 1, 2, 3].map((i) => (
               <motion.div
@@ -183,7 +208,7 @@ export function BentoMemory() {
                 transition={{
                   duration: 1.5,
                   repeat: Infinity,
-                  ease: 'easeOut',
+                  ease: "easeOut",
                   delay: i * 0.2,
                 }}
               >
@@ -237,9 +262,9 @@ export function BentoMemory() {
         transition={{
           duration: 3,
           repeat: Infinity,
-          ease: 'easeInOut',
+          ease: "easeInOut",
         }}
       />
     </div>
   );
-}   
+}

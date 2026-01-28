@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
 import { BentoGrid, BentoGridItem } from "@/components/ui/bento-grid";
-import { BentoCalendar } from "./bento-calendar";
+import BentoIntegration from "./bento-integration";
 import { BentoReminder } from "./bento-reminder";
 import { BentoMemory } from "./bento-memory";
 import BentoPersona from "./bento-persona";
@@ -20,7 +20,7 @@ export function BentoFeatures() {
             your productivity with intelligent automation.
           </p>
         </div>
-        <BentoGrid className="md:auto-rows-[22rem]">
+        <BentoGrid className="md:auto-rows-[20rem]">
           {items.map((item, i) => (
             <BentoGridItem
               key={i}
@@ -41,15 +41,15 @@ const Skeleton = () => (
 );
 const items = [
   {
-    title: "Smart Calendar",
+    title: "All Your Apps, Connected",
     description:
-      "Instantly schedule meetings and create calendar events using simple, natural language input.",
-    header: <BentoCalendar />,
+      "Connect your favorite tools and let everything work together automatically.",
+    header: <BentoIntegration />,
     className: "lg:col-span-5 md:col-span-5",
   },
   {
     title: "Unlimited Reminders",
-    description: "Tailor reminders to any specific task or calendar event.",
+    description: "Tailor reminders to any specific task or events.",
     header: <BentoReminder />,
     className: "lg:col-span-3 md:col-span-3",
   },
@@ -61,9 +61,9 @@ const items = [
     className: "lg:col-span-4 md:col-span-4",
   },
   {
-    title: "Centralized Task Management",
+    title: "Personality Modes",
     description:
-      "Command center for getting things done. Organize, assign, and plan your steps.",
+      "Pick a personality and watch your AI instantly change how it talks and thinks.",
     header: <BentoPersona />,
     className: "lg:col-span-4 md:col-span-4",
   },

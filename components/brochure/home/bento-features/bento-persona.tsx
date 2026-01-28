@@ -12,7 +12,7 @@ export default function BentoPersona() {
   ];
 
   return (
-    <div className="relative w-full h-full flex items-center justify-center overflow-hidden">
+    <div className="relative w-full h-full flex items-center justify-center overflow-hidden sm:scale-100 scale-90">
       {/* Connecting lines between personas */}
       <svg className="absolute inset-0 w-full h-full" style={{ opacity: 0.3 }}>
         {personas.map((persona, i) => {
@@ -47,13 +47,21 @@ export default function BentoPersona() {
       </svg>
 
       {/* Persona orbs */}
-      <div className="relative w-full h-full flex items-center justify-center gap-4">
+      <div className="relative w-full h-full flex items-center justify-center gap-2 sm:gap-4">
         {personas.map((persona, index) => {
           const gradientStart = index / (personas.length - 1);
+          // Hide the first and last persona on small screens (show on >=sm)
+          const mobilePositionClass =
+            persona.id === 1
+              ? "hidden sm:flex sm:relative sm:left-auto sm:translate-x-0 sm:bottom-auto"
+              : persona.id === 5
+                ? "hidden sm:flex sm:relative sm:left-auto sm:translate-x-0 sm:bottom-auto"
+                : "relative";
+
           return (
             <motion.div
               key={persona.id}
-              className="relative flex items-center justify-center"
+              className={`flex items-center justify-center transform-gpu sm:scale-100 scale-90 ${mobilePositionClass}`}
               initial={{ scale: 0, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               transition={{

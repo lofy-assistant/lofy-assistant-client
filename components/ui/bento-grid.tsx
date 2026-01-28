@@ -12,7 +12,7 @@ export const BentoGrid = ({
     <div
       className={cn(
         "mx-auto grid max-w-7xl grid-cols-1 gap-4 md:auto-rows-[18rem] md:grid-cols-8",
-        className
+        className,
       )}
     >
       {children}
@@ -43,10 +43,10 @@ export const BentoGridItem = ({
         inactiveZone={0.01}
       >
         <div className="border h-full rounded-xl overflow-hidden">
-          <div className="relative bg-white flex h-full flex-col justify-between gap-4 p-4 dark:bg-neutral-950 dark:shadow-[0px_0px_27px_0px_#2D2D2D]">
+          <div className="relative bg-white flex h-full flex-col justify-between gap-4 p-4 md:p-6 dark:bg-neutral-950 dark:shadow-[0px_0px_27px_0px_#2D2D2D]">
             <div className="relative flex flex-1 flex-col justify-between gap-3">
               {header && (
-                <div className="w-full h-40 overflow-hidden rounded-lg">
+                <div className="w-full h-48 overflow-hidden rounded-lg">
                   {header}
                 </div>
               )}
