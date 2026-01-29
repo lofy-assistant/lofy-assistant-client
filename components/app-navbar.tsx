@@ -39,7 +39,7 @@ interface NavbarProps {
 }
 
 export default function AppNavbar({
-  logo = <Image src="/logo.png" alt="Logo" width={32} height={32} className="size-8" />,
+  logo = <Image src="/assets/logo/lofy-logo-1.png" alt="Logo" width={32} height={32} className="size-8" />,
   name = "Lofy AI",
   homeUrl = "/",
   mobileLinks = [

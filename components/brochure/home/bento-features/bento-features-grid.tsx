@@ -14,7 +14,7 @@ export function BentoFeatures() {
           <h2 className="mb-6 py-1 text-4xl md:text-5xl font-bold text-transparent bg-linear-to-r from-gray-900 to-gray-700 bg-clip-text">
             Smart Companion
           </h2>
-          <p className="max-w-5xl mx-auto leading-relaxed text-gray-600 text-md lg:text-lg">
+          <p className="max-w-5xl mx-auto leading-relaxed text-gray-600 text-sm md:text-md text-justify md:text-center lg:text-lg">
             Lofy is simple to understand, a friendly convenience, and an
             assistant without sleep, only powered by data and intelligence. It
             integrates into your daily life, understanding context
