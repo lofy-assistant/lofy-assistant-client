@@ -73,13 +73,13 @@ export default function HowItWorks() {
   ];
 
   return (
-    <section className="relative py-24 overflow-hidden bg-background">
+    <section className="relative py-24 my-8 md:my-16 overflow-hidden bg-background">
       <div className="max-w-7xl mx-auto px-8">
         <div className="mb-16 text-center">
-          <h2 className="mb-6 text-5xl font-bold text-transparent bg-linear-to-r from-gray-900 to-gray-700 bg-clip-text">
+          <h2 className="mb-6 text-4xl md:text-5xl font-bold text-transparent bg-linear-to-r from-gray-900 to-gray-700 bg-clip-text">
             Simple Conversations, Powerful Results
           </h2>
-          <p className="max-w-3xl mx-auto text-xl leading-relaxed text-gray-600">
+          <p className="max-w-5xl mx-auto leading-relaxed text-gray-600 text-md lg:text-lg">
             Just chat naturally with Lofy like you would with a real assistant. 
             Watch how it understands and executes your requests effortlessly.
           </p>

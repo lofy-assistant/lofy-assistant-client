@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, JetBrains_Mono } from "next/font/google";
+import { Inter, Space_Grotesk, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
 import { Toaster } from "sonner";
@@ -7,12 +7,17 @@ import { LenisScroll } from "@/components/lenis-scroll";
 
 // Fonts
 const inter = Inter({
-  variable: "--font-geist-sans",
+  variable: "--font-inter",
+  subsets: ["latin"],
+});
+
+const spaceGrotesk = Space_Grotesk({
+  variable: "--font-space-grotesk",
   subsets: ["latin"],
 });
 
 const jetbrainsMono = JetBrains_Mono({
-  variable: "--font-geist-mono",
+  variable: "--font-mono",
   subsets: ["latin"],
 });
 
@@ -28,7 +33,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${inter.variable} ${jetbrainsMono.variable} antialiased overflow-x-hidden`}>
+      <body className={`${inter.variable} ${spaceGrotesk.variable} ${jetbrainsMono.variable} antialiased overflow-x-hidden`}>
         <LenisScroll />
         <Providers>
           {children}

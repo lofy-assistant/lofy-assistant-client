@@ -8,16 +8,17 @@ import BentoPersona from "./bento-persona";
 
 export function BentoFeatures() {
   return (
-    <section className="relative py-24 overflow-hidden bg-background">
+    <section className="relative py-24 my-8 md:my-16 overflow-hidden bg-background">
       <div className="max-w-7xl mx-auto px-8">
         <div className="mb-20 text-center">
-          <h2 className="mb-6 py-1 text-5xl font-bold text-transparent bg-linear-to-r from-gray-900 to-gray-700 bg-clip-text">
-            Your Personal Assistant AI Agent
+          <h2 className="mb-6 py-1 text-4xl md:text-5xl font-bold text-transparent bg-linear-to-r from-gray-900 to-gray-700 bg-clip-text">
+            Smart Companion
           </h2>
-          <p className="max-w-4xl mx-auto leading-relaxed text-gray-600 text-md lg:text-lg">
-            Lofy is an agentic AI personal assistant that integrates seamlessly
-            into your daily life, understanding context and reasoning to boost
-            your productivity with intelligent automation.
+          <p className="max-w-5xl mx-auto leading-relaxed text-gray-600 text-md lg:text-lg">
+            Lofy is simple to understand, a friendly convenience, and an
+            assistant without sleep, only powered by data and intelligence. It
+            integrates into your daily life, understanding context
+            and reasoning, exist solely to make your life more manageable.
           </p>
         </div>
         <BentoGrid className="md:auto-rows-[20rem]">

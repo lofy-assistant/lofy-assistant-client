@@ -114,14 +114,14 @@ export default function Navigation({
           <NavigationMenuItem key={index}>
             {item.isLink ? (
               <NavigationMenuLink
-                className={navigationMenuTriggerStyle()}
+                className={cn(navigationMenuTriggerStyle(), "bg-transparent text-white hover:bg-neutral-800 hover:text-white focus:bg-neutral-800 focus:text-white")}
                 asChild
               >
                 <Link href={item.href || "#"}>{item.title}</Link>
               </NavigationMenuLink>
             ) : (
               <>
-                <NavigationMenuTrigger>{item.title}</NavigationMenuTrigger>
+                <NavigationMenuTrigger className="bg-transparent text-white hover:bg-neutral-800 hover:text-white focus:bg-neutral-800 focus:text-white data-[state=open]:bg-neutral-800">{item.title}</NavigationMenuTrigger>
                 <NavigationMenuContent>
                   {item.content === "default" ? (
                     <ul className="grid gap-3 p-6 md:w-[500px] lg:w-[600px] md:grid-cols-2">

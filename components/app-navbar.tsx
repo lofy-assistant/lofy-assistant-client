@@ -1,6 +1,8 @@
-import { Menu } from "lucide-react";
+"use client";
+
+import { Menu, ChevronDown } from "lucide-react";
 import Link from "next/link";
-import { type ReactNode } from "react";
+import { type ReactNode, useState } from "react";
 import Image from "next/image";
 
 import { cn } from "@/lib/utils";
@@ -13,6 +15,7 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 interface NavbarLink {
   text: string;
   href: string;
+  children?: { text: string; href: string }[];
 }
 
 interface NavbarActionProps {
@@ -40,8 +43,24 @@ export default function AppNavbar({
   name = "Lofy AI",
   homeUrl = "/",
   mobileLinks = [
-    { text: "Features", href: "/features" },
-    { text: "Resources", href: "/resources" },
+    { 
+      text: "Features", 
+      href: "/features",
+      children: [
+        { text: "Smart Calendar", href: "/features/smart-calendar" },
+        { text: "Unlimited Reminders", href: "/features/unlimited-reminders" },
+        { text: "Save To Memory", href: "/features/save-to-memory" },
+        { text: "Centralized Tasks", href: "/features/centralized-task" },
+      ]
+    },
+    { 
+      text: "Resources", 
+      href: "/resources",
+      children: [
+        { text: "Guides", href: "/resources/guides" },
+        { text: "About Us", href: "/resources/about-us" },
+      ]
+    },
     { text: "Pricing", href: "/pricing" },
   ],
   actions = [
@@ -52,7 +71,7 @@ export default function AppNavbar({
     },
     {
       text: "Get Started",
-      href: "/register",
+      href: "https://wa.me/60178230685?text=Hey%2C%20I%20just%20get%20started",
       isButton: true,
       variant: "default",
     },
@@ -61,9 +80,15 @@ export default function AppNavbar({
   customNavigation,
   className,
 }: NavbarProps) {
+  const [openSections, setOpenSections] = useState<{ [key: number]: boolean }>({});
+
+  const toggleSection = (index: number) => {
+    setOpenSections(prev => ({ ...prev, [index]: !prev[index] }));
+  };
+
   return (
-    <header className={cn("sticky top-0 z-50 px-4 pb-4 w-full", className)}>
-      <div className="absolute left-0 w-full h-20 fade-bottom bg-background/15 backdrop-blur-lg" />
+    <header className={cn("sticky top-0 z-50 px-4 w-full", className)}>
+      <div className="absolute left-0 w-full h-18 fade-bottom bg-foreground backdrop-blur-md" />
       <div className="relative mx-auto max-w-7xl">
         <NavbarComponent>
           <NavbarLeft>
@@ -77,7 +102,11 @@ export default function AppNavbar({
             {actions.map((action, index) =>
               action.isButton ? (
                 <Button key={index} variant={action.variant} asChild>
-                  <Link href={action.href}>
+                  <Link 
+                    href={action.href}
+                    target={action.href.startsWith('http') ? '_blank' : undefined}
+                    rel={action.href.startsWith('http') ? 'noopener noreferrer' : undefined}
+                  >
                     {action.icon}
                     {action.text}
                     {action.iconRight}
@@ -90,7 +119,7 @@ export default function AppNavbar({
               )
             )}
             <Sheet>
-              <SheetTrigger className={cn(buttonVariants({ variant: "ghost", size: "icon" }), "shrink-0 md:hidden")}>
+              <SheetTrigger className={cn(buttonVariants({ variant: "default", size: "icon" }), "shrink-0 md:hidden")}>
                 <Menu className="size-5" />
                 <span className="sr-only">Toggle navigation menu</span>
               </SheetTrigger>
@@ -100,9 +129,41 @@ export default function AppNavbar({
                     {name}
                   </Link>
                   {mobileLinks.map((link, index) => (
-                    <Link key={index} href={link.href} className="text-muted-foreground hover:text-foreground">
-                      {link.text}
-                    </Link>
+                    <div key={index}>
+                      {link.children ? (
+                        <div>
+                          <button
+                            onClick={() => toggleSection(index)}
+                            className="flex items-center justify-between w-full text-muted-foreground hover:text-foreground transition-colors"
+                          >
+                            <span>{link.text}</span>
+                            <ChevronDown
+                              className={cn(
+                                "size-4 transition-transform",
+                                openSections[index] && "rotate-180"
+                              )}
+                            />
+                          </button>
+                          {openSections[index] && (
+                            <div className="ml-4 mt-3 grid gap-3">
+                              {link.children.map((child, childIndex) => (
+                                <Link
+                                  key={childIndex}
+                                  href={child.href}
+                                  className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                                >
+                                  {child.text}
+                                </Link>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <Link href={link.href} className="text-muted-foreground hover:text-foreground transition-colors">
+                          {link.text}
+                        </Link>
+                      )}
+                    </div>
                   ))}
                 </nav>
               </SheetContent>
