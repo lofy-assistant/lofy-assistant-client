@@ -57,8 +57,8 @@ export default function AppNavbar({
       text: "Resources", 
       href: "/resources",
       children: [
-        { text: "Guides", href: "/resources/guides" },
-        { text: "About Us", href: "/resources/about-us" },
+        { text: "Guides", href: "/guides" },
+        { text: "About Us", href: "/about-us" },
       ]
     },
     { text: "Pricing", href: "/pricing" },

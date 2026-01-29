@@ -98,11 +98,11 @@ export default function Navigation({
   components = [
     {
       title: "Guides",
-      href: "/resources/guides",
+      href: "/guides",
     },
     {
       title: "About Us",
-      href: "/resources/about-us",
+      href: "/about-us",
       
     },
   ],
