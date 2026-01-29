@@ -1,8 +1,11 @@
 import { useMemo } from "react";
 import { motion } from "motion/react";
 import { Brain, Zap } from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export function BentoMemory() {
+  const isMobile = useIsMobile();
+  
   // Generate random positions once
   const particles = useMemo(() => {
     return [...Array(12)].map(() => ({
@@ -42,43 +45,45 @@ export function BentoMemory() {
 
   return (
     <div className="relative w-full h-full sm:aspect-3/1 aspect-2/1 overflow-hidden flex items-center justify-center">
-      {/* Floating particles */}
-      <div className="absolute inset-0">
-        {particles.map((particle, i) => (
-          <motion.div
-            key={i}
-            className={
-              i > 6
-                ? "absolute hidden sm:block w-1.5 h-1.5 bg-emerald-400/40 rounded-full"
-                : "absolute w-1.5 h-1.5 bg-emerald-400/40 rounded-full"
-            }
-            initial={{
-              x: particle.initialX + "%",
-              y: particle.initialY + "%",
-            }}
-            animate={{
-              x: [
-                particle.initialX + "%",
-                particle.targetX + "%",
-                particle.initialX + "%",
-              ],
-              y: [
-                particle.initialY + "%",
-                particle.targetY + "%",
-                particle.initialY + "%",
-              ],
-              opacity: [0.2, 0.6, 0.2],
-              scale: [1, 1.5, 1],
-            }}
-            transition={{
-              duration: particle.duration,
-              repeat: Infinity,
-              ease: "easeInOut",
-              delay: particle.delay,
-            }}
-          />
-        ))}
-      </div>
+      {/* Floating particles - hidden on mobile */}
+      {!isMobile && (
+        <div className="absolute inset-0">
+          {particles.map((particle, i) => (
+            <motion.div
+              key={i}
+              className={
+                i > 6
+                  ? "absolute hidden sm:block w-1.5 h-1.5 bg-emerald-400/40 rounded-full"
+                  : "absolute w-1.5 h-1.5 bg-emerald-400/40 rounded-full"
+              }
+              initial={{
+                x: particle.initialX + "%",
+                y: particle.initialY + "%",
+              }}
+              animate={{
+                x: [
+                  particle.initialX + "%",
+                  particle.targetX + "%",
+                  particle.initialX + "%",
+                ],
+                y: [
+                  particle.initialY + "%",
+                  particle.targetY + "%",
+                  particle.initialY + "%",
+                ],
+                opacity: [0.2, 0.6, 0.2],
+                scale: [1, 1.5, 1],
+              }}
+              transition={{
+                duration: particle.duration,
+                repeat: Infinity,
+                ease: "easeInOut",
+                delay: particle.delay,
+              }}
+            />
+          ))}
+        </div>
+      )}
 
       {/* Main visual - Brain with data streams */}
       <div className="relative flex items-center gap-8">
@@ -88,10 +93,10 @@ export function BentoMemory() {
             <motion.div
               key={`source-${i}`}
               className="relative"
-              animate={{
+              animate={isMobile ? { opacity: 0.7 } : {
                 opacity: [0.4, 1, 0.4],
               }}
-              transition={{
+              transition={isMobile ? { duration: 0 } : {
                 duration: 2,
                 repeat: Infinity,
                 delay: stream.delay,
@@ -108,32 +113,34 @@ export function BentoMemory() {
             <div key={`stream-${i}`} className="relative h-0.5 w-full">
               <motion.div
                 className="absolute h-full bg-gradient-to-r from-emerald-400 to-indigo-500"
-                initial={{ width: "0%", left: "0%" }}
-                animate={{
+                initial={{ width: isMobile ? "100%" : "0%", left: "0%" }}
+                animate={isMobile ? { width: "100%", left: "0%" } : {
                   width: ["0%", "100%", "0%"],
                   left: ["0%", "0%", "100%"],
                 }}
-                transition={{
+                transition={isMobile ? { duration: 0 } : {
                   duration: stream.duration,
                   repeat: Infinity,
                   ease: "easeInOut",
                   delay: stream.delay,
                 }}
               />
-              {/* Glowing dots moving along stream */}
-              <motion.div
-                className="absolute w-2 h-2 bg-emerald-300 rounded-full shadow-lg shadow-emerald-400/50 -top-0.75"
-                initial={{ left: "0%" }}
-                animate={{
-                  left: ["0%", "100%"],
-                }}
-                transition={{
-                  duration: stream.duration,
-                  repeat: Infinity,
-                  ease: "easeInOut",
-                  delay: stream.delay,
-                }}
-              />
+              {/* Glowing dots moving along stream - hidden on mobile */}
+              {!isMobile && (
+                <motion.div
+                  className="absolute w-2 h-2 bg-emerald-300 rounded-full shadow-lg shadow-emerald-400/50 -top-0.75"
+                  initial={{ left: "0%" }}
+                  animate={{
+                    left: ["0%", "100%"],
+                  }}
+                  transition={{
+                    duration: stream.duration,
+                    repeat: Infinity,
+                    ease: "easeInOut",
+                    delay: stream.delay,
+                  }}
+                />
+              )}
             </div>
           ))}
         </div>
@@ -141,22 +148,22 @@ export function BentoMemory() {
         {/* Center - Brain icon */}
         <motion.div
           className="relative z-10"
-          animate={{
+          animate={isMobile ? { scale: 1 } : {
             scale: [1, 1.05, 1],
           }}
-          transition={{
+          transition={isMobile ? { duration: 0 } : {
             duration: 2,
             repeat: Infinity,
             ease: "easeInOut",
           }}
         >
-          {/* Rotating ring */}
+          {/* Rotating ring - static on mobile */}
           <motion.div
             className="absolute inset-0 -m-4"
-            animate={{
+            animate={isMobile ? { rotate: 0 } : {
               rotate: 360,
             }}
-            transition={{
+            transition={isMobile ? { duration: 0 } : {
               duration: 8,
               repeat: Infinity,
               ease: "linear",
@@ -165,8 +172,8 @@ export function BentoMemory() {
             <div className="w-full h-full border-2 border-dashed border-emerald-400/30 rounded-full" />
           </motion.div>
 
-          {/* Pulsing rings */}
-          {[0, 0.5, 1].map((delay) => (
+          {/* Pulsing rings - hidden on mobile */}
+          {!isMobile && [0, 0.5, 1].map((delay) => (
             <motion.div
               key={delay}
               className="absolute inset-0 border-2 border-indigo-400/40 rounded-full"
@@ -190,8 +197,8 @@ export function BentoMemory() {
               strokeWidth={1.5}
             />
 
-            {/* Energy sparks */}
-            {[0, 1, 2, 3].map((i) => (
+            {/* Energy sparks - hidden on mobile */}
+            {!isMobile && [0, 1, 2, 3].map((i) => (
               <motion.div
                 key={i}
                 className="absolute"
@@ -224,9 +231,9 @@ export function BentoMemory() {
             <motion.div
               key={`memory-${i}`}
               className="flex gap-1"
-              initial={{ opacity: 0, x: -10 }}
+              initial={{ opacity: isMobile ? 1 : 0, x: isMobile ? 0 : -10 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{
+              transition={isMobile ? { duration: 0 } : {
                 duration: 0.5,
                 delay: i * 0.3 + 1,
               }}
@@ -235,12 +242,12 @@ export function BentoMemory() {
                 <motion.div
                   key={j}
                   className="w-6 h-6 bg-gradient-to-br from-indigo-400 to-indigo-600 rounded"
-                  initial={{ scale: 0 }}
-                  animate={{
+                  initial={{ scale: isMobile ? 1 : 0 }}
+                  animate={isMobile ? { scale: 1, opacity: 0.85 } : {
                     scale: [0, 1, 1],
                     opacity: [0, 1, 0.7],
                   }}
-                  transition={{
+                  transition={isMobile ? { duration: 0 } : {
                     duration: 0.8,
                     delay: i * 0.3 + j * 0.1 + 1.2,
                     repeat: Infinity,
@@ -256,10 +263,10 @@ export function BentoMemory() {
       {/* Background ambient glow */}
       <motion.div
         className="absolute inset-0 bg-gradient-to-r from-emerald-500/5 via-teal-500/5 to-indigo-500/5 blur-3xl"
-        animate={{
+        animate={isMobile ? { opacity: 0.45 } : {
           opacity: [0.3, 0.6, 0.3],
         }}
-        transition={{
+        transition={isMobile ? { duration: 0 } : {
           duration: 3,
           repeat: Infinity,
           ease: "easeInOut",

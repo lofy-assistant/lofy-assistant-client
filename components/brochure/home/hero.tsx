@@ -30,7 +30,7 @@ export default function Hero() {
         </h1>
 
         {/* Phone mockup */}
-        <div className="relative w-[378px] md:w-[432px] mx-auto">
+        <div className="relative w-[321px] sm:w-[378px] md:w-[432px] mx-auto">
           {/* Phone frame */}
           <div className="relative bg-black rounded-[3rem] p-3 shadow-2xl">
             {/* Phone notch */}

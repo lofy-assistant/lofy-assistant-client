@@ -16,9 +16,9 @@ export function BentoFeatures() {
           </h2>
           <p className="max-w-5xl mx-auto leading-relaxed text-gray-600 text-sm md:text-md text-justify md:text-center lg:text-lg">
             Lofy is simple to understand, a friendly convenience, and an
-            assistant without sleep, only powered by data and intelligence. It
-            integrates into your daily life, understanding context
-            and reasoning, exist solely to make your life more manageable.
+            assistant without sleep. It integrates into your daily life,
+            understanding context and reasoning, exist solely to make your life
+            more manageable.
           </p>
         </div>
         <BentoGrid className="md:auto-rows-[20rem]">

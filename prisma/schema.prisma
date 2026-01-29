@@ -72,6 +72,7 @@ model calendar_events {
   reminder_id     Int?
   recurrence      String? // RRULE format
   next_recurrence DateTime?  @db.Timestamptz(6)
+  google_event_id String?
   reminders   reminders? @relation(fields: [reminder_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   user        users      @relation(fields: [user_id], references: [id], onDelete: Cascade)
 

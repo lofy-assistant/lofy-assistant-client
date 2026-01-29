@@ -1,5 +1,6 @@
 import { motion } from "motion/react";
 import { CSSProperties, useEffect, useRef } from "react";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface GrainyGradientBlobProps {
   size?: number;
@@ -17,6 +18,7 @@ export function GrainyGradientBlob({
   animated = true,
 }: GrainyGradientBlobProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const isMobile = useIsMobile();
 
   // Generate grain texture
   useEffect(() => {
@@ -67,7 +69,7 @@ export function GrainyGradientBlob({
     </div>
   );
 
-  if (!animated) {
+  if (!animated || isMobile) {
     return <div className={className}>{blobContent}</div>;
   }
 

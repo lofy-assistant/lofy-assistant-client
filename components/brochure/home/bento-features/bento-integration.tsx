@@ -1,5 +1,6 @@
 import { motion } from "motion/react";
 import Image from "next/image";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface Node {
   id: number;
@@ -10,6 +11,8 @@ interface Node {
 }
 
 export default function BentoIntegration() {
+  const isMobile = useIsMobile();
+  
   // Center node at exact center
   const centerX = 50;
   const centerY = 50;
@@ -51,12 +54,12 @@ export default function BentoIntegration() {
             strokeWidth="0.5"
             strokeLinecap="round"
             fill="none"
-            initial={{ pathLength: 0, opacity: 0 }}
-            animate={{
+            initial={{ pathLength: isMobile ? 1 : 0, opacity: isMobile ? 0.8 : 0 }}
+            animate={isMobile ? { pathLength: 1, opacity: 0.8 } : {
               pathLength: 1,
               opacity: [0.6, 1, 0.6],
             }}
-            transition={{
+            transition={isMobile ? { duration: 0 } : {
               pathLength: {
                 duration: 1.5,
                 delay: index * 0.1,
@@ -84,12 +87,12 @@ export default function BentoIntegration() {
               top: `${node.y}%`,
               zIndex: 2,
             }}
-            initial={{ scale: 0, opacity: 0 }}
-            animate={{
+            initial={{ scale: isMobile ? 1 : 0, opacity: isMobile ? 1 : 0 }}
+            animate={isMobile ? { scale: 1, opacity: 1 } : {
               scale: [1, 1.05, 1],
               opacity: 1,
             }}
-            transition={{
+            transition={isMobile ? { duration: 0 } : {
               scale: {
                 duration: 5,
                 delay: index * 0.3,
@@ -119,12 +122,12 @@ export default function BentoIntegration() {
           top: `${centerY}%`,
           zIndex: 3,
         }}
-        initial={{ scale: 0, opacity: 0 }}
-        animate={{
+        initial={{ scale: isMobile ? 1 : 0, opacity: isMobile ? 1 : 0 }}
+        animate={isMobile ? { scale: 1, opacity: 1 } : {
           scale: [1, 1.05, 1],
           opacity: 1,
         }}
-        transition={{
+        transition={isMobile ? { duration: 0 } : {
           scale: {
             duration: 6,
             repeat: Infinity,
@@ -143,20 +146,22 @@ export default function BentoIntegration() {
         </div>
 
         {/* Pulse ring effect for center */}
-        <motion.div
-          className="absolute inset-0 rounded-full border-[3px] border-violet-500"
-          initial={{ scale: 1, opacity: 0 }}
-          animate={{
-            scale: [1, 1.2, 1.6, 2.2, 2.4],
-            opacity: [0, 0.5, 0.4, 0.15, 0],
-          }}
-          transition={{
-            duration: 4,
-            repeat: Infinity,
-            ease: "easeInOut",
-            times: [0, 0.1, 0.4, 0.8, 1],
-          }}
-        />
+        {!isMobile && (
+          <motion.div
+            className="absolute inset-0 rounded-full border-[3px] border-violet-500"
+            initial={{ scale: 1, opacity: 0 }}
+            animate={{
+              scale: [1, 1.2, 1.6, 2.2, 2.4],
+              opacity: [0, 0.5, 0.4, 0.15, 0],
+            }}
+            transition={{
+              duration: 4,
+              repeat: Infinity,
+              ease: "easeInOut",
+              times: [0, 0.1, 0.4, 0.8, 1],
+            }}
+          />
+        )}
       </motion.div>
     </div>
   );

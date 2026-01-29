@@ -47,10 +47,10 @@ export default function AppNavbar({
       text: "Features", 
       href: "/features",
       children: [
-        { text: "Smart Calendar", href: "/features/smart-calendar" },
+        { text: "Apps Integration", href: "/features/apps-integration" },
         { text: "Unlimited Reminders", href: "/features/unlimited-reminders" },
         { text: "Save To Memory", href: "/features/save-to-memory" },
-        { text: "Centralized Tasks", href: "/features/centralized-task" },
+        { text: "Personality Modes", href: "/features/personality-modes" },
       ]
     },
     { 

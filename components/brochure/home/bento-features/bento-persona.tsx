@@ -1,7 +1,10 @@
 import { motion } from "motion/react";
 import Image from "next/image";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export default function BentoPersona() {
+  const isMobile = useIsMobile();
+  
   // Define 5 different AI personas as abstract orbs with emoji personalities
   const personas = [
     { id: 1, delay: 0, size: 70, y: 20, emoji: "💅", label: "Sassy" },
@@ -28,9 +31,9 @@ export default function BentoPersona() {
               y2="50%"
               stroke="url(#gradient)"
               strokeWidth="2"
-              initial={{ pathLength: 0, opacity: 0 }}
+              initial={{ pathLength: isMobile ? 1 : 0, opacity: isMobile ? 0.3 : 0 }}
               animate={{ pathLength: 1, opacity: 0.3 }}
-              transition={{
+              transition={isMobile ? { duration: 0 } : {
                 duration: 1.5,
                 delay: persona.delay,
                 ease: "easeInOut",
@@ -62,9 +65,9 @@ export default function BentoPersona() {
             <motion.div
               key={persona.id}
               className={`flex items-center justify-center transform-gpu sm:scale-100 scale-90 ${mobilePositionClass}`}
-              initial={{ scale: 0, opacity: 0 }}
+              initial={{ scale: isMobile ? 1 : 0, opacity: isMobile ? 1 : 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              transition={{
+              transition={isMobile ? { duration: 0 } : {
                 duration: 0.6,
                 delay: persona.delay,
                 ease: "easeOut",
@@ -78,11 +81,11 @@ export default function BentoPersona() {
                   height: persona.size + 40,
                   background: `radial-gradient(circle, ${gradientStart < 0.5 ? "rgba(52, 211, 153, 0.2)" : "rgba(129, 140, 248, 0.2)"} 0%, transparent 70%)`,
                 }}
-                animate={{
+                animate={isMobile ? { scale: 1, opacity: 0.65 } : {
                   scale: [1, 1.1, 1],
                   opacity: [0.5, 0.8, 0.5],
                 }}
-                transition={{
+                transition={isMobile ? { duration: 0 } : {
                   duration: 3,
                   delay: persona.delay,
                   repeat: Infinity,
@@ -101,11 +104,11 @@ export default function BentoPersona() {
                     rgb(${129 - gradientStart * 77}, ${140 + gradientStart * 71}, ${248 - gradientStart * 95}))`,
                   boxShadow: `0 0 ${persona.size / 2}px ${gradientStart < 0.5 ? "rgba(52, 211, 153, 0.4)" : "rgba(129, 140, 248, 0.4)"}`,
                 }}
-                animate={{
+                animate={isMobile ? { y: persona.y, rotate: 0 } : {
                   y: [persona.y, persona.y - 15, persona.y],
                   rotate: [0, 5, 0, -5, 0],
                 }}
-                transition={{
+                transition={isMobile ? { duration: 0 } : {
                   duration: 4 + index * 0.5,
                   delay: persona.delay,
                   repeat: Infinity,
@@ -118,11 +121,11 @@ export default function BentoPersona() {
                   style={{
                     background: `radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.6) 0%, transparent 50%)`,
                   }}
-                  animate={{
+                  animate={isMobile ? { opacity: 0.45, scale: 1 } : {
                     opacity: [0.3, 0.6, 0.3],
                     scale: [1, 1.05, 1],
                   }}
-                  transition={{
+                  transition={isMobile ? { duration: 0 } : {
                     duration: 2,
                     delay: persona.delay + 0.5,
                     repeat: Infinity,
@@ -138,11 +141,11 @@ export default function BentoPersona() {
                     width: persona.id === 3 ? persona.size * 0.72 : "auto",
                     height: persona.id === 3 ? persona.size * 0.72 : "auto",
                   }}
-                  animate={{
+                  animate={isMobile ? { scale: 1, rotate: 0 } : {
                     scale: [1, 1.1, 1],
                     rotate: [0, 10, -10, 0],
                   }}
-                  transition={{
+                  transition={isMobile ? { duration: 0 } : {
                     duration: 3,
                     delay: persona.delay + 0.3,
                     repeat: Infinity,
@@ -162,37 +165,39 @@ export default function BentoPersona() {
                   )}
                 </motion.div>
 
-                {/* Particle dots inside orb */}
-                <div className="absolute inset-0 rounded-full overflow-hidden">
-                  {[...Array(3)].map((_, i) => (
-                    <motion.div
-                      key={i}
-                      className="absolute w-1.5 h-1.5 rounded-full bg-white/60"
-                      style={{
-                        left: `${30 + i * 20}%`,
-                        top: `${40 + i * 10}%`,
-                      }}
-                      animate={{
-                        y: [0, -10, 0],
-                        opacity: [0.4, 0.8, 0.4],
-                      }}
-                      transition={{
-                        duration: 2 + i * 0.3,
-                        delay: persona.delay + i * 0.2,
-                        repeat: Infinity,
-                        ease: "easeInOut",
-                      }}
-                    />
-                  ))}
-                </div>
+                {/* Particle dots inside orb - hidden on mobile */}
+                {!isMobile && (
+                  <div className="absolute inset-0 rounded-full overflow-hidden">
+                    {[...Array(3)].map((_, i) => (
+                      <motion.div
+                        key={i}
+                        className="absolute w-1.5 h-1.5 rounded-full bg-white/60"
+                        style={{
+                          left: `${30 + i * 20}%`,
+                          top: `${40 + i * 10}%`,
+                        }}
+                        animate={{
+                          y: [0, -10, 0],
+                          opacity: [0.4, 0.8, 0.4],
+                        }}
+                        transition={{
+                          duration: 2 + i * 0.3,
+                          delay: persona.delay + i * 0.2,
+                          repeat: Infinity,
+                          ease: "easeInOut",
+                        }}
+                      />
+                    ))}
+                  </div>
+                )}
               </motion.div>
             </motion.div>
           );
         })}
       </div>
 
-      {/* Ambient particles floating around */}
-      {[...Array(8)].map((_, i) => (
+      {/* Ambient particles floating around - hidden on mobile */}
+      {!isMobile && [...Array(8)].map((_, i) => (
         <motion.div
           key={`particle-${i}`}
           className="absolute w-2 h-2 rounded-full"

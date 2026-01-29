@@ -82,7 +82,7 @@ export default function PricingPage() {
           <h1 className="mb-4 text-4xl font-bold text-gray-900 sm:text-5xl">
             Pricing
           </h1>
-          <p className="max-w-3xl mx-auto text-xl text-gray-600">
+          <p className="max-w-3xl mx-auto text-md md:text-xl text-gray-600">
             Try it free for 14 days — upgrade to continue.
           </p>
         </div>
@@ -94,7 +94,7 @@ export default function PricingPage() {
           </span>
           <button
             onClick={() => setBillingCycle(billingCycle === "monthly" ? "yearly" : "monthly")}
-            className="relative inline-flex h-6 w-11 items-center rounded-full bg-gray-200 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+            className="relative inline-flex h-6 w-11 items-center rounded-full bg-gray-400 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
           >
             <span
               className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
@@ -172,7 +172,7 @@ export default function PricingPage() {
 
         {/* Additional Info */}
         <div className="mt-4 text-center">
-          <p className="text-sm text-gray-500">
+          <p className="text-xs md:text-sm text-gray-500">
             No credit card required for trial • Cancel anytime • Secure payments
           </p>
         </div>

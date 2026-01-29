@@ -71,9 +71,9 @@ export default function Navigation({
   ],
   introItems = [
     {
-      title: "Smart Calendar",
-      href: "/features/smart-calendar",
-      description: "Organize your schedule",
+      title: "Apps Integration",
+      href: "/features/apps-integration",
+      description: "Connect your apps",
       icon: Calendar,
     },
     {
@@ -89,9 +89,9 @@ export default function Navigation({
       icon: Brain,
     },
     {
-      title: "Centralized Tasks",
-      href: "/features/centralized-task",
-      description: "Manage everything",
+      title: "Personality Modes",
+      href: "/features/personality-modes",
+      description: "Choose how Lofy interacts",
       icon: ListChecks,
     },
   ],
@@ -114,14 +114,14 @@ export default function Navigation({
           <NavigationMenuItem key={index}>
             {item.isLink ? (
               <NavigationMenuLink
-                className={cn(navigationMenuTriggerStyle(), "bg-transparent text-white hover:bg-neutral-800 hover:text-white focus:bg-neutral-800 focus:text-white")}
+                className={cn(navigationMenuTriggerStyle(), "bg-transparent text-white")}
                 asChild
               >
                 <Link href={item.href || "#"}>{item.title}</Link>
               </NavigationMenuLink>
             ) : (
               <>
-                <NavigationMenuTrigger className="bg-transparent text-white hover:bg-neutral-800 hover:text-white focus:bg-neutral-800 focus:text-white data-[state=open]:bg-neutral-800">{item.title}</NavigationMenuTrigger>
+                <NavigationMenuTrigger className="bg-transparent text-white">{item.title}</NavigationMenuTrigger>
                 <NavigationMenuContent>
                   {item.content === "default" ? (
                     <ul className="grid gap-3 p-6 md:w-[500px] lg:w-[600px] md:grid-cols-2">

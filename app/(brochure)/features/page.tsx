@@ -12,11 +12,11 @@ import { Badge } from "@/components/ui/badge";
 const Features = () => {
   const features = [
     {
-      title: "Smart Calendar",
+      title: "Apps Integration",
       description:
         "Instantly schedule meetings and create calendar events using simple, natural language input.",
       icon: "📅",
-      href: "/features/smart-calendar",
+      href: "/features/apps-integration",
       badge: "Calendar",
     },
     {
@@ -36,12 +36,12 @@ const Features = () => {
       badge: "Memory",
     },
     {
-      title: "Centralized Task Management",
+      title: "Personality Modes",
       description:
-        "Command center for getting things done. Organize, assign, and plan your steps all in one place.",
+        "Choose how Lofy interacts with you by selecting different personality modes tailored to your preferences.",
       icon: "✅",
-      href: "/features/centralized-task",
-      badge: "Tasks",
+      href: "/features/personality-modes",
+      badge: "Personality",
     },
   ];
 

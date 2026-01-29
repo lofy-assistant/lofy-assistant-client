@@ -19,7 +19,7 @@ export default function FeatureHeader({ badge, title, description }: FeatureHead
           <span>{badge}</span>
         </Badge>
       )}
-      <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-transparent bg-linear-to-r from-gray-900 to-gray-700 bg-clip-text">
+      <h1 className="text-4xl md:text-5xl lg:text-6xl py-2.5 font-bold text-transparent bg-linear-to-r from-emerald-700 to-indigo-700 bg-clip-text">
         {title}
       </h1>
       <p className="max-w-3xl mx-auto text-xl leading-relaxed text-gray-600">
