@@ -137,7 +137,7 @@ export default function BentoIntegration() {
         }}>
         <div className="relative w-17 h-17 rounded-full flex items-center justify-center">
           <Image
-            src="/assets/logo/logo.png"
+            src="/assets/logo/lofy-logo-1.png"
             alt="Lofy Logo"
             width={68}
             height={68}

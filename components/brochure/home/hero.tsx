@@ -45,7 +45,7 @@ export default function Hero() {
               <div className="bg-[#075E54] px-4 py-3 pt-8 flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full bg-emerald-400 flex items-center justify-center overflow-hidden">
                   <Image
-                    src="/assets/logo/logo.png"
+                    src="/assets/logo/lofy-logo-1.png"
                     alt="Lofy AI"
                     width={40}
                     height={40}
