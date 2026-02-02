@@ -16,39 +16,24 @@ export async function POST(req: NextRequest) {
       req.headers.get("x-vercel-ip-country")?.toUpperCase() ??
       undefined;
 
-    // Get user from session
+    // Optional: get user from session (guests can checkout without auth)
+    let customerEmail: string | undefined;
+    let userId: string | undefined;
+
     const cookieStore = await cookies();
     const token = cookieStore.get("session")?.value;
-
-    if (!token) {
-      return NextResponse.json(
-        { error: "Authentication required" },
-        { status: 401 }
-      );
-    }
-
-    const session = await verifySession(token);
-
-    if (!session) {
-      return NextResponse.json(
-        { error: "Invalid session" },
-        { status: 401 }
-      );
-    }
-
-    const user = await prisma.users.findUnique({
-      where: { id: session.userId },
-      select: {
-        id: true,
-        email: true,
-      },
-    });
-
-    if (!user || !user.email) {
-      return NextResponse.json(
-        { error: "User not found or email missing" },
-        { status: 404 }
-      );
+    if (token) {
+      const session = await verifySession(token);
+      if (session) {
+        const user = await prisma.users.findUnique({
+          where: { id: session.userId },
+          select: { id: true, email: true },
+        });
+        if (user?.email) {
+          customerEmail = user.email;
+          userId = user.id;
+        }
+      }
     }
 
     // Find the plan based on billing cycle
@@ -85,10 +70,8 @@ export async function POST(req: NextRequest) {
         trial_period_days: 14,
       },
       allow_promotion_codes: true,
-      customer_email: user.email,
-      metadata: {
-        userId: user.id,
-      },
+      ...(customerEmail && { customer_email: customerEmail }),
+      ...(userId && { metadata: { userId } }),
     });
 
     return NextResponse.json({ url: stripeSession.url });
