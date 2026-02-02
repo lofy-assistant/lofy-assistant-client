@@ -69,7 +69,6 @@ export async function POST(req: NextRequest) {
       subscription_data: {
         trial_period_days: 14,
       },
-      allow_promotion_codes: true,
       ...(customerEmail && { customer_email: customerEmail }),
       ...(userId && { metadata: { userId } }),
     });
