@@ -48,7 +48,7 @@ export default function AppNavbar({
       href: "/features",
       children: [
         { text: "Apps Integration", href: "/features/apps-integration" },
-        { text: "Unlimited Reminders", href: "/features/unlimited-reminders" },
+        { text: "Limitless Reminder", href: "/features/limitless-reminder" },
         { text: "Save To Memory", href: "/features/save-to-memory" },
         { text: "Personality Modes", href: "/features/personality-modes" },
       ]

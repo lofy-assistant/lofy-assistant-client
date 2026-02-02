@@ -9,7 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Bell, Calendar, Repeat, Clock, Zap, MessageSquare } from "lucide-react";
 
-export default function UnlimitedRemindersPage() {
+export default function LimitlessReminderPage() {
   const reminderTypes = [
     {
       icon: <Clock className="w-6 h-6" />,
@@ -39,11 +39,11 @@ export default function UnlimitedRemindersPage() {
       <section className="relative py-16 bg-background">
         <div className="max-w-7xl mx-auto px-8">
           <div className="mb-8">
-            <FeatureBreadcrumb featureName="Unlimited Reminders" />
+            <FeatureBreadcrumb featureName="Limitless Reminder" />
           </div>
           <FeatureHeader
             badge="⏰ Reminders"
-            title="Unlimited Reminders"
+            title="Limitless Reminder"
             description="Tailor reminders to any specific task or calendar event. Never miss an important deadline or appointment again."
           />
         </div>
@@ -174,7 +174,7 @@ export default function UnlimitedRemindersPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="text-center">
               <div className="text-5xl font-bold text-primary mb-2">∞</div>
-              <h3 className="text-xl font-bold mb-2">Unlimited Reminders</h3>
+              <h3 className="text-xl font-bold mb-2">Limitless Reminder</h3>
               <p className="text-muted-foreground">
                 Create as many reminders as you need. Personal, work, family—no restrictions.
               </p>

@@ -20,11 +20,11 @@ const Features = () => {
       badge: "Calendar",
     },
     {
-      title: "Unlimited Reminders",
+      title: "Limitless Reminders",
       description:
         "Tailor reminders to any specific task or calendar event. Never miss important deadlines.",
       icon: "⏰",
-      href: "/features/unlimited-reminders",
+      href: "/features/limitless-reminder",
       badge: "Reminders",
     },
     {

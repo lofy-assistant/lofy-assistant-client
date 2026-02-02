@@ -49,7 +49,7 @@ const items = [
     className: "lg:col-span-5 md:col-span-5",
   },
   {
-    title: "Unlimited Reminders",
+    title: "Limitless Reminder",
     description: "Tailor reminders to any specific task or events.",
     header: <BentoReminder />,
     className: "lg:col-span-3 md:col-span-3",

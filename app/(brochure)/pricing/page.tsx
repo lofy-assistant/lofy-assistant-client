@@ -65,7 +65,7 @@ export default function PricingPage() {
   };
 
   const features = [
-    "Unlimited reminders",
+    "Limitless reminder",
     "Smart calendar integration",
     "Centralized task management",
     "Save memories forever",

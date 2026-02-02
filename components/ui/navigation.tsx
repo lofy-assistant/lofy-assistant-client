@@ -77,8 +77,8 @@ export default function Navigation({
       icon: Calendar,
     },
     {
-      title: "Unlimited Reminders",
-      href: "/features/unlimited-reminders",
+      title: "Limitless Reminder",
+      href: "/features/limitless-reminder",
       description: "Never miss tasks",
       icon: Bell,
     },
