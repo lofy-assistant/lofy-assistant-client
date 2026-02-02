@@ -24,7 +24,7 @@ export default function CTASection() {
             className="min-w-full h-[60vh]"
           />
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-6">
-            <div className="p-8 md:p-12 bg-black/30 backdrop-blur rounded-xl border border-white/20 flex flex-col items-center gap-6">
+            <div className="p-8 md:p-12 bg-black/30 backdrop-blur rounded-3xl border border-white/20 flex flex-col items-center gap-6">
               <h2 className="text-xl md:text-4xl font-medium leading-tight text-white drop-shadow-lg">
               AI assistance that feels human
             </h2>
