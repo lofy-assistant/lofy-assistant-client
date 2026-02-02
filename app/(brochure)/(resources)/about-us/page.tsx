@@ -3,7 +3,8 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import AppNavbar from "@/components/app-navbar";
+
+
 import {
   Sparkles,
   Brain,
@@ -20,13 +21,13 @@ import {
   ArrowRight,
   CheckCircle2,
 } from "lucide-react";
+import CTASection from "@/components/brochure/home/cta-section";
 
 const stats = [
   { value: "5K+", label: "Reminders Sent" },
   { value: "2K+", label: "Calendar Events Created" },
-  { value: "50K+", label: "Conversations" },
+  { value: "100K+", label: "Conversations" },
   { value: "8hrs", label: "Saved Weekly" },
-
 ];
 
 const values = [
@@ -95,38 +96,9 @@ const capabilities = [
   },
 ];
 
-const timeline = [
-  {
-    year: "2022",
-    title: "The Spark",
-    description:
-      "Inspired by a cat named Loafy, the idea for a subtle, intelligent personal assistant was born.",
-  },
-  {
-    year: "2023",
-    title: "Building the Foundation",
-    description:
-      "Core AI engine developed with focus on context-awareness and natural language understanding.",
-  },
-  {
-    year: "2024",
-    title: "Beta Launch",
-    description:
-      "First public beta released to 10,000 early adopters who helped shape the product.",
-  },
-  {
-    year: "2025",
-    title: "Going Global",
-    description:
-      "Full launch with 500K+ users trusting Lofy to help manage their daily lives.",
-  },
-];
-
 export default function AboutUsPage() {
   return (
     <div className="min-h-screen bg-background">
-      <AppNavbar />
-
       {/* Subtle background pattern */}
       <div className="fixed inset-0 -z-10 overflow-hidden">
         <div className="absolute top-0 left-1/4 w-[600px] h-[600px] bg-primary/5 rounded-full blur-3xl" />
@@ -204,15 +176,10 @@ export default function AboutUsPage() {
             <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-accent/10 rounded-3xl blur-2xl" />
             <Card className="relative border-2 border-primary/10 shadow-xl">
               <CardContent className="p-8">
-                <div className="flex items-center gap-4 mb-6">
-                  <div className="p-3 rounded-2xl bg-primary/10">
-                    <Cat className="w-8 h-8 text-primary" />
-                  </div>
-                  <div>
-                    <div className="font-bold text-lg">The Lofy Philosophy</div>
-                    <div className="text-sm text-muted-foreground">
-                      Inspired by Loafy the cat
-                    </div>
+                <div className="mb-6">
+                  <div className="font-bold text-lg">The Lofy Philosophy</div>
+                  <div className="text-sm text-muted-foreground">
+                    Inspired by Loafy the cat
                   </div>
                 </div>
                 <ul className="space-y-3">
@@ -350,96 +317,7 @@ export default function AboutUsPage() {
           </div>
         </div>
       </section>
-
-      {/* Timeline */}
-      <section className="px-4 py-20 mx-auto max-w-6xl sm:px-6 lg:px-8">
-        <div className="text-center mb-12">
-          <Badge variant="indigo" className="mb-4 px-3 py-1">
-            Our Journey
-          </Badge>
-          <h2 className="text-3xl md:text-4xl font-bold text-balance">
-            From Idea to Reality
-          </h2>
-        </div>
-        <div className="relative max-w-3xl mx-auto">
-          {/* Timeline line */}
-          <div className="absolute left-4 md:left-1/2 top-0 bottom-0 w-0.5 bg-border md:-translate-x-px" />
-
-          {timeline.map((item, index) => (
-            <div
-              key={index}
-              className={`relative flex items-start gap-6 mb-12 last:mb-0 ${
-                index % 2 === 0 ? "md:flex-row" : "md:flex-row-reverse"
-              }`}
-            >
-              {/* Dot */}
-              <div className="absolute left-4 md:left-1/2 w-3 h-3 bg-primary rounded-full -translate-x-1/2 mt-2 ring-4 ring-background" />
-
-              {/* Content */}
-              <div
-                className={`ml-12 md:ml-0 md:w-1/2 ${
-                  index % 2 === 0 ? "md:pr-12 md:text-right" : "md:pl-12"
-                }`}
-              >
-                <div className="inline-block px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-semibold mb-2">
-                  {item.year}
-                </div>
-                <h3 className="font-bold text-lg mb-1">{item.title}</h3>
-                <p className="text-muted-foreground text-sm leading-relaxed">
-                  {item.description}
-                </p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="px-4 py-20 bg-primary text-primary-foreground">
-        <div className="mx-auto max-w-4xl text-center sm:px-6 lg:px-8">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4 text-balance">
-            Ready to Meet Your New Assistant?
-          </h2>
-          <p className="text-lg opacity-90 mb-8 max-w-2xl mx-auto text-pretty">
-            Join thousands of users who have already discovered a better way to
-            manage their lives with Lofy.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button
-              size="lg"
-              variant="secondary"
-              className="text-primary font-semibold"
-            >
-              Get Started Free
-              <ArrowRight className="w-4 h-4 ml-2" />
-            </Button>
-            <Button
-              size="lg"
-              variant="outline"
-              className="border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/10 bg-transparent"
-            >
-              Watch Demo
-            </Button>
-          </div>
-        </div>
-      </section>
-
-      {/* Footer */}
-      <footer className="px-4 py-12 border-t">
-        <div className="mx-auto max-w-6xl sm:px-6 lg:px-8">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-2">
-              <div className="p-1.5 rounded-lg bg-primary/10">
-                <Cat className="w-5 h-5 text-primary" />
-              </div>
-              <span className="font-bold">Lofy</span>
-            </div>
-            <p className="text-sm text-muted-foreground">
-              2025 Lofy. All rights reserved.
-            </p>
-          </div>
-        </div>
-      </footer>
+      <CTASection />
     </div>
   );
 }

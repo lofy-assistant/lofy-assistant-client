@@ -1,9 +1,9 @@
 "use client";
 
-import AppNavBar from "@/components/app-navbar";
+
 import FeatureBreadcrumb from "@/components/brochure/features/feature-breadcrumb";
 import FeatureHeader from "@/components/brochure/features/feature-header";
-import Footer from "@/components/brochure/home/footer";
+
 import CTASection from "@/components/brochure/home/cta-section";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -33,8 +33,8 @@ export default function LimitlessReminderPage() {
 
   return (
     <div className="relative min-h-screen">
-      <AppNavBar />
-      
+
+
       {/* Hero Section */}
       <section className="relative py-16 bg-background">
         <div className="max-w-7xl mx-auto px-8">
@@ -59,7 +59,7 @@ export default function LimitlessReminderPage() {
               From quick one-time alerts to complex recurring schedules—Lofy handles it all.
             </p>
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {reminderTypes.map((type) => (
               <Card key={type.title} className="hover:shadow-lg transition-all hover:scale-[1.02] py-6">
@@ -106,7 +106,7 @@ export default function LimitlessReminderPage() {
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground">
-                  Just talk naturally. "Remind me next Tuesday at 2pm" or "Every Friday remind me to submit timesheet." 
+                  Just talk naturally. "Remind me next Tuesday at 2pm" or "Every Friday remind me to submit timesheet."
                   No forms, no menus—just chat.
                 </p>
               </CardContent>
@@ -121,7 +121,7 @@ export default function LimitlessReminderPage() {
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground">
-                  Busy when the reminder hits? Just reply "snooze 30 min" or "remind me tonight instead." 
+                  Busy when the reminder hits? Just reply "snooze 30 min" or "remind me tonight instead."
                   Lofy reschedules instantly.
                 </p>
               </CardContent>
@@ -136,7 +136,7 @@ export default function LimitlessReminderPage() {
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground">
-                  Mark reminders as urgent for persistent notifications, or low-priority for gentle nudges. 
+                  Mark reminders as urgent for persistent notifications, or low-priority for gentle nudges.
                   Lofy adjusts notification intensity accordingly.
                 </p>
               </CardContent>
@@ -151,7 +151,7 @@ export default function LimitlessReminderPage() {
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground">
-                  Reminders sync with Google Calendar automatically. See all your reminders alongside 
+                  Reminders sync with Google Calendar automatically. See all your reminders alongside
                   events in one unified view.
                 </p>
               </CardContent>
@@ -259,11 +259,11 @@ export default function LimitlessReminderPage() {
                   <p className="text-sm">Remind me every weekday at 9am to check my emails and every Friday at 5pm to submit my timesheet</p>
                 </div>
               </div>
-              
+
               {/* AI response */}
               <div className="flex justify-start">
                 <div className="bg-muted rounded-lg rounded-tl-none p-3 max-w-[80%]">
-                  <p className="text-sm">Done! ⏰ I've set up two recurring reminders:<br/><br/>1. Daily (Mon-Fri) at 9:00 AM: Check emails<br/>2. Weekly (Friday) at 5:00 PM: Submit timesheet<br/><br/>Both added to your calendar!</p>
+                  <p className="text-sm">Done! ⏰ I've set up two recurring reminders:<br /><br />1. Daily (Mon-Fri) at 9:00 AM: Check emails<br />2. Weekly (Friday) at 5:00 PM: Submit timesheet<br /><br />Both added to your calendar!</p>
                 </div>
               </div>
 
@@ -273,10 +273,10 @@ export default function LimitlessReminderPage() {
               {/* AI notification */}
               <div className="flex justify-start">
                 <div className="bg-muted rounded-lg rounded-tl-none p-3 max-w-[80%]">
-                  <p className="text-sm">🔔 Reminder: Submit timesheet<br/><br/>Reply "done" to mark complete, or "snooze 1 hour" to delay.</p>
+                  <p className="text-sm">🔔 Reminder: Submit timesheet<br /><br />Reply "done" to mark complete, or "snooze 1 hour" to delay.</p>
                 </div>
               </div>
-              
+
               {/* User response */}
               <div className="flex justify-end">
                 <div className="bg-indigo-100 dark:bg-indigo-900/30 rounded-lg rounded-tr-none p-3 max-w-[80%]">
@@ -296,7 +296,7 @@ export default function LimitlessReminderPage() {
       </section>
 
       <CTASection />
-      <Footer />
+
     </div>
   );
 }

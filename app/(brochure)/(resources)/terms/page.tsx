@@ -2,8 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import AppNavBar from "@/components/app-navbar";
-import Footer from "@/components/brochure/home/footer";
+
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 
@@ -12,7 +11,7 @@ export default function TermsOfServicePage() {
 
   return (
     <div className="relative min-h-screen bg-background text-foreground">
-      <AppNavBar />
+
 
       {/* Main Content */}
       <div className="container px-4 py-16 mx-auto sm:px-6 lg:px-8 max-w-5xl">
@@ -192,7 +191,7 @@ export default function TermsOfServicePage() {
         </div>
       </div>
 
-      <Footer />
+
     </div>
   );
 }

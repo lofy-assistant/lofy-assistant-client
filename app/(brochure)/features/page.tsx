@@ -2,10 +2,9 @@
 
 import React from "react";
 import Link from "next/link";
-import AppNavbar from "@/components/app-navbar";
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import Footer from "@/components/brochure/home/footer";
 import CTASection from "@/components/brochure/home/cta-section";
 import { Badge } from "@/components/ui/badge";
 
@@ -47,7 +46,7 @@ const Features = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <AppNavbar />
+
       
       {/* Hero Section */}
       <section className="relative py-16 bg-background">
@@ -111,7 +110,7 @@ const Features = () => {
       </section>
 
       <CTASection />
-      <Footer />
+
     </div>
   );
 };

@@ -1,9 +1,9 @@
 "use client";
 
-import AppNavBar from "@/components/app-navbar";
+
 import FeatureBreadcrumb from "@/components/brochure/features/feature-breadcrumb";
 import FeatureHeader from "@/components/brochure/features/feature-header";
-import Footer from "@/components/brochure/home/footer";
+
 import CTASection from "@/components/brochure/home/cta-section";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -33,8 +33,8 @@ export default function SaveToMemoryPage() {
 
   return (
     <div className="relative min-h-screen">
-      <AppNavBar />
-      
+
+
       {/* Hero Section */}
       <section className="relative py-16 bg-background">
         <div className="max-w-7xl mx-auto px-8">
@@ -59,7 +59,7 @@ export default function SaveToMemoryPage() {
               From fleeting thoughts to important details—Lofy remembers everything so you don't have to.
             </p>
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {memoryTypes.map((type) => (
               <Card key={type.title} className="hover:shadow-lg transition-all hover:scale-[1.02] py-4">
@@ -106,7 +106,7 @@ export default function SaveToMemoryPage() {
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground">
-                  Just ask "What was that restaurant John recommended?" and Lofy finds it instantly. 
+                  Just ask "What was that restaurant John recommended?" and Lofy finds it instantly.
                   Natural language search across all your memories.
                 </p>
               </CardContent>
@@ -121,7 +121,7 @@ export default function SaveToMemoryPage() {
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground">
-                  Lofy automatically tags and categorizes your memories. No manual organization needed—just 
+                  Lofy automatically tags and categorizes your memories. No manual organization needed—just
                   save and let AI do the heavy lifting.
                 </p>
               </CardContent>
@@ -136,7 +136,7 @@ export default function SaveToMemoryPage() {
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground">
-                  Lofy understands context. Save "Call the dentist" and it knows it's health-related. 
+                  Lofy understands context. Save "Call the dentist" and it knows it's health-related.
                   Ask about health stuff later and it surfaces relevant memories.
                 </p>
               </CardContent>
@@ -151,7 +151,7 @@ export default function SaveToMemoryPage() {
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground">
-                  Your memories are encrypted and private. Only you can access them. Delete anytime 
+                  Your memories are encrypted and private. Only you can access them. Delete anytime
                   and they're gone forever—no backups, no traces.
                 </p>
               </CardContent>
@@ -220,7 +220,7 @@ export default function SaveToMemoryPage() {
                   <p className="text-sm">Remember that Sarah's birthday is March 15th and she loves chocolate cake</p>
                 </div>
               </div>
-              
+
               {/* AI response */}
               <div className="flex justify-start">
                 <div className="bg-muted rounded-lg rounded-tl-none p-3 max-w-[80%]">
@@ -237,7 +237,7 @@ export default function SaveToMemoryPage() {
                   <p className="text-sm">When is Sarah's birthday and what cake does she like?</p>
                 </div>
               </div>
-              
+
               {/* AI response */}
               <div className="flex justify-start">
                 <div className="bg-muted rounded-lg rounded-tl-none p-3 max-w-[80%]">
@@ -250,7 +250,7 @@ export default function SaveToMemoryPage() {
       </section>
 
       <CTASection />
-      <Footer />
+
     </div>
   );
 }

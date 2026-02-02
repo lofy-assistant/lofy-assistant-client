@@ -1,15 +1,13 @@
-import AppNavbar from "@/components/app-navbar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import Footer from "@/components/brochure/home/footer";
+import { TracingBeam } from "@/components/ui/tracing-beam";
 import { BookOpen, Brain, Bell, Calendar, MessageSquare, Mic, Lightbulb, HelpCircle, RefreshCw, Rocket, CheckCircle2, XCircle } from "lucide-react";
 
 export default function GuidesPage() {
   return (
     <div className="min-h-screen bg-background">
-      <AppNavbar />
-      <div className="px-4 mx-auto max-w-5xl sm:px-6 lg:px-8 py-12">
-        {/* Header */}
+      {/* Header */}
+      <div className="px-4 mx-auto max-w-4xl sm:px-6 lg:px-8 py-12">
         <div className="mb-12 text-center">
           <div className="flex items-center justify-center gap-3 mb-4">
             <BookOpen className="w-10 h-10 text-primary" />
@@ -19,9 +17,11 @@ export default function GuidesPage() {
         </div>
 
         <Separator className="mb-12" />
+      </div>
 
+      <TracingBeam className="px-4">
         {/* Memory Storage & Recall */}
-        <Card className="mb-8">
+        <Card className="mb-8 py-4">
           <CardHeader>
             <div className="flex items-center gap-3">
               <Brain className="w-6 h-6 text-primary" />
@@ -64,7 +64,7 @@ export default function GuidesPage() {
         </Card>
 
         {/* Reminders */}
-        <Card className="mb-8">
+        <Card className="mb-8 py-4">
           <CardHeader>
             <div className="flex items-center gap-3">
               <Bell className="w-6 h-6 text-primary" />
@@ -146,7 +146,7 @@ export default function GuidesPage() {
         </Card>
 
         {/* Calendar Events */}
-        <Card className="mb-8">
+        <Card className="mb-8 py-4">
           <CardHeader>
             <div className="flex items-center gap-3">
               <Calendar className="w-6 h-6 text-primary" />
@@ -242,7 +242,7 @@ export default function GuidesPage() {
         </Card>
 
         {/* Forwarded Messages & Images */}
-        <Card className="mb-8">
+        <Card className="mb-8 py-4">
           <CardHeader>
             <div className="flex items-center gap-3">
               <MessageSquare className="w-6 h-6 text-primary" />
@@ -278,7 +278,7 @@ export default function GuidesPage() {
         </Card>
 
         {/* Voice Messages & Images */}
-        <Card className="mb-8">
+        <Card className="mb-8 py-4">
           <CardHeader>
             <div className="flex items-center gap-3">
               <Mic className="w-6 h-6 text-primary" />
@@ -355,7 +355,7 @@ export default function GuidesPage() {
         </Card>
 
         {/* Quick Tips */}
-        <Card className="mb-8">
+        <Card className="mb-8 py-4">
           <CardHeader>
             <div className="flex items-center gap-3">
               <Lightbulb className="w-6 h-6 text-primary" />
@@ -413,7 +413,7 @@ export default function GuidesPage() {
         </Card>
 
         {/* Need Help? */}
-        <Card className="mb-8">
+        <Card className="mb-8 py-4">
           <CardHeader>
             <div className="flex items-center gap-3">
               <HelpCircle className="w-6 h-6 text-primary" />
@@ -455,7 +455,7 @@ export default function GuidesPage() {
         </Card>
 
         {/* Common Workflows */}
-        <Card className="mb-8">
+        <Card className="mb-8 py-4">
           <CardHeader>
             <div className="flex items-center gap-3">
               <RefreshCw className="w-6 h-6 text-primary" />
@@ -529,7 +529,7 @@ export default function GuidesPage() {
         </Card>
 
         {/* Getting Started */}
-        <Card className="mb-12">
+        <Card className="mb-8 py-4">
           <CardHeader>
             <div className="flex items-center gap-3">
               <Rocket className="w-6 h-6 text-primary" />
@@ -557,8 +557,7 @@ export default function GuidesPage() {
             </ol>
           </CardContent>
         </Card>
-      </div>
-      <Footer />
+      </TracingBeam>
     </div>
   );
 }

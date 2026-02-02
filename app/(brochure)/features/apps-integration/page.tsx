@@ -1,9 +1,9 @@
 "use client";
 
-import AppNavBar from "@/components/app-navbar";
+
 import FeatureBreadcrumb from "@/components/brochure/features/feature-breadcrumb";
 import FeatureHeader from "@/components/brochure/features/feature-header";
-import Footer from "@/components/brochure/home/footer";
+
 import CTASection from "@/components/brochure/home/cta-section";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -73,8 +73,8 @@ export default function AppsIntegrationPage() {
 
   return (
     <div className="relative min-h-screen">
-      <AppNavBar />
-      
+
+
       {/* Hero Section */}
       <section className="relative py-16 bg-background">
         <div className="max-w-7xl mx-auto px-8">
@@ -99,7 +99,7 @@ export default function AppsIntegrationPage() {
               Talk to Lofy through your favorite messaging platforms. One assistant, multiple channels.
             </p>
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {communicationChannels.map((integration) => (
               <Card key={integration.name} className="hover:shadow-lg transition-all hover:scale-[1.02] py-4">
@@ -138,7 +138,7 @@ export default function AppsIntegrationPage() {
               Connect your productivity tools and let Lofy manage them for you.
             </p>
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {toolsIntegrations.map((integration) => (
               <Card key={integration.name} className="hover:shadow-lg transition-all hover:scale-[1.02] py-4">
@@ -185,7 +185,7 @@ export default function AppsIntegrationPage() {
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground">
-                  Create a reminder on WhatsApp and see it in your Google Calendar instantly. 
+                  Create a reminder on WhatsApp and see it in your Google Calendar instantly.
                   Changes propagate across all connected platforms in real-time.
                 </p>
               </CardContent>
@@ -197,7 +197,7 @@ export default function AppsIntegrationPage() {
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground">
-                  No more scattered tasks across different apps. Lofy centralizes everything 
+                  No more scattered tasks across different apps. Lofy centralizes everything
                   while keeping each platform in sync.
                 </p>
               </CardContent>
@@ -209,7 +209,7 @@ export default function AppsIntegrationPage() {
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground">
-                  All integrations use OAuth 2.0 for secure authentication. Your credentials 
+                  All integrations use OAuth 2.0 for secure authentication. Your credentials
                   are never stored—only secure access tokens.
                 </p>
               </CardContent>
@@ -221,7 +221,7 @@ export default function AppsIntegrationPage() {
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground">
-                  Connect or disconnect apps anytime from your dashboard. Full control over 
+                  Connect or disconnect apps anytime from your dashboard. Full control over
                   what Lofy can access and when.
                 </p>
               </CardContent>
@@ -275,7 +275,6 @@ export default function AppsIntegrationPage() {
       </section>
 
       <CTASection />
-      <Footer />
     </div>
   );
 }

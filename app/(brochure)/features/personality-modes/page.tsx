@@ -1,9 +1,9 @@
 "use client";
 
-import AppNavBar from "@/components/app-navbar";
+
 import FeatureBreadcrumb from "@/components/brochure/features/feature-breadcrumb";
 import FeatureHeader from "@/components/brochure/features/feature-header";
-import Footer from "@/components/brochure/home/footer";
+
 import CTASection from "@/components/brochure/home/cta-section";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -42,8 +42,8 @@ export default function PersonalityModesPage() {
 
   return (
     <div className="relative min-h-screen">
-      <AppNavBar />
-      
+
+
       {/* Hero Section */}
       <section className="relative py-16 bg-background">
         <div className="max-w-7xl mx-auto px-8">
@@ -68,7 +68,7 @@ export default function PersonalityModesPage() {
               Switch between modes instantly or let Lofy automatically adapt based on context.
             </p>
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {personalities.map((personality) => (
               <Card key={personality.name} className={`${personality.color} border-2 hover:scale-[1.02] transition-transform py-4`}>
@@ -200,7 +200,7 @@ export default function PersonalityModesPage() {
       </section>
 
       <CTASection />
-      <Footer />
+
     </div>
   );
 }
