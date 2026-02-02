@@ -18,23 +18,23 @@ export default function Footer() {
             <h4 className="text-sm font-semibold text-foreground">Product</h4>
             <ul className="space-y-2 text-sm text-muted-foreground">
               <li>
-                <Link href="/features" className="hover:text-foreground transition-colors">
-                  Features
+                <Link href="/features/apps-integration" className="hover:text-foreground transition-colors">
+                  Apps Integration
                 </Link>
               </li>
               <li>
-                <Link href="/pricing" className="hover:text-foreground transition-colors">
-                  Pricing
+                <Link href="/features/limitless-reminder" className="hover:text-foreground transition-colors">
+                  Limitless Reminder
                 </Link>
               </li>
               <li>
-                <Link href="/about-us" className="hover:text-foreground transition-colors">
-                  About Us
+                <Link href="/features/save-to-memory" className="hover:text-foreground transition-colors">
+                  Save to Memory
                 </Link>
               </li>
               <li>
-                <Link href="/guide" className="hover:text-foreground transition-colors">
-                  Guide
+                <Link href="/features/personality-modes" className="hover:text-foreground transition-colors">
+                  Personality Modes
                 </Link>
               </li>
             </ul>
@@ -45,24 +45,24 @@ export default function Footer() {
             <h4 className="text-sm font-semibold text-foreground">Resources</h4>
             <ul className="space-y-2 text-sm text-muted-foreground">
               <li>
-                <Link href="/dashboard" className="hover:text-foreground transition-colors">
-                  Dashboard
+                <Link href="/about-us" className="hover:text-foreground transition-colors">
+                  About Us
                 </Link>
               </li>
               <li>
-                <Link href="/premium" className="hover:text-foreground transition-colors">
-                  Premium
+                <Link href="/pricing" className="hover:text-foreground transition-colors">
+                  Pricing
                 </Link>
               </li>
               <li>
-                <a href="#" className="hover:text-foreground transition-colors">
-                  Documentation
-                </a>
+                <Link href="/guides" className="hover:text-foreground transition-colors">
+                  Guides
+                </Link>
               </li>
               <li>
-                <a href="#" className="hover:text-foreground transition-colors">
-                  Support
-                </a>
+                <Link href="/features" className="hover:text-foreground transition-colors">
+                  Features
+                </Link>
               </li>
             </ul>
           </div>
@@ -72,12 +72,12 @@ export default function Footer() {
             <h4 className="text-sm font-semibold text-foreground">Legal</h4>
             <ul className="space-y-2 text-sm text-muted-foreground">
               <li>
-                <Link href="/resources/privacy-policy" className="hover:text-foreground transition-colors">
+                <Link href="/privacy-policy" className="hover:text-foreground transition-colors">
                   Privacy Policy
                 </Link>
               </li>
               <li>
-                <Link href="/resources/terms" className="hover:text-foreground transition-colors">
+                <Link href="/terms" className="hover:text-foreground transition-colors">
                   Terms of Service
                 </Link>
               </li>
@@ -87,9 +87,9 @@ export default function Footer() {
                 </a>
               </li>
               <li>
-                <a href="#" className="hover:text-foreground transition-colors">
+                <Link href="/gdpr" className="hover:text-foreground transition-colors">
                   GDPR
-                </a>
+                </Link>
               </li>
             </ul>
           </div>
@@ -99,7 +99,7 @@ export default function Footer() {
         <div className="flex flex-col items-center justify-between gap-4 pt-8 mt-8 border-t border-border md:flex-row">
           <p className="text-sm text-muted-foreground">© {new Date().getFullYear()} Lofy. All rights reserved.</p>
           <div className="flex gap-6">
-            <a href="#" className="text-muted-foreground hover:text-foreground transition-colors" aria-label="Twitter">
+            {/* <a href="#" className="text-muted-foreground hover:text-foreground transition-colors" aria-label="Twitter">
               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
               </svg>
@@ -117,7 +117,7 @@ export default function Footer() {
                   clipRule="evenodd"
                 />
               </svg>
-            </a>
+            </a> */}
           </div>
         </div>
       </div>

@@ -32,18 +32,18 @@ export const TracingBeam = ({
   }, []);
 
   const y1 = useSpring(
-    useTransform(scrollYProgress, [0, 0.4], [50, svgHeight]),
+    useTransform(scrollYProgress, [0, 0.8], [50, svgHeight]),
     {
       stiffness: 500,
       damping: 90,
-    }
+    },
   );
   const y2 = useSpring(
     useTransform(scrollYProgress, [0, 1], [50, svgHeight - 200]),
     {
       stiffness: 500,
       damping: 90,
-    }
+    },
   );
 
   return (
@@ -114,7 +114,7 @@ export const TracingBeam = ({
             >
               <stop stopColor="#18CCFC" stopOpacity="0"></stop>
               <stop stopColor="#18CCFC"></stop>
-              <stop offset="0.5" stopColor="#6344F5"></stop>
+              <stop offset="0.325" stopColor="#6344F5"></stop>
               <stop offset="1" stopColor="#AE48FF" stopOpacity="0"></stop>
             </motion.linearGradient>
           </defs>
