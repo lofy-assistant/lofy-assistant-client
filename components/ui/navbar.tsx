@@ -36,7 +36,7 @@ function NavbarCenter({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="navbar-center"
-      className={cn("flex items-center justify-center gap-4", className)}
+      className={cn("flex items-center justify-center gap-8", className)}
       {...props}
     />
   );

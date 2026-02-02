@@ -65,7 +65,7 @@ export default function AppNavbar({
   ],
   actions = [
     {
-      text: "Sign in",
+      text: "Login/Register",
       href: "/login",
       isButton: false,
     },
@@ -113,7 +113,7 @@ export default function AppNavbar({
                   </Link>
                 </Button>
               ) : (
-                <Link key={index} href={action.href} className="hidden text-sm md:block">
+                <Link key={index} href={action.href} className="hidden text-sm font-medium underline-offset-4 hover:underline tracking-wide text-white md:block">
                   {action.text}
                 </Link>
               )
@@ -123,49 +123,84 @@ export default function AppNavbar({
                 <Menu className="size-5" />
                 <span className="sr-only">Toggle navigation menu</span>
               </SheetTrigger>
-              <SheetContent side="right">
-                <nav className="grid gap-6 text-lg font-medium">
-                  <Link href={homeUrl} className="flex items-center gap-2 text-xl font-bold">
-                    {name}
-                  </Link>
-                  {mobileLinks.map((link, index) => (
-                    <div key={index}>
-                      {link.children ? (
-                        <div>
-                          <button
-                            onClick={() => toggleSection(index)}
-                            className="flex items-center justify-between w-full text-muted-foreground hover:text-foreground transition-colors"
-                          >
-                            <span>{link.text}</span>
-                            <ChevronDown
+              <SheetContent side="right" className="w-full sm:max-w-full bg-background/98 backdrop-blur-xl border-none p-0">
+                <div className="flex flex-col h-full p-6">
+                  <div className="flex items-center justify-between mb-6">
+                    <Link href={homeUrl} className="flex items-center gap-2 text-2xl font-bold">
+                      {logo}
+                      {name}
+                    </Link>
+                  </div>
+                  
+                  <nav className="flex-1 px-1">
+                    {mobileLinks.map((link, index) => (
+                      <div key={index} className="bg-linear-to-r from-emerald-600/30 to-indigo-600/30 my-2 rounded-xl overflow-hidden transition-all hover:bg-secondary/30">
+                        {link.children ? (
+                          <div className="px-4 py-1">
+                            <button
+                              onClick={() => toggleSection(index)}
+                              className="flex items-center justify-between w-full py-3 text-lg font-medium text-foreground hover:text-primary transition-colors group"
+                            >
+                              <span>{link.text}</span>
+                              <ChevronDown
+                                className={cn(
+                                  "size-5 transition-transform duration-300 text-muted-foreground group-hover:text-primary",
+                                  openSections[index] && "rotate-180"
+                                )}
+                              />
+                            </button>
+                            <div 
                               className={cn(
-                                "size-4 transition-transform",
-                                openSections[index] && "rotate-180"
+                                "grid gap-2 overflow-hidden transition-all duration-300 ease-in-out",
+                                openSections[index] ? "grid-rows-[1fr] opacity-100 pb-3" : "grid-rows-[0fr] opacity-0"
                               )}
-                            />
-                          </button>
-                          {openSections[index] && (
-                            <div className="ml-4 mt-3 grid gap-3">
-                              {link.children.map((child, childIndex) => (
-                                <Link
-                                  key={childIndex}
-                                  href={child.href}
-                                  className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-                                >
-                                  {child.text}
-                                </Link>
-                              ))}
+                            >
+                              <div className="min-h-0 flex flex-col gap-2">
+                                {link.children.map((child, childIndex) => (
+                                  <Link
+                                    key={childIndex}
+                                    href={child.href}
+                                    className="text-base text-muted-foreground hover:text-foreground transition-colors py-2 px-2 rounded-lg hover:bg-background/50"
+                                  >
+                                    {child.text}
+                                  </Link>
+                                ))}
+                              </div>
                             </div>
-                          )}
-                        </div>
-                      ) : (
-                        <Link href={link.href} className="text-muted-foreground hover:text-foreground transition-colors">
-                          {link.text}
-                        </Link>
-                      )}
+                          </div>
+                        ) : (
+                          <Link 
+                            href={link.href} 
+                            className="flex items-center w-full px-4 py-3.5 text-lg font-medium text-foreground hover:text-primary transition-colors"
+                          >
+                            {link.text}
+                          </Link>
+                        )}
+                      </div>
+                    ))}
+                  </nav>
+
+                  <div className="flex flex-col w-full">
+                    <div className="grid grid-cols-2 gap-4"> 
+                      {actions.map((action, index) => (
+                        <Button 
+                          key={index} 
+                          variant={action.isButton ? action.variant : "outline"} 
+                          size="lg"
+                          className="w-full text-base font-semibold shadow-sm" 
+                          asChild
+                        >
+                          <Link href={action.href}>
+                            {action.text}
+                          </Link>
+                        </Button>
+                      ))}
                     </div>
-                  ))}
-                </nav>
+                    <p className="text-center text-xs text-muted-foreground mt-2">
+                      © {new Date().getFullYear()} {name}. All rights reserved.
+                    </p>
+                  </div>
+                </div>
               </SheetContent>
             </Sheet>
           </NavbarCenter>

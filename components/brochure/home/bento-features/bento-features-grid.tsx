@@ -21,7 +21,7 @@ export function BentoFeatures() {
             more manageable.
           </p>
         </div>
-        <BentoGrid className="md:auto-rows-[20rem]">
+        <BentoGrid className="md:auto-rows-[21.5rem]">
           {items.map((item, i) => (
             <BentoGridItem
               key={i}
@@ -29,6 +29,7 @@ export function BentoFeatures() {
               description={item.description}
               header={item.header}
               className={item.className}
+              link={item.link}
             />
           ))}
         </BentoGrid>
@@ -47,12 +48,14 @@ const items = [
       "Connect your favorite tools and let everything work together automatically.",
     header: <BentoIntegration />,
     className: "lg:col-span-5 md:col-span-5",
+    link: "/features/apps-integration",
   },
   {
     title: "Limitless Reminder",
     description: "Tailor reminders to any specific task or events.",
     header: <BentoReminder />,
     className: "lg:col-span-3 md:col-span-3",
+    link: "/features/limitless-reminder",
   },
   {
     title: "Save To Memory",
@@ -60,6 +63,7 @@ const items = [
       "Build a searchable archive of your mind. Capture ideas, and fleeting thoughts the moment they strike.",
     header: <BentoMemory />,
     className: "lg:col-span-4 md:col-span-4",
+    link: "/features/save-to-memory",
   },
   {
     title: "Personality Modes",
@@ -67,5 +71,6 @@ const items = [
       "Pick a personality and watch your AI instantly change how it talks and thinks.",
     header: <BentoPersona />,
     className: "lg:col-span-4 md:col-span-4",
+    link: "/features/personality-modes",
   },
 ];
