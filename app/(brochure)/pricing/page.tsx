@@ -4,13 +4,14 @@ import AppNavbar from "@/components/app-navbar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Check } from "lucide-react";
+import { Check, Loader2 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { plans } from "@/lib/stripe-plans";
 
 export default function PricingPage() {
   const [billingCycle, setBillingCycle] = useState<"monthly" | "yearly">("monthly");
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const monthlyPlan = plans.find((p) => p.billingCycle === "monthly")!;
   const yearlyPlan = plans.find((p) => p.billingCycle === "yearly")!;
@@ -37,13 +38,8 @@ export default function PricingPage() {
   }, []);
 
   const handleGetStarted = async () => {
+    setIsLoading(true);
     try {
-      // If no user, open WhatsApp chat
-      if (!isLoggedIn) {
-        window.open(whatsappUrl, "_blank");
-        return;
-      }
-
       const response = await fetch("/api/stripe/create-checkout-session", {
         method: "POST",
         headers: {
@@ -55,12 +51,15 @@ export default function PricingPage() {
       });
 
       const data = await response.json();
-      
+
       if (data.url) {
         window.location.href = data.url;
+      } else {
+        setIsLoading(false);
       }
     } catch (error) {
       console.error("Error creating checkout session:", error);
+      setIsLoading(false);
     }
   };
 
@@ -161,16 +160,23 @@ export default function PricingPage() {
             <CardFooter>
               <Button
                 onClick={handleGetStarted}
-                className="w-full text-lg py-6"
+                className="w-full text-lg py-6 cursor-pointer"
                 size="lg"
+                disabled={isLoading}
               >
-                Try Lofy for Free
+                {isLoading ? (
+                  <>
+                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                    Processing...
+                  </>
+                ) : (
+                  "Try Lofy for Free"
+                )}
               </Button>
             </CardFooter>
           </Card>
         </div>
 
-        {/* Additional Info */}
         <div className="mt-4 text-center">
           <p className="text-xs md:text-sm text-gray-500">
             No credit card required for trial • Cancel anytime • Secure payments

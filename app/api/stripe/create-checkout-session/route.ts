@@ -56,9 +56,9 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 
-                    process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 
-                    "http://localhost:3000";
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL ||
+      process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` :
+      "http://localhost:3000";
 
     // Create checkout session using the plan's price ID
     const stripeSession = await stripe.checkout.sessions.create({
@@ -86,7 +86,7 @@ export async function POST(req: NextRequest) {
   } catch (error) {
     console.error("Error creating checkout session:", error);
     return NextResponse.json(
-      { error: "Failed to create checkout session" },
+      { error: error instanceof Error ? error.message : "Failed to create checkout session" },
       { status: 500 }
     );
   }
