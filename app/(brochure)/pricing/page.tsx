@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Badge } from "@/components/ui/badge";
 import { Check, Loader2 } from "lucide-react";
 import { useState, useEffect } from "react";
-import { plans } from "@/lib/stripe-plans";
+import { plans, resolveCurrency } from "@/lib/stripe-plans";
 
 export default function PricingPage() {
   const [billingCycle, setBillingCycle] = useState<"monthly" | "yearly">("monthly");
@@ -15,7 +15,43 @@ export default function PricingPage() {
 
   const monthlyPlan = plans.find((p) => p.billingCycle === "monthly")!;
   const yearlyPlan = plans.find((p) => p.billingCycle === "yearly")!;
-  const monthlySavings = (monthlyPlan.price * 12 - yearlyPlan.price).toFixed(0);
+
+  /** Display currency: IP geo (Vercel x-vercel-ip-country) first, then locale fallback. */
+  const [displayCurrency, setDisplayCurrency] = useState<"usd" | "myr">("usd");
+  const [countryForCheckout, setCountryForCheckout] = useState<string | undefined>(undefined);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const applyGeo = (country: string | null, currency: "usd" | "myr") => {
+      if (!cancelled) {
+        setDisplayCurrency(currency);
+        if (country) setCountryForCheckout(country);
+      }
+    };
+
+    fetch("/api/geo")
+      .then((res) => (res.ok ? res.json() : Promise.reject(new Error("Geo failed"))))
+      .then((data: { country: string | null; currency: string }) => {
+        applyGeo(data.country, data.currency as "usd" | "myr");
+      })
+      .catch(() => {
+        const locale = typeof navigator !== "undefined"
+          ? navigator.language ?? (typeof navigator.languages !== "undefined" ? navigator.languages[0] : undefined)
+          : undefined;
+        const country = locale?.toLowerCase().endsWith("-my") ? "MY" : undefined;
+        applyGeo(country ?? null, resolveCurrency(country) as "usd" | "myr");
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const currencySymbol = displayCurrency === "myr" ? "RM" : "$";
+  const monthlyPrice = displayCurrency === "myr" ? monthlyPlan.priceMyr : monthlyPlan.priceUsd;
+  const yearlyPrice = displayCurrency === "myr" ? yearlyPlan.priceMyr : yearlyPlan.priceUsd;
+  const monthlySavings = (monthlyPrice * 12 - yearlyPrice).toFixed(0);
 
   // WhatsApp configuration
   const whatsappNumber = "60178230685";
@@ -47,6 +83,7 @@ export default function PricingPage() {
         },
         body: JSON.stringify({
           billingCycle,
+          ...(countryForCheckout && { country: countryForCheckout }),
         }),
       });
 
@@ -106,7 +143,7 @@ export default function PricingPage() {
           </span>
           {billingCycle === "yearly" && (
             <Badge variant="emerald" className="ml-2">
-              Save ${monthlySavings}
+              Save {currencySymbol}{monthlySavings}
             </Badge>
           )}
         </div>
@@ -128,7 +165,7 @@ export default function PricingPage() {
               </CardDescription>
               <div className="mt-4">
                 <span className="text-5xl font-bold text-gray-900">
-                  ${billingCycle === "monthly" ? monthlyPlan.price : yearlyPlan.price}
+                  {currencySymbol}{billingCycle === "monthly" ? monthlyPrice : yearlyPrice}
                 </span>
                 <span className="text-gray-600">
                   /{billingCycle === "monthly" ? "month" : "year"}
@@ -136,7 +173,7 @@ export default function PricingPage() {
               </div>
               {billingCycle === "yearly" && (
                 <p className="mt-2 text-sm text-gray-500">
-                  ${(yearlyPlan.price / 12).toFixed(2)} per month, billed annually
+                  {currencySymbol}{(yearlyPrice / 12).toFixed(2)} per month, billed annually
                 </p>
               )}
               <div className="mt-3">

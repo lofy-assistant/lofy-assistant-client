@@ -3,13 +3,18 @@ import Stripe from "stripe";
 import { cookies } from "next/headers";
 import { verifySession } from "@/lib/session";
 import { prisma } from "@/lib/prisma";
-import { plans } from "@/lib/stripe-plans";
+import { plans, resolveCurrency, resolveCurrencyFromIP } from "@/lib/stripe-plans";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
 export async function POST(req: NextRequest) {
   try {
-    const { billingCycle } = await req.json();
+    const body = await req.json();
+    const { billingCycle } = body;
+    const country =
+      body.country ??
+      req.headers.get("x-vercel-ip-country")?.toUpperCase() ??
+      undefined;
 
     // Get user from session
     const cookieStore = await cookies();
@@ -60,10 +65,14 @@ export async function POST(req: NextRequest) {
       process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` :
       "http://localhost:3000";
 
-    // Create checkout session using the plan's price ID
+    // Same price_id; Stripe picks amount from currency_options (USD/MYR) per session currency.
+    // Country from body (pricing page) or fallback to IP geo (Vercel x-vercel-ip-country).
+    const currency = resolveCurrencyFromIP(country);
+
     const stripeSession = await stripe.checkout.sessions.create({
       mode: "subscription",
       payment_method_types: ["card"],
+      currency,
       line_items: [
         {
           price: plan.priceId,

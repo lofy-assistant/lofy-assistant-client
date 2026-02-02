@@ -1,3 +1,14 @@
+/** Resolve Stripe currency from country (use country, not locale). */
+export function resolveCurrency(country?: string): string {
+  return country === "MY" ? "myr" : "usd";
+}
+
+/** Resolve currency from IP-derived country (e.g. Vercel x-vercel-ip-country). */
+export function resolveCurrencyFromIP(country?: string): "myr" | "usd" {
+  if (country === "MY") return "myr";
+  return "usd";
+}
+
 export const plans = [
   {
     link:
@@ -8,7 +19,8 @@ export const plans = [
       process.env.NODE_ENV === "development"
         ? "price_1StNzuBSILEw5PUUDdMQudxW"
         : "price_1SwSV5PXWy5Z5igtCk3AWIcV",
-    price: 5,
+    priceUsd: 5,
+    priceMyr: 15,
     duration: "/month",
     billingCycle: "monthly" as const,
   },
@@ -21,7 +33,8 @@ export const plans = [
       process.env.NODE_ENV === "development"
         ? "price_1StO0RBSILEw5PUU1o2Xt1BT"
         : "price_1SwSXQPXWy5Z5igtsOoAFuC6",
-    price: 45,
+    priceUsd: 45,
+    priceMyr: 135,
     duration: "/year",
     billingCycle: "yearly" as const,
   },
