@@ -69,7 +69,7 @@ export const BentoGridItem = ({
             {link && (
               <Link
                 href={link}
-                className="inline-flex items-center gap-1 text-sm font-medium hover:underline transition-all group/link"
+                className="inline-flex items-center gap-1 text-sm font-medium hover:underline transition-all group/link hover:text-primary-alt"
               >
                 Learn more
                 <ArrowRight className="w-4 h-4 transition-transform group-hover/link:translate-x-1" />

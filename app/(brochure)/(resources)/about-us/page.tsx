@@ -117,7 +117,7 @@ export default function AboutUsPage() {
           </Badge>
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight mb-6 text-balance">
             Your Intelligent
-            <span className="text-primary"> Personal Assistant</span>
+            <span className="text-primary-alt"> Personal Assistant</span>
           </h1>
           <p className="text-lg md:text-xl text-muted-foreground leading-relaxed max-w-2xl mx-auto text-pretty">
             Like a warm loaf of bread always there when you need it, Lofy
@@ -130,7 +130,7 @@ export default function AboutUsPage() {
         <div className="mt-16 grid grid-cols-2 md:grid-cols-4 gap-8 max-w-4xl mx-auto">
           {stats.map((stat, index) => (
             <div key={index} className="text-center">
-              <div className="text-3xl md:text-4xl font-bold text-primary mb-1">
+              <div className="text-3xl md:text-4xl font-bold text-primary-alt mb-1">
                 {stat.value}
               </div>
               <div className="text-sm text-muted-foreground">{stat.label}</div>
@@ -190,7 +190,7 @@ export default function AboutUsPage() {
                     "Quietly reliable, always there",
                   ].map((item, i) => (
                     <li key={i} className="flex items-center gap-3">
-                      <CheckCircle2 className="w-5 h-5 text-primary shrink-0" />
+                      <CheckCircle2 className="w-5 h-5 text-primary-alt shrink-0" />
                       <span className="text-muted-foreground">{item}</span>
                     </li>
                   ))}
@@ -216,7 +216,7 @@ export default function AboutUsPage() {
             <Card className="border-2 hover:border-primary/20 transition-colors">
               <CardContent className="p-8">
                 <div className="p-3 rounded-xl bg-primary/10 w-fit mb-4">
-                  <Target className="w-6 h-6 text-primary" />
+                  <Target className="w-6 h-6 text-primary-alt" />
                 </div>
                 <h3 className="text-xl font-bold mb-3">Our Mission</h3>
                 <p className="text-muted-foreground leading-relaxed">
@@ -230,7 +230,7 @@ export default function AboutUsPage() {
             <Card className="border-2 hover:border-primary/20 transition-colors">
               <CardContent className="p-8">
                 <div className="p-3 rounded-xl bg-accent/10 w-fit mb-4">
-                  <Sparkles className="w-6 h-6 text-accent" />
+                  <Sparkles className="w-6 h-6 text-primary-alt" />
                 </div>
                 <h3 className="text-xl font-bold mb-3">Our Vision</h3>
                 <p className="text-muted-foreground leading-relaxed">
@@ -266,7 +266,7 @@ export default function AboutUsPage() {
             >
               <CardContent className="p-6">
                 <div className="p-3 rounded-xl bg-primary/10 w-fit mb-4 group-hover:bg-primary/20 transition-colors">
-                  <value.icon className="w-6 h-6 text-primary" />
+                  <value.icon className="w-6 h-6 text-primary-alt" />
                 </div>
                 <h3 className="font-bold text-lg mb-2">{value.title}</h3>
                 <p className="text-sm text-muted-foreground leading-relaxed">
@@ -302,7 +302,7 @@ export default function AboutUsPage() {
                 <CardContent className="p-6">
                   <div className="flex items-start gap-4">
                     <div className="p-2.5 rounded-lg bg-primary/10 shrink-0">
-                      <cap.icon className="w-5 h-5 text-primary" />
+                      <cap.icon className="w-5 h-5 text-primary-alt" />
                     </div>
                     <div>
                       <h3 className="font-semibold mb-2">{cap.title}</h3>

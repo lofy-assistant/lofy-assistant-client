@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { TracingBeam } from "@/components/ui/tracing-beam";
-import { BookOpen, Brain, Bell, Calendar, MessageSquare, Mic, Lightbulb, HelpCircle, RefreshCw, Rocket, CheckCircle2, XCircle } from "lucide-react";
+import { Brain, Bell, Calendar, MessageSquare, Mic, Lightbulb, HelpCircle, RefreshCw, Rocket, CheckCircle2, XCircle } from "lucide-react";
 
 export default function GuidesPage() {
   return (
@@ -9,8 +9,8 @@ export default function GuidesPage() {
       {/* Header */}
       <div className="px-4 mx-auto max-w-4xl sm:px-6 lg:px-8 py-12">
         <div className="mb-12 text-center">
-          <div className="flex items-center justify-center gap-3 mb-4">
-            <BookOpen className="w-10 h-10 text-primary" />
+          <div className="flex items-center justify-center gap-4 mb-4">
+
             <h1 className="text-4xl font-bold">Lofy AI User Guide</h1>
           </div>
           <p className="max-w-3xl mx-auto text-xl text-muted-foreground">Learn everything you need to know to get the most out of Lofy AI. Manage your life with reminders, calendar events, and memory storage.</p>
@@ -24,7 +24,7 @@ export default function GuidesPage() {
         <Card className="mb-8 py-4">
           <CardHeader>
             <div className="flex items-center gap-3">
-              <Brain className="w-6 h-6 text-primary" />
+              <Brain className="w-6 h-6 text-primary-alt" />
               <CardTitle className="text-2xl">Memory Storage & Recall</CardTitle>
             </div>
           </CardHeader>
@@ -67,7 +67,7 @@ export default function GuidesPage() {
         <Card className="mb-8 py-4">
           <CardHeader>
             <div className="flex items-center gap-3">
-              <Bell className="w-6 h-6 text-primary" />
+              <Bell className="w-6 h-6 text-primary-alt" />
               <CardTitle className="text-2xl">Reminders</CardTitle>
             </div>
           </CardHeader>
@@ -149,7 +149,7 @@ export default function GuidesPage() {
         <Card className="mb-8 py-4">
           <CardHeader>
             <div className="flex items-center gap-3">
-              <Calendar className="w-6 h-6 text-primary" />
+              <Calendar className="w-6 h-6 text-primary-alt" />
               <CardTitle className="text-2xl">Calendar Events</CardTitle>
             </div>
           </CardHeader>
@@ -245,7 +245,7 @@ export default function GuidesPage() {
         <Card className="mb-8 py-4">
           <CardHeader>
             <div className="flex items-center gap-3">
-              <MessageSquare className="w-6 h-6 text-primary" />
+              <MessageSquare className="w-6 h-6 text-primary-alt" />
               <CardTitle className="text-2xl">Forwarded Messages & Images</CardTitle>
             </div>
           </CardHeader>
@@ -281,7 +281,7 @@ export default function GuidesPage() {
         <Card className="mb-8 py-4">
           <CardHeader>
             <div className="flex items-center gap-3">
-              <Mic className="w-6 h-6 text-primary" />
+              <Mic className="w-6 h-6 text-primary-alt" />
               <CardTitle className="text-2xl">Voice Messages & Images</CardTitle>
             </div>
           </CardHeader>
@@ -358,7 +358,7 @@ export default function GuidesPage() {
         <Card className="mb-8 py-4">
           <CardHeader>
             <div className="flex items-center gap-3">
-              <Lightbulb className="w-6 h-6 text-primary" />
+              <Lightbulb className="w-6 h-6 text-primary-alt" />
               <CardTitle className="text-2xl">Quick Tips</CardTitle>
             </div>
           </CardHeader>
@@ -416,7 +416,7 @@ export default function GuidesPage() {
         <Card className="mb-8 py-4">
           <CardHeader>
             <div className="flex items-center gap-3">
-              <HelpCircle className="w-6 h-6 text-primary" />
+              <HelpCircle className="w-6 h-6 text-primary-alt" />
               <CardTitle className="text-2xl">Need Help?</CardTitle>
             </div>
           </CardHeader>
@@ -458,7 +458,7 @@ export default function GuidesPage() {
         <Card className="mb-8 py-4">
           <CardHeader>
             <div className="flex items-center gap-3">
-              <RefreshCw className="w-6 h-6 text-primary" />
+              <RefreshCw className="w-6 h-6 text-primary-alt" />
               <CardTitle className="text-2xl">Common Workflows</CardTitle>
             </div>
           </CardHeader>
@@ -532,7 +532,7 @@ export default function GuidesPage() {
         <Card className="mb-8 py-4">
           <CardHeader>
             <div className="flex items-center gap-3">
-              <Rocket className="w-6 h-6 text-primary" />
+              <Rocket className="w-6 h-6 text-primary-alt" />
               <CardTitle className="text-2xl">Getting Started</CardTitle>
             </div>
           </CardHeader>

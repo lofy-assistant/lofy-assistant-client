@@ -11,6 +11,7 @@
   --color-popover: var(--popover);
   --color-popover-foreground: var(--popover-foreground);
   --color-primary: var(--primary);
+  --color-primary-alt: var(--primary-alt);
   --color-primary-foreground: var(--primary-foreground);
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
@@ -62,13 +63,15 @@
   --tracking-wider: calc(var(--tracking-normal) + 0.05em);
   --tracking-widest: calc(var(--tracking-normal) + 0.1em);
 
-   --animate-aurora: aurora 60s linear infinite;
+  --animate-aurora: aurora 60s linear infinite;
+
   @keyframes aurora {
     from {
       background-position:
         50% 50%,
         50% 50%;
     }
+
     to {
       background-position:
         350% 50%,
@@ -85,6 +88,7 @@
   --popover: oklch(0.9911 0 0);
   --popover-foreground: oklch(0.4386 0 0);
   --primary: oklch(0.8348 0.1302 160.9080);
+  --primary-alt: oklch(0.5960 0.1450 163.2250);
   --primary-foreground: oklch(0.2626 0.0147 166.4589);
   --secondary: oklch(0.9940 0 0);
   --secondary-foreground: oklch(0.2046 0 0);
@@ -191,6 +195,7 @@ body {
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply bg-background text-foreground;
   }
