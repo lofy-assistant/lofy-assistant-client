@@ -19,16 +19,16 @@ export default function BentoIntegration() {
 
   // Left side nodes (3 icons, evenly distributed vertically) - WhatsApp, Slack, Telegram
   const leftNodes: Node[] = [
-    { id: 1, x: 15, y: 20, iconSrc: "/assets/bento-features/whatsapp-icon.svg", alt: "WhatsApp" },
-    { id: 2, x: 15, y: 50, iconSrc: "/assets/bento-features/slack-icon.svg", alt: "Slack" },
-    { id: 3, x: 15, y: 80, iconSrc: "/assets/bento-features/telegram-icon.svg", alt: "Telegram" },
+    { id: 1, x: 15, y: 20, iconSrc: "/assets/icons/whatsapp-icon.svg", alt: "WhatsApp" },
+    { id: 2, x: 15, y: 50, iconSrc: "/assets/icons/slack-icon.svg", alt: "Slack" },
+    { id: 3, x: 15, y: 80, iconSrc: "/assets/icons/telegram-icon.svg", alt: "Telegram" },
   ];
 
   // Right side nodes (3 icons, evenly distributed vertically) - Outlook, Calendar, Gmail
   const rightNodes: Node[] = [
-    { id: 4, x: 85, y: 20, iconSrc: "/assets/bento-features/outlook-icon.svg", alt: "Outlook" },
-    { id: 5, x: 85, y: 50, iconSrc: "/assets/bento-features/google-calendar-icon.svg", alt: "Google Calendar" },
-    { id: 6, x: 85, y: 80, iconSrc: "/assets/bento-features/gmail-icon.svg", alt: "Gmail" },
+    { id: 4, x: 85, y: 20, iconSrc: "/assets/icons/outlook-icon.svg", alt: "Outlook" },
+    { id: 5, x: 85, y: 50, iconSrc: "/assets/icons/google-calendar-icon.svg", alt: "Google Calendar" },
+    { id: 6, x: 85, y: 80, iconSrc: "/assets/icons/gmail-icon.svg", alt: "Gmail" },
   ];
 
   const sideNodes = [...leftNodes, ...rightNodes];

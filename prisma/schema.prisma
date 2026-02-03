@@ -151,3 +151,22 @@ model integrations {
   @@index([credential_id])
   @@map("integrations")
 }
+
+model upvotes {
+  id             Int      @id @default(autoincrement())
+  user_id        String   @db.Uuid
+  integration_id String  
+  created_at     DateTime @default(now()) @db.Timestamptz(6)
+
+  @@unique([user_id, integration_id])
+  @@index([user_id])
+  @@map("upvotes")
+}
+
+model upvote_counts {
+  id             Int    @id @default(autoincrement())
+  integration_id String @unique
+  count          Int    @default(0)
+
+  @@map("upvote_counts")
+}

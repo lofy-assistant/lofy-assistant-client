@@ -6,7 +6,8 @@ import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { IconClockHour4, IconArrowBigUp } from "@tabler/icons-react";
+import { IconClockHour4, IconArrowBigUp, IconCheck } from "@tabler/icons-react";
+import { toast } from "sonner";
 
 export interface Integration {
   id: string;
@@ -17,30 +18,31 @@ export interface Integration {
   status: "connected" | "disconnected" | "error";
   comingSoon?: boolean;
   votes?: number;
+  hasVoted?: boolean;
 }
 
 const COMING_SOON_INTEGRATIONS: Omit<Integration, "enabled" | "status">[] = [
   {
-    id: "gmail",
-    name: "Gmail",
-    description: "Sync emails and schedule from your inbox",
-    icon: <Image src="/assets/bento-features/gmail-icon.svg" alt="Gmail" width={32} height={32} className="size-8 object-contain" />,
-    comingSoon: true,
-    votes: 0,
-  },
-  {
-    id: "outlook",
-    name: "Microsoft Outlook",
-    description: "Connect Outlook Calendar and Mail",
-    icon: <Image src="/assets/bento-features/outlook-icon.svg" alt="Outlook" width={32} height={32} className="size-8 object-contain" />,
-    comingSoon: true,
-    votes: 0,
-  },
-  {
     id: "slack",
     name: "Slack",
     description: "Get reminders and updates in your workspace",
-    icon: <Image src="/assets/bento-features/slack-icon.svg" alt="Slack" width={32} height={32} className="size-8 object-contain" />,
+    icon: <Image src="/assets/icons/slack-icon.svg" alt="Slack" width={32} height={32} className="size-8 object-contain" />,
+    comingSoon: true,
+    votes: 0,
+  },
+  {
+    id: "microsoft-teams",
+    name: "Microsoft Teams",
+    description: "Collaborate and get notifications in Teams",
+    icon: <Image src="/assets/icons/teams-icon.svg" alt="Microsoft Teams" width={32} height={32} className="size-8 object-contain" />,
+    comingSoon: true,
+    votes: 0,
+  },
+  {
+    id: "discord",
+    name: "Discord",
+    description: "Receive updates and reminders in Discord",
+    icon: <Image src="/assets/icons/discord-icon.svg" alt="Discord" width={32} height={32} className="size-8 object-contain" />,
     comingSoon: true,
     votes: 0,
   },
@@ -48,23 +50,55 @@ const COMING_SOON_INTEGRATIONS: Omit<Integration, "enabled" | "status">[] = [
     id: "telegram",
     name: "Telegram",
     description: "Get notifications in Telegram",
-    icon: <Image src="/assets/bento-features/telegram-icon.svg" alt="Telegram" width={32} height={32} className="size-8 object-contain" />,
+    icon: <Image src="/assets/icons/telegram-icon.svg" alt="Telegram" width={32} height={32} className="size-8 object-contain" />,
     comingSoon: true,
     votes: 0,
   },
   {
-    id: "notion",
-    name: "Notion",
-    description: "Sync tasks and notes with Notion",
-    icon: <IconClockHour4 className="size-8 text-muted-foreground" />,
+    id: "gmail",
+    name: "Gmail",
+    description: "Sync emails and schedule from your inbox",
+    icon: <Image src="/assets/icons/gmail-icon.svg" alt="Gmail" width={32} height={32} className="size-8 object-contain" />,
     comingSoon: true,
     votes: 0,
   },
   {
-    id: "linear",
-    name: "Linear",
-    description: "Track issues and get reminder updates",
-    icon: <IconClockHour4 className="size-8 text-muted-foreground" />,
+    id: "outlook",
+    name: "Microsoft Outlook",
+    description: "Connect Outlook Calendar and Mail",
+    icon: <Image src="/assets/icons/outlook-icon.svg" alt="Outlook" width={32} height={32} className="size-8 object-contain" />,
+    comingSoon: true,
+    votes: 0,
+  },
+  {
+    id: "google-drive",
+    name: "Google Drive",
+    description: "Access and manage your files from Drive",
+    icon: <Image src="/assets/icons/drive-icon.svg" alt="Google Drive" width={32} height={32} className="size-8 object-contain" />,
+    comingSoon: true,
+    votes: 0,
+  },
+  {
+    id: "onedrive",
+    name: "OneDrive",
+    description: "Sync files and documents from OneDrive",
+    icon: <Image src="/assets/icons/onedrive-icon.svg" alt="OneDrive" width={32} height={32} className="size-8 object-contain" />,
+    comingSoon: true,
+    votes: 0,
+  },
+  {
+    id: "trello",
+    name: "Trello",
+    description: "Manage boards and get task updates",
+    icon: <Image src="/assets/icons/trello-icon.svg" alt="Trello" width={32} height={32} className="size-8 object-contain" />,
+    comingSoon: true,
+    votes: 0,
+  },
+  {
+    id: "web-search",
+    name: "Web Search API",
+    description: "Search the web and get relevant results",
+    icon: <Image src="/assets/icons/web-search-icon.svg" alt="Web Search API" width={32} height={32} className="size-8 object-contain" />,
     comingSoon: true,
     votes: 0,
   },
@@ -76,7 +110,7 @@ export function IntegrationCard() {
       id: "whatsapp",
       name: "WhatsApp",
       description: "Receive reminders via WhatsApp",
-      icon: <Image src="/assets/bento-features/whatsapp-icon.svg" alt="WhatsApp" width={32} height={32} className="size-8 object-contain" />,
+      icon: <Image src="/assets/icons/whatsapp-icon.svg" alt="WhatsApp" width={32} height={32} className="size-8 object-contain" />,
       enabled: true,
       status: "connected",
     },
@@ -84,7 +118,7 @@ export function IntegrationCard() {
       id: "google-calendar",
       name: "Google Calendar",
       description: "Sync events and availability with Google Calendar",
-      icon: <Image src="/assets/bento-features/google-calendar-icon.svg" alt="Google Calendar" width={32} height={32} className="size-8 object-contain" />,
+      icon: <Image src="/assets/icons/google-calendar-icon.svg" alt="Google Calendar" width={32} height={32} className="size-8 object-contain" />,
       enabled: false,
       status: "disconnected",
     },
@@ -92,10 +126,13 @@ export function IntegrationCard() {
       ...i,
       enabled: false,
       status: "disconnected" as const,
+      hasVoted: false,
     })),
   ]);
+  const [remainingVotes, setRemainingVotes] = useState(3);
+  const [isVoting, setIsVoting] = useState<string | null>(null);
 
-  // Fetch integration status on mount
+  // Fetch integration status and vote data on mount
   useEffect(() => {
     const fetchIntegrationStatus = async () => {
       try {
@@ -127,7 +164,35 @@ export function IntegrationCard() {
       }
     };
 
+    const fetchVoteData = async () => {
+      try {
+        const response = await fetch("/api/integration/vote", {
+          method: "GET",
+          credentials: "include",
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          const counts = data.counts as Record<string, number>;
+          const userVotes = data.userVotes as string[];
+
+          setRemainingVotes(data.remainingVotes);
+
+          setIntegrations((prev) =>
+            prev.map((integration) => ({
+              ...integration,
+              votes: counts[integration.id] || 0,
+              hasVoted: userVotes.includes(integration.id),
+            })),
+          );
+        }
+      } catch (error) {
+        console.error("Failed to fetch vote data:", error);
+      }
+    };
+
     fetchIntegrationStatus();
+    fetchVoteData();
   }, []);
 
   const handleToggle = async (id: string, currentEnabled: boolean, comingSoon?: boolean) => {
@@ -186,17 +251,59 @@ export function IntegrationCard() {
     );
   };
 
-  const handleVote = (id: string) => {
-    setIntegrations((prev) =>
-      prev.map((integration) =>
-        integration.id === id && integration.comingSoon
-          ? {
-              ...integration,
-              votes: (integration.votes || 0) + 1,
-            }
-          : integration,
-      ),
-    );
+  const handleVote = async (id: string) => {
+    if (isVoting) return;
+
+    const integration = integrations.find((i) => i.id === id);
+    if (!integration?.comingSoon) return;
+
+    // Check if user can vote (hasn't reached limit and hasn't voted for this)
+    if (!integration.hasVoted && remainingVotes <= 0) {
+      toast.error("You've used all 3 votes. Unvote an integration to vote for another.");
+      return;
+    }
+
+    setIsVoting(id);
+
+    try {
+      const response = await fetch("/api/integration/vote", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ integrationId: id }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+
+        setRemainingVotes(data.remainingVotes);
+        setIntegrations((prev) =>
+          prev.map((i) =>
+            i.id === id
+              ? {
+                  ...i,
+                  votes: data.count,
+                  hasVoted: data.voted,
+                }
+              : i,
+          ),
+        );
+
+        if (data.voted) {
+          toast.success(`Voted for ${integration.name}!`);
+        } else {
+          toast.info(`Removed vote from ${integration.name}`);
+        }
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        toast.error(errorData.error || "Failed to vote");
+      }
+    } catch (error) {
+      console.error("Vote error:", error);
+      toast.error("Failed to vote. Please try again.");
+    } finally {
+      setIsVoting(null);
+    }
   };
 
   const getStatusBadge = (status: Integration["status"]) => {
@@ -234,7 +341,9 @@ export function IntegrationCard() {
                     </div>
                     <div className="flex shrink-0 items-center gap-3">
                       {getStatusBadge(integration.status)}
-                      <Switch checked={integration.enabled} onCheckedChange={() => handleToggle(integration.id, integration.enabled, integration.comingSoon)} />
+                      {integration.id !== "whatsapp" && (
+                        <Switch checked={integration.enabled} onCheckedChange={() => handleToggle(integration.id, integration.enabled, integration.comingSoon)} />
+                      )}
                     </div>
                   </div>
                 </CardHeader>
@@ -248,7 +357,7 @@ export function IntegrationCard() {
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Coming soon</h2>
-            <p className="text-xs text-muted-foreground">Vote for integrations you want next</p>
+            <p className="text-xs text-muted-foreground">{remainingVotes} vote{remainingVotes !== 1 ? "s" : ""} remaining</p>
           </div>
           <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
             {comingSoon
@@ -270,9 +379,19 @@ export function IntegrationCard() {
                     </div>
                   </CardHeader>
                   <div className="px-6 pb-4 flex justify-end">
-                    <Button variant="outline" size="sm" onClick={() => handleVote(integration.id)} className="gap-2 h-9 min-w-[120px]">
-                      <IconArrowBigUp className="size-4" />
-                      <span className="font-medium">{integration.votes || 0} votes</span>
+                    <Button
+                      variant={integration.hasVoted ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => handleVote(integration.id)}
+                      disabled={isVoting === integration.id}
+                      className="gap-2 h-9 min-w-[120px]"
+                    >
+                      {integration.hasVoted ? (
+                        <IconCheck className="size-4" />
+                      ) : (
+                        <IconArrowBigUp className="size-4" />
+                      )}
+                      <span className="font-medium">{integration.votes || 0} vote{(integration.votes || 0) !== 1 ? "s" : ""}</span>
                     </Button>
                   </div>
                 </Card>
