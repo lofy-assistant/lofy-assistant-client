@@ -5,7 +5,8 @@ import Image from "next/image";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
-import { IconClockHour4 } from "@tabler/icons-react";
+import { Button } from "@/components/ui/button";
+import { IconClockHour4, IconArrowBigUp } from "@tabler/icons-react";
 
 export interface Integration {
   id: string;
@@ -15,6 +16,7 @@ export interface Integration {
   enabled: boolean;
   status: "connected" | "disconnected" | "error";
   comingSoon?: boolean;
+  votes?: number;
 }
 
 const COMING_SOON_INTEGRATIONS: Omit<Integration, "enabled" | "status">[] = [
@@ -24,6 +26,7 @@ const COMING_SOON_INTEGRATIONS: Omit<Integration, "enabled" | "status">[] = [
     description: "Sync emails and schedule from your inbox",
     icon: <Image src="/assets/bento-features/gmail-icon.svg" alt="Gmail" width={32} height={32} className="size-8 object-contain" />,
     comingSoon: true,
+    votes: 0,
   },
   {
     id: "outlook",
@@ -31,6 +34,7 @@ const COMING_SOON_INTEGRATIONS: Omit<Integration, "enabled" | "status">[] = [
     description: "Connect Outlook Calendar and Mail",
     icon: <Image src="/assets/bento-features/outlook-icon.svg" alt="Outlook" width={32} height={32} className="size-8 object-contain" />,
     comingSoon: true,
+    votes: 0,
   },
   {
     id: "slack",
@@ -38,6 +42,7 @@ const COMING_SOON_INTEGRATIONS: Omit<Integration, "enabled" | "status">[] = [
     description: "Get reminders and updates in your workspace",
     icon: <Image src="/assets/bento-features/slack-icon.svg" alt="Slack" width={32} height={32} className="size-8 object-contain" />,
     comingSoon: true,
+    votes: 0,
   },
   {
     id: "telegram",
@@ -45,6 +50,7 @@ const COMING_SOON_INTEGRATIONS: Omit<Integration, "enabled" | "status">[] = [
     description: "Get notifications in Telegram",
     icon: <Image src="/assets/bento-features/telegram-icon.svg" alt="Telegram" width={32} height={32} className="size-8 object-contain" />,
     comingSoon: true,
+    votes: 0,
   },
   {
     id: "notion",
@@ -52,6 +58,7 @@ const COMING_SOON_INTEGRATIONS: Omit<Integration, "enabled" | "status">[] = [
     description: "Sync tasks and notes with Notion",
     icon: <IconClockHour4 className="size-8 text-muted-foreground" />,
     comingSoon: true,
+    votes: 0,
   },
   {
     id: "linear",
@@ -59,6 +66,7 @@ const COMING_SOON_INTEGRATIONS: Omit<Integration, "enabled" | "status">[] = [
     description: "Track issues and get reminder updates",
     icon: <IconClockHour4 className="size-8 text-muted-foreground" />,
     comingSoon: true,
+    votes: 0,
   },
 ];
 
@@ -111,7 +119,7 @@ export function IntegrationCard() {
                 };
               }
               return integration;
-            })
+            }),
           );
         }
       } catch (error) {
@@ -157,8 +165,8 @@ export function IntegrationCard() {
                   ...integration,
                   status: "error",
                 }
-              : integration
-          )
+              : integration,
+          ),
         );
       }
       return;
@@ -173,8 +181,21 @@ export function IntegrationCard() {
               enabled: !integration.enabled,
               status: !integration.enabled ? "connected" : "disconnected",
             }
-          : integration
-      )
+          : integration,
+      ),
+    );
+  };
+
+  const handleVote = (id: string) => {
+    setIntegrations((prev) =>
+      prev.map((integration) =>
+        integration.id === id && integration.comingSoon
+          ? {
+              ...integration,
+              votes: (integration.votes || 0) + 1,
+            }
+          : integration,
+      ),
     );
   };
 
@@ -205,22 +226,15 @@ export function IntegrationCard() {
                 <CardHeader>
                   <div className="flex items-center justify-between gap-4">
                     <div className="flex items-center gap-4 min-w-0">
-                      <div className="flex size-12 shrink-0 items-center justify-center rounded-lg border bg-muted/50">
-                        {integration.icon}
-                      </div>
+                      <div className="flex size-12 shrink-0 items-center justify-center rounded-lg border bg-muted/50">{integration.icon}</div>
                       <div className="min-w-0 flex-1">
                         <CardTitle className="text-lg truncate">{integration.name}</CardTitle>
-                        {integration.description && (
-                          <p className="mt-0.5 text-sm text-muted-foreground line-clamp-2">{integration.description}</p>
-                        )}
+                        {integration.description && <p className="mt-0.5 text-sm text-muted-foreground line-clamp-2">{integration.description}</p>}
                       </div>
                     </div>
                     <div className="flex shrink-0 items-center gap-3">
                       {getStatusBadge(integration.status)}
-                      <Switch
-                        checked={integration.enabled}
-                        onCheckedChange={() => handleToggle(integration.id, integration.enabled, integration.comingSoon)}
-                      />
+                      <Switch checked={integration.enabled} onCheckedChange={() => handleToggle(integration.id, integration.enabled, integration.comingSoon)} />
                     </div>
                   </div>
                 </CardHeader>
@@ -232,30 +246,37 @@ export function IntegrationCard() {
 
       {comingSoon.length > 0 && (
         <div className="space-y-4">
-          <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Coming soon</h2>
+          <div className="flex items-center justify-between">
+            <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Coming soon</h2>
+            <p className="text-xs text-muted-foreground">Vote for integrations you want next</p>
+          </div>
           <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
-            {comingSoon.map((integration) => (
-              <Card key={integration.id} className="overflow-hidden opacity-90 py-4">
-                <CardHeader>
-                  <div className="flex items-start gap-4">
-                    <div className="flex size-12 shrink-0 items-center justify-center rounded-lg border bg-muted/50">
-                      {integration.icon}
-                    </div>
-                    <div className="min-w-0 flex-1 space-y-1">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <CardTitle className="text-lg truncate">{integration.name}</CardTitle>
-                        <Badge variant="default" className="shrink-0 font-normal bg-muted text-muted-foreground">
-                          Coming soon
-                        </Badge>
+            {comingSoon
+              .sort((a, b) => (b.votes || 0) - (a.votes || 0))
+              .map((integration) => (
+                <Card key={integration.id} className="overflow-hidden opacity-90 py-4">
+                  <CardHeader>
+                    <div className="flex items-start gap-4">
+                      <div className="flex size-12 shrink-0 items-center justify-center rounded-lg border bg-muted/50">{integration.icon}</div>
+                      <div className="min-w-0 flex-1 space-y-1">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <CardTitle className="text-lg truncate">{integration.name}</CardTitle>
+                          <Badge variant="default" className="shrink-0 font-normal bg-muted text-muted-foreground">
+                            Coming soon
+                          </Badge>
+                        </div>
+                        {integration.description && <p className="text-sm text-muted-foreground line-clamp-2">{integration.description}</p>}
+                        <div className="pt-2">
+                          <Button variant="outline" size="sm" onClick={() => handleVote(integration.id)} className="gap-2 h-8">
+                            <IconArrowBigUp className="size-4" />
+                            <span className="font-medium">{integration.votes || 0}</span>
+                          </Button>
+                        </div>
                       </div>
-                      {integration.description && (
-                        <p className="text-sm text-muted-foreground line-clamp-2">{integration.description}</p>
-                      )}
                     </div>
-                  </div>
-                </CardHeader>
-              </Card>
-            ))}
+                  </CardHeader>
+                </Card>
+              ))}
           </div>
         </div>
       )}
