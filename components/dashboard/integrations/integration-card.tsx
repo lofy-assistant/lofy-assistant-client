@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
@@ -40,13 +40,6 @@ const COMING_SOON_INTEGRATIONS: Omit<Integration, "enabled" | "status">[] = [
     comingSoon: true,
   },
   {
-    id: "whatsapp",
-    name: "WhatsApp",
-    description: "Receive reminders via WhatsApp",
-    icon: <Image src="/assets/bento-features/whatsapp-icon.svg" alt="WhatsApp" width={32} height={32} className="size-8 object-contain" />,
-    comingSoon: true,
-  },
-  {
     id: "telegram",
     name: "Telegram",
     description: "Get notifications in Telegram",
@@ -72,6 +65,14 @@ const COMING_SOON_INTEGRATIONS: Omit<Integration, "enabled" | "status">[] = [
 export function IntegrationCard() {
   const [integrations, setIntegrations] = useState<Integration[]>([
     {
+      id: "whatsapp",
+      name: "WhatsApp",
+      description: "Receive reminders via WhatsApp",
+      icon: <Image src="/assets/bento-features/whatsapp-icon.svg" alt="WhatsApp" width={32} height={32} className="size-8 object-contain" />,
+      enabled: true,
+      status: "connected",
+    },
+    {
       id: "google-calendar",
       name: "Google Calendar",
       description: "Sync events and availability with Google Calendar",
@@ -85,6 +86,41 @@ export function IntegrationCard() {
       status: "disconnected" as const,
     })),
   ]);
+
+  // Fetch integration status on mount
+  useEffect(() => {
+    const fetchIntegrationStatus = async () => {
+      try {
+        const response = await fetch("/api/integration/status", {
+          method: "GET",
+          credentials: "include",
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          const statuses = data.integrations as Record<string, { isActive: boolean; status: "connected" | "disconnected" | "error" }>;
+
+          setIntegrations((prev) =>
+            prev.map((integration) => {
+              const statusInfo = statuses[integration.id];
+              if (statusInfo) {
+                return {
+                  ...integration,
+                  enabled: statusInfo.isActive,
+                  status: statusInfo.status,
+                };
+              }
+              return integration;
+            })
+          );
+        }
+      } catch (error) {
+        console.error("Failed to fetch integration status:", error);
+      }
+    };
+
+    fetchIntegrationStatus();
+  }, []);
 
   const handleToggle = async (id: string, currentEnabled: boolean, comingSoon?: boolean) => {
     if (comingSoon) return;

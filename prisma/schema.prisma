@@ -21,7 +21,6 @@ model users {
   calendar_events calendar_events[]
   feedbacks       feedbacks[]
   integration_credentials integration_credentials[]
-  integrations    integrations[]
   memories        memories[]
   reminders       reminders[]
   subscriptions   subscriptions[]
@@ -140,19 +139,15 @@ model integration_credentials {
 
 model integrations {
   id                  Int    @id @default(autoincrement())
-  user_id             String @db.Uuid
   credential_id       Int
   integration_type    String  
-  display_name        String? 
   settings            Json @default(dbgenerated("'{}'::jsonb"))
   is_active           Boolean  @default(true)
   created_at          DateTime @default(now()) @db.Timestamptz(6)
   updated_at          DateTime @updatedAt @db.Timestamptz(6)
 
-  user                users                   @relation(fields: [user_id], references: [id], onDelete: Cascade)
   credential          integration_credentials @relation(fields: [credential_id], references: [id], onDelete: Cascade)
 
-  @@index([user_id])
   @@index([credential_id])
   @@map("integrations")
 }
