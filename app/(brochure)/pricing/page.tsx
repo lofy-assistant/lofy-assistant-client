@@ -9,16 +9,14 @@ import { plans, resolveCurrency } from "@/lib/stripe-plans";
 
 export default function PricingPage() {
   const [billingCycle, setBillingCycle] = useState<"monthly" | "yearly">("monthly");
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [displayCurrency, setDisplayCurrency] = useState<"usd" | "myr">("usd");
+  const [countryForCheckout, setCountryForCheckout] = useState<string | undefined>(undefined);
 
   const monthlyPlan = plans.find((p) => p.billingCycle === "monthly")!;
   const yearlyPlan = plans.find((p) => p.billingCycle === "yearly")!;
 
-  /** Display currency: IP geo (Vercel x-vercel-ip-country) first, then locale fallback. */
-  const [displayCurrency, setDisplayCurrency] = useState<"usd" | "myr">("usd");
-  const [countryForCheckout, setCountryForCheckout] = useState<string | undefined>(undefined);
-
+  // Detect user's country and currency
   useEffect(() => {
     let cancelled = false;
 
@@ -35,6 +33,7 @@ export default function PricingPage() {
         applyGeo(data.country, data.currency as "usd" | "myr");
       })
       .catch(() => {
+        // Fallback to browser locale
         const locale = typeof navigator !== "undefined"
           ? navigator.language ?? (typeof navigator.languages !== "undefined" ? navigator.languages[0] : undefined)
           : undefined;
@@ -51,26 +50,6 @@ export default function PricingPage() {
   const monthlyPrice = displayCurrency === "myr" ? monthlyPlan.priceMyr : monthlyPlan.priceUsd;
   const yearlyPrice = displayCurrency === "myr" ? yearlyPlan.priceMyr : yearlyPlan.priceUsd;
   const monthlySavings = (monthlyPrice * 12 - yearlyPrice).toFixed(0);
-
-  // WhatsApp configuration
-  const whatsappNumber = "60178230685";
-  const whatsappMessage = encodeURIComponent("Hey, I just get started");
-  const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${whatsappMessage}`;
-
-  useEffect(() => {
-    // Check if user is logged in via API
-    const checkSession = async () => {
-      try {
-        const response = await fetch("/api/auth/check-session");
-        const data = await response.json();
-        setIsLoggedIn(data.isLoggedIn);
-      } catch (error) {
-        console.error("Error checking session:", error);
-        setIsLoggedIn(false);
-      }
-    };
-    checkSession();
-  }, []);
 
   const handleGetStarted = async () => {
     setIsLoading(true);
@@ -91,6 +70,7 @@ export default function PricingPage() {
       if (data.url) {
         window.location.href = data.url;
       } else {
+        console.error("No checkout URL returned");
         setIsLoading(false);
       }
     } catch (error) {
@@ -100,7 +80,7 @@ export default function PricingPage() {
   };
 
   const features = [
-    "Limitless reminder",
+    "Limitless reminders",
     "Smart calendar integration",
     "Centralized task management",
     "Save memories forever",
@@ -111,71 +91,74 @@ export default function PricingPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
-
       <div className="px-4 py-16 mx-auto max-w-7xl sm:px-6 lg:px-8">
         <div className="mb-12 text-center">
-          <h1 className="mb-4 text-4xl font-bold text-gray-900 sm:text-5xl">
+          <Badge variant="indigo" className="mb-4">
             Pricing
+          </Badge>
+          <h1 className="mb-4 text-4xl font-bold text-gray-900 sm:text-5xl">
+            Simple, Transparent Pricing
           </h1>
           <p className="max-w-3xl mx-auto text-md md:text-xl text-gray-600">
-            Try it free for 14 days — upgrade to continue.
+            Try it free for 14 days — no credit card required.
           </p>
         </div>
 
         {/* Billing Toggle */}
         <div className="flex items-center justify-center mb-12 gap-4">
-          <span className={`text-lg font-medium ${billingCycle === "monthly" ? "text-gray-900" : "text-gray-500"}`}>
+          <span className={`text-lg font-medium transition-colors ${billingCycle === "monthly" ? "text-gray-900" : "text-gray-500"}`}>
             Monthly
           </span>
           <button
             onClick={() => setBillingCycle(billingCycle === "monthly" ? "yearly" : "monthly")}
-            className="relative inline-flex h-6 w-11 items-center rounded-full bg-gray-400 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+            className="relative inline-flex h-6 w-11 items-center rounded-full bg-gray-400 hover:bg-gray-500 transition-colors focus:outline-none focus:ring-2 focus:ring-foreground focus:ring-offset-2"
+            aria-label="Toggle billing cycle"
           >
             <span
-              className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                billingCycle === "yearly" ? "translate-x-6" : "translate-x-1"
-              }`}
+              className={`inline-block h-4 w-4 transform rounded-full bg-gray-900 transition-transform ${billingCycle === "yearly" ? "translate-x-6" : "translate-x-1"
+                }`}
             />
           </button>
-          <span className={`text-lg font-medium ${billingCycle === "yearly" ? "text-gray-900" : "text-gray-500"}`}>
+          <span className={`text-lg font-medium transition-colors ${billingCycle === "yearly" ? "text-gray-900" : "text-gray-500"}`}>
             Yearly
           </span>
-          {billingCycle === "yearly" && (
-            <Badge variant="emerald" className="ml-2">
-              Save {currencySymbol}{monthlySavings}
-            </Badge>
-          )}
+
         </div>
 
         {/* Pricing Card */}
         <div className="flex justify-center">
-          <Card className="w-full max-w-lg py-3">
+          <Card className="w-full max-w-lg py-3 border-2 hover:border-primary/20 transition-all hover:shadow-xl">
             <CardHeader className="text-center">
-              <div className="flex items-center justify-center mb-2">
-                <CardTitle className="text-2xl font-bold">Pro Plan</CardTitle>
+              <div className="flex items-center justify-center">
+                <CardTitle className="text-2xl font-bold">Basic Plan</CardTitle>
                 {billingCycle === "yearly" && (
                   <Badge variant="indigo" className="ml-3">
                     25% OFF
                   </Badge>
                 )}
               </div>
-              <CardDescription>
+              <CardDescription className="text-base">
                 Everything you need to stay organized and productive
               </CardDescription>
               <div className="mt-4">
-                <span className="text-5xl font-bold text-gray-900">
+                <span className="text-5xl font-bold">
                   {currencySymbol}{billingCycle === "monthly" ? monthlyPrice : yearlyPrice}
                 </span>
-                <span className="text-gray-600">
+                <span className="text-gray-600 text-lg">
                   /{billingCycle === "monthly" ? "month" : "year"}
                 </span>
               </div>
               {billingCycle === "yearly" && (
-                <p className="mt-2 text-sm text-gray-500">
+                <Badge variant="emerald" className="mx-auto mt-2">
+                  Save {currencySymbol}{monthlySavings}
+                </Badge>
+              )}
+              {billingCycle === "yearly" && (
+                <p className="text-sm text-gray-500">
                   {currencySymbol}{(yearlyPrice / 12).toFixed(2)} per month, billed annually
                 </p>
               )}
-              <div className="mt-3">
+              <div className="mt-1">
                 <Badge variant="emerald" className="text-sm">
                   14 Days Free Trial
                 </Badge>
@@ -196,7 +179,7 @@ export default function PricingPage() {
             <CardFooter>
               <Button
                 onClick={handleGetStarted}
-                className="w-full text-lg py-6 cursor-pointer"
+                className="w-full text-lg py-6 cursor-pointer hover:scale-[1.02] transition-transform"
                 size="lg"
                 disabled={isLoading}
               >
@@ -206,16 +189,16 @@ export default function PricingPage() {
                     Processing...
                   </>
                 ) : (
-                  "Try Lofy for Free"
+                  "Start Free Trial"
                 )}
               </Button>
             </CardFooter>
           </Card>
         </div>
 
-        <div className="mt-4 text-center">
-          <p className="text-xs md:text-sm text-gray-500">
-            No credit card required for trial • Cancel anytime • Secure payments
+        <div className="mt-6 text-center">
+          <p className="text-sm text-gray-500">
+            No credit card required • Cancel anytime • Secure payments powered by Stripe
           </p>
         </div>
       </div>

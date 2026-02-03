@@ -90,7 +90,9 @@ export async function POST(request: NextRequest) {
     response.cookies.set("session", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
+      // Needed for OAuth flows: allows cookie on top-level cross-site redirects back to our app
+      // (e.g. Google -> lofy-ai.com). `strict` would drop the cookie and middleware would redirect to /login.
+      sameSite: "lax",
       maxAge: 60 * 60 * 24,
       path: "/",
     });
