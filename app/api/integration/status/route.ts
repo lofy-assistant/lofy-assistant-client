@@ -33,7 +33,7 @@ export async function GET(request: NextRequest) {
       // For Google Calendar, check if there's a calendar integration
       if (cred.provider_name === "google") {
         const calendarIntegration = cred.integrations.find(
-          (i) => i.integration_type === "calendar"
+          (i) => i.integration_type === "google_calendar"
         );
         
         if (calendarIntegration) {
