@@ -5,6 +5,18 @@ import { verifySession } from "@/lib/session";
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
+  // If user is already authenticated, block access to auth pages
+  if (pathname.startsWith("/login") || pathname.startsWith("/register")) {
+    const sessionToken = request.cookies.get("session")?.value;
+    if (sessionToken) {
+      const session = await verifySession(sessionToken);
+      if (session) {
+        return NextResponse.redirect(new URL("/dashboard", request.url));
+      }
+    }
+    return NextResponse.next();
+  }
+
   // Public routes
   const publicRoutes = ["/login", "/register", "/pricing", "/features", "/about-us", "/guides", "/privacy-policy", "/terms"];
   if (publicRoutes.some((route) => pathname.startsWith(route))) {

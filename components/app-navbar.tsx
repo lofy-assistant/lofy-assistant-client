@@ -2,7 +2,7 @@
 
 import { Menu, ChevronDown } from "lucide-react";
 import Link from "next/link";
-import { type ReactNode, useState } from "react";
+import { type ReactNode, useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 
 import { cn } from "@/lib/utils";
@@ -63,28 +63,52 @@ export default function AppNavbar({
     },
     { text: "Pricing", href: "/pricing" },
   ],
-  actions = [
-    {
-      text: "Login/Register",
-      href: "/login",
-      isButton: false,
-    },
-    {
-      text: "Get Started",
-      href: "https://wa.me/60178230685?text=Hey%2C%20I%20just%20get%20started",
-      isButton: true,
-      variant: "default",
-    },
-  ],
+  actions,
   showNavigation = true,
   customNavigation,
   className,
 }: NavbarProps) {
   const [openSections, setOpenSections] = useState<{ [key: number]: boolean }>({});
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
 
   const toggleSection = (index: number) => {
     setOpenSections(prev => ({ ...prev, [index]: !prev[index] }));
   };
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function check() {
+      try {
+        const res = await fetch("/api/auth/check-session", { method: "GET", credentials: "include" });
+        const data = (await res.json().catch(() => ({}))) as { isLoggedIn?: boolean };
+        if (!cancelled) setIsLoggedIn(Boolean(data?.isLoggedIn));
+      } catch {
+        if (!cancelled) setIsLoggedIn(false);
+      }
+    }
+
+    check();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const computedActions = useMemo<NavbarActionProps[]>(() => {
+    if (actions?.length) return actions;
+
+    return [
+      isLoggedIn
+        ? { text: "Dashboard", href: "/dashboard", isButton: false }
+        : { text: "Login/Register", href: "/login", isButton: false },
+      {
+        text: "Get Started",
+        href: "https://wa.me/60178230685?text=Hey%2C%20I%20just%20get%20started",
+        isButton: true,
+        variant: "default",
+      },
+    ];
+  }, [actions, isLoggedIn]);
 
   return (
     <header className={cn("sticky top-0 z-50 px-4 w-full", className)}>
@@ -99,7 +123,7 @@ export default function AppNavbar({
             {showNavigation && (customNavigation || <Navigation />)}
           </NavbarLeft>
           <NavbarCenter>
-            {actions.map((action, index) =>
+            {computedActions.map((action, index) =>
               action.isButton ? (
                 <Button key={index} variant={action.variant} asChild>
                   <Link 
@@ -182,7 +206,7 @@ export default function AppNavbar({
 
                   <div className="flex flex-col w-full">
                     <div className="grid grid-cols-2 gap-4"> 
-                      {actions.map((action, index) => (
+                      {computedActions.map((action, index) => (
                         <Button 
                           key={index} 
                           variant={action.isButton ? action.variant : "outline"} 
