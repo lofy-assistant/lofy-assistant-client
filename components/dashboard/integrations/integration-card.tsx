@@ -254,8 +254,8 @@ export function IntegrationCard() {
             {comingSoon
               .sort((a, b) => (b.votes || 0) - (a.votes || 0))
               .map((integration) => (
-                <Card key={integration.id} className="overflow-hidden opacity-90 py-4">
-                  <CardHeader>
+                <Card key={integration.id} className="overflow-hidden opacity-90 py-4 flex flex-col">
+                  <CardHeader className="flex-1">
                     <div className="flex items-start gap-4">
                       <div className="flex size-12 shrink-0 items-center justify-center rounded-lg border bg-muted/50">{integration.icon}</div>
                       <div className="min-w-0 flex-1 space-y-1">
@@ -266,15 +266,15 @@ export function IntegrationCard() {
                           </Badge>
                         </div>
                         {integration.description && <p className="text-sm text-muted-foreground line-clamp-2">{integration.description}</p>}
-                        <div className="pt-2">
-                          <Button variant="outline" size="sm" onClick={() => handleVote(integration.id)} className="gap-2 h-8">
-                            <IconArrowBigUp className="size-4" />
-                            <span className="font-medium">{integration.votes || 0}</span>
-                          </Button>
-                        </div>
                       </div>
                     </div>
                   </CardHeader>
+                  <div className="px-6 pb-4 flex justify-end">
+                    <Button variant="outline" size="sm" onClick={() => handleVote(integration.id)} className="gap-2 h-9 min-w-[120px]">
+                      <IconArrowBigUp className="size-4" />
+                      <span className="font-medium">{integration.votes || 0} votes</span>
+                    </Button>
+                  </div>
                 </Card>
               ))}
           </div>
