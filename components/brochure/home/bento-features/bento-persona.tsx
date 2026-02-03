@@ -154,7 +154,7 @@ export default function BentoPersona() {
                 >
                   {persona.id === 3 ? (
                     <Image
-                      src="/assets/logo/lofy-logo-2.png"
+                      src="/assets/icons/lofy-logo-2.png"
                       alt="Lofy Logo"
                       width={persona.size * 0.72}
                       height={persona.size * 0.72}
