@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Bell, Clock, Loader2 } from "lucide-react";
+import { Plus, Bell, Clock, Loader2, Repeat } from "lucide-react";
 import { ReminderDialog } from "@/components/dashboard/reminders/reminder-dialog";
 import { ReminderFormDialog } from "@/components/dashboard/reminders/reminder-form-dialog";
 import { format } from "date-fns";
@@ -19,6 +19,21 @@ interface Reminder {
   status: string;
   created_at: string;
   updated_at: string;
+  recurrence?: string | null;
+}
+
+/** Extract FREQ= from RRULE and return a short label (e.g. "Weekly"). */
+function recurrenceLabel(r: string | null | undefined): string | null {
+  if (!r) return null;
+  const match = r.replace(/^RRULE:/i, "").match(/FREQ=([A-Za-z]+)/);
+  if (!match) return null;
+  const labels: Record<string, string> = {
+    DAILY: "Daily",
+    WEEKLY: "Weekly",
+    MONTHLY: "Monthly",
+    YEARLY: "Yearly",
+  };
+  return labels[match[1].toUpperCase()] ?? null;
 }
 
 export function ReminderList() {
@@ -124,6 +139,18 @@ export function ReminderList() {
   const currentYear = new Date().getFullYear();
   const years = Array.from({ length: 5 }, (_, i) => currentYear - 2 + i);
 
+  // Group reminders by date (yyyy-MM-dd), sorted by date
+  const remindersByDate = useMemo(() => {
+    const map = new Map<string, Reminder[]>();
+    for (const reminder of reminders) {
+      const key = format(new Date(reminder.reminder_time), "yyyy-MM-dd");
+      if (!map.has(key)) map.set(key, []);
+      map.get(key)!.push(reminder);
+    }
+    const entries = Array.from(map.entries()).sort(([a], [b]) => a.localeCompare(b));
+    return entries;
+  }, [reminders]);
+
   if (loading) {
     return (
       <Card>
@@ -210,43 +237,69 @@ export function ReminderList() {
           </CardContent>
         </Card>
       ) : (
-        <div className="grid gap-3 sm:gap-4">
-          {reminders.map((reminder) => {
-            const reminderDate = new Date(reminder.reminder_time);
-            const isToday = format(reminderDate, "yyyy-MM-dd") === format(new Date(), "yyyy-MM-dd");
+        <div className="grid gap-8">
+          {remindersByDate.map(([dateKey, dayReminders]) => {
+            const startDate = new Date(dayReminders[0].reminder_time);
+            const isToday = dateKey === format(new Date(), "yyyy-MM-dd");
 
             return (
-              <Card key={`${reminder.id}-${reminder.reminder_time}`} className="transition-all cursor-pointer rounded-xl hover:shadow-md active:scale-[0.98]" onClick={() => handleReminderClick(reminder)}>
-                <CardContent className="p-0">
-                  <div className="flex items-center gap-2 sm:gap-3">
-                    {/* Date Section */}
-                    <div className="flex flex-col items-center justify-center w-16 py-3 border-r sm:w-24 sm:py-4">
-                      <Badge variant={isToday ? "orange" : "default"} className="mb-1 sm:mb-2 text-[10px] sm:text-xs">
-                        {format(reminderDate, "EEE")}
-                      </Badge>
-                      <div className="text-xl font-bold sm:text-2xl">{format(reminderDate, "d")}</div>
-                      <div className="text-[10px] sm:text-xs text-muted-foreground">{format(reminderDate, "MMM yyyy")}</div>
-                    </div>
-
-                    {/* Content Section */}
-                    <div className="flex-1 min-w-0 p-3 sm:p-4">
-                      <div className="flex items-start justify-between gap-2 mb-2">
-                        <h3 className="flex-1 text-sm font-semibold sm:text-base line-clamp-2">{reminder.message}</h3>
-                        <Badge variant={getStatusColor(reminder.status)} className="ml-2 text-[10px] sm:text-xs shrink-0">
-                          {reminder.status}
-                        </Badge>
-                      </div>
-
-                      <Separator className="mb-2 sm:mb-3" />
-
-                      <div className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground">
-                        <Clock className="w-3 h-3 sm:w-4 sm:h-4 shrink-0" />
-                        <span>{format(reminderDate, "h:mm a")}</span>
-                      </div>
-                    </div>
+              <div key={dateKey} className="space-y-3">
+                {/* Clean date header */}
+                <div className="flex items-baseline gap-3 px-1">
+                  <h3 className="text-xl font-bold sm:text-2xl">{format(startDate, "d")}</h3>
+                  <div className="flex items-baseline gap-2">
+                    <span className={`text-sm font-medium ${isToday ? "text-orange-600" : "text-muted-foreground"}`}>{format(startDate, "EEEE")}</span>
+                    <span className="text-xs text-muted-foreground">{format(startDate, "MMMM yyyy")}</span>
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+
+                {/* Reminder cards */}
+                <div className="space-y-2">
+                  {dayReminders.map((reminder) => {
+                    const reminderTime = new Date(reminder.reminder_time);
+                    const recLabel = recurrenceLabel(reminder.recurrence);
+
+                    return (
+                      <Card key={`${reminder.id}-${reminder.reminder_time}`} className="transition-all cursor-pointer hover:shadow-md border-l-4 border-l-primary/20 hover:border-l-primary" onClick={() => handleReminderClick(reminder)}>
+                        <CardContent className="p-4">
+                          <div className="flex items-start gap-3">
+                            {/* Time column */}
+                            <div className="flex flex-col items-end pt-0.5 w-16 shrink-0">
+                              <span className="text-sm font-medium">{format(reminderTime, "h:mm")}</span>
+                              <span className="text-xs text-muted-foreground">{format(reminderTime, "a")}</span>
+                            </div>
+
+                            <Separator orientation="vertical" className="h-12" />
+
+                            {/* Content */}
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-start justify-between gap-2 mb-1">
+                                <h3 className="font-semibold line-clamp-2">{reminder.message}</h3>
+                                <div className="flex items-center gap-1.5 shrink-0">
+                                  <Badge variant={getStatusColor(reminder.status)} className="text-[10px]">
+                                    {reminder.status}
+                                  </Badge>
+                                  {recLabel && (
+                                    <Badge variant="default" className="text-[10px] gap-1">
+                                      <Repeat className="w-3 h-3" />
+                                      {recLabel}
+                                    </Badge>
+                                  )}
+                                </div>
+                              </div>
+
+                              <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                                <Clock className="w-3 h-3" />
+                                <span>{format(reminderTime, "h:mm a")}</span>
+                              </div>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
+                </div>
+              </div>
             );
           })}
 
