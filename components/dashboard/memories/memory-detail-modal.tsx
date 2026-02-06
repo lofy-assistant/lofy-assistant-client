@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
-import { Loader2, Trash2, Calendar, Clock } from "lucide-react";
+import { Loader2, Trash2, Calendar, Clock, Copy } from "lucide-react";
 
 interface Memory {
   id: number;
@@ -106,12 +106,22 @@ export function MemoryDetailModal({ memory, open, onOpenChange, onUpdate }: Memo
     setIsEditing(false);
   };
 
+  const handleCopy = async () => {
+    if (!memory) return;
+    try {
+      await navigator.clipboard.writeText(memory.content);
+      toast.success("Content copied to clipboard");
+    } catch (error) {
+      toast.error("Failed to copy content");
+    }
+  };
+
   if (!memory) return null;
 
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
+        <DialogContent className="max-w-2xl max-h-[75vh] overflow-hidden flex flex-col">
           <DialogHeader>
             <DialogTitle className="text-xl sm:text-2xl">{isEditing ? "Edit Memory" : memory.title || "Untitled Memory"}</DialogTitle>
             {!isEditing && (
@@ -130,15 +140,15 @@ export function MemoryDetailModal({ memory, open, onOpenChange, onUpdate }: Memo
 
           <Separator className="my-4" />
 
-          <div className="flex-1 overflow-y-auto space-y-4 px-1">
+          <div className="flex-1 overflow-y-auto px-1">
             {isEditing ? (
-              <>
+              <div className="space-y-4">
                 {/* Title Input */}
                 <div className="space-y-2">
                   <Label htmlFor="title" className="text-sm font-medium">
                     Title
                   </Label>
-                  <Input id="title" value={formData.title} onChange={(e) => setFormData({ ...formData, title: e.target.value })} placeholder="Enter memory title" className="text-base" />
+                  <Input id="title" value={formData.title} onChange={(e) => setFormData({ ...formData, title: e.target.value })} placeholder="Untitled Memory" className="text-base" />
                 </div>
 
                 {/* Content Input */}
@@ -146,14 +156,23 @@ export function MemoryDetailModal({ memory, open, onOpenChange, onUpdate }: Memo
                   <Label htmlFor="content" className="text-sm font-medium">
                     Content
                   </Label>
-                  <Textarea id="content" value={formData.content} onChange={(e) => setFormData({ ...formData, content: e.target.value })} placeholder="Enter memory content" rows={12} className="resize-none text-base" />
+                  <Textarea id="content" value={formData.content} onChange={(e) => setFormData({ ...formData, content: e.target.value })} placeholder="Enter your memory content here..." rows={5} className="resize-none text-sm sm:text-base leading-relaxed" />
                 </div>
-              </>
+              </div>
             ) : (
               <>
                 {/* Content Display */}
-                <div className="prose prose-sm sm:prose max-w-none">
-                  <p className="text-sm sm:text-base text-foreground whitespace-pre-wrap leading-relaxed">{memory.content}</p>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-sm font-medium">Content</Label>
+                    <Button variant="outline" size="sm" onClick={handleCopy} className="h-8 gap-2">
+                      <Copy className="h-3.5 w-3.5" />
+                      Copy
+                    </Button>
+                  </div>
+                  <div className="prose prose-sm sm:prose max-w-none">
+                    <p className="text-sm sm:text-base text-foreground whitespace-pre-wrap leading-relaxed">{memory.content}</p>
+                  </div>
                 </div>
               </>
             )}
