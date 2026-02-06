@@ -2,10 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { format } from "date-fns";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Loader2, Search, Calendar } from "lucide-react";
 import { MemoryDetailModal } from "@/components/dashboard/memories/memory-detail-modal";
+import { Separator } from "@/components/ui/separator";
 
 interface Memory {
   id: number;
@@ -42,9 +43,7 @@ export function MemoryGrid() {
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         console.error("Failed to fetch memories:", response.status, errorData);
-        throw new Error(
-          errorData.error || `Failed to fetch memories (${response.status})`
-        );
+        throw new Error(errorData.error || `Failed to fetch memories (${response.status})`);
       }
 
       const data = await response.json();
@@ -85,7 +84,7 @@ export function MemoryGrid() {
     fetchMemories(searchQuery);
   };
 
-  const truncateContent = (content: string, maxLength: number = 120) => {
+  const truncateContent = (content: string, maxLength: number = 150) => {
     if (content.length <= maxLength) return content;
     return content.substring(0, maxLength) + "...";
   };
@@ -103,13 +102,7 @@ export function MemoryGrid() {
       {/* Search Bar */}
       <div className="relative">
         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-        <Input
-          type="text"
-          placeholder="Search memories..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="pl-10"
-        />
+        <Input type="text" placeholder="Search memories..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-10" />
       </div>
 
       {/* Loading State */}
@@ -122,49 +115,41 @@ export function MemoryGrid() {
       {/* Empty State */}
       {!loading && memories.length === 0 && (
         <div className="flex flex-col items-center justify-center p-12 text-center">
-          <p className="text-lg text-muted-foreground">
-            {searchQuery ? "No memories found matching your search" : "No memories yet"}
-          </p>
+          <p className="text-lg text-muted-foreground">{searchQuery ? "No memories found matching your search" : "No memories yet"}</p>
         </div>
       )}
 
       {/* Grid Layout */}
       {!loading && memories.length > 0 && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {memories.map((memory) => (
-            <Card
-              key={memory.id}
-              className="cursor-pointer hover:shadow-lg transition-shadow duration-200"
-              onClick={() => handleMemoryClick(memory)}
-            >
-              <CardHeader>
-                <CardTitle className="text-lg line-clamp-2">
-                  {memory.title || "Untitled Memory"}
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <p className="text-sm text-muted-foreground line-clamp-3">
-                  {truncateContent(memory.content)}
-                </p>
-                <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                  <Calendar className="h-3 w-3" />
-                  <span>
-                    {format(new Date(memory.created_at), "MMM d, yyyy")}
-                  </span>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+          {memories.map((memory) => {
+            const memoryDate = new Date(memory.created_at);
+
+            return (
+              <Card key={memory.id} className="group cursor-pointer hover:shadow-lg transition-all duration-200 border-l-4 border-l-transparent hover:border-l-primary" onClick={() => handleMemoryClick(memory)}>
+                <CardContent className="p-5 space-y-3">
+                  {/* Title */}
+                  <h3 className="text-lg font-semibold line-clamp-2">{memory.title || "Untitled Memory"}</h3>
+
+                  <Separator />
+
+                  {/* Content Preview */}
+                  <p className="text-sm text-muted-foreground line-clamp-4 leading-relaxed">{truncateContent(memory.content)}</p>
+
+                  {/* Date */}
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground pt-2">
+                    <Calendar className="h-3.5 w-3.5" />
+                    <span>{format(memoryDate, "MMM d, yyyy 'at' h:mm a")}</span>
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
         </div>
       )}
 
       {/* Memory Detail Modal */}
-      <MemoryDetailModal
-        memory={selectedMemory}
-        open={dialogOpen}
-        onOpenChange={setDialogOpen}
-        onUpdate={handleUpdate}
-      />
+      <MemoryDetailModal memory={selectedMemory} open={dialogOpen} onOpenChange={setDialogOpen} onUpdate={handleUpdate} />
     </div>
   );
 }
