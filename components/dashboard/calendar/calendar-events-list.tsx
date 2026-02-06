@@ -258,34 +258,34 @@ export function CalendarEventsList() {
 
                     return (
                       <Card key={`${event.id}-${event.start_time}`} className="transition-all cursor-pointer hover:shadow-md border-l-4 border-l-primary/20 hover:border-l-primary" onClick={() => handleEventClick(event)}>
-                        <CardContent className="p-4">
-                          <div className="flex items-start gap-3">
+                        <CardContent className="p-3 sm:p-4">
+                          <div className="flex items-start gap-2 sm:gap-3">
                             {/* Time column */}
-                            <div className="flex flex-col items-end pt-0.5 w-16 shrink-0">
-                              <span className="text-sm font-medium">{event.is_all_day ? "All day" : format(eventStart, "h:mm")}</span>
-                              {!event.is_all_day && <span className="text-xs text-muted-foreground">{format(eventStart, "a")}</span>}
+                            <div className="flex flex-col items-end pt-0.5 w-12 sm:w-16 shrink-0">
+                              <span className="text-xs sm:text-sm font-medium">{event.is_all_day ? "All day" : format(eventStart, "h:mm")}</span>
+                              {!event.is_all_day && <span className="text-[10px] sm:text-xs text-muted-foreground">{format(eventStart, "a")}</span>}
                             </div>
 
-                            <Separator orientation="vertical" className="h-12" />
+                            <Separator orientation="vertical" className="h-10 sm:h-12" />
 
                             {/* Content */}
                             <div className="flex-1 min-w-0">
-                              <div className="flex items-start justify-between gap-2 mb-1">
-                                <h3 className="font-semibold line-clamp-1">{event.title}</h3>
+                              <div className="flex items-start justify-between gap-1.5 sm:gap-2 mb-1">
+                                <h3 className="text-sm sm:text-base font-semibold line-clamp-1 break-words">{event.title}</h3>
                                 {recLabel && (
-                                  <Badge variant="default" className="shrink-0 text-[10px] gap-1">
-                                    <Repeat className="w-3 h-3" />
-                                    {recLabel}
+                                  <Badge variant="default" className="shrink-0 text-[9px] sm:text-[10px] gap-0.5 sm:gap-1">
+                                    <Repeat className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
+                                    <span className="hidden xs:inline">{recLabel}</span>
                                   </Badge>
                                 )}
                               </div>
 
-                              {event.description && <p className="text-sm text-muted-foreground line-clamp-1 mb-2">{event.description}</p>}
+                              {event.description && <p className="text-xs sm:text-sm text-muted-foreground line-clamp-1 mb-1.5 sm:mb-2 break-words">{event.description}</p>}
 
                               {!event.is_all_day && (
-                                <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                                  <Clock className="w-3 h-3" />
-                                  <span>
+                                <div className="flex items-center gap-1 sm:gap-1.5 text-[10px] sm:text-xs text-muted-foreground">
+                                  <Clock className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
+                                  <span className="truncate">
                                     {format(eventStart, "h:mm a")} - {format(eventEnd, "h:mm a")}
                                   </span>
                                 </div>
