@@ -13,7 +13,6 @@ export default function SettingsPage() {
     <SidebarProvider
       style={
         {
-          "--sidebar-width": "calc(var(--spacing) * 48)",
           "--header-height": "calc(var(--spacing) * 12)",
         } as React.CSSProperties
       }
@@ -26,7 +25,7 @@ export default function SettingsPage() {
             <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
               <div className="w-full max-w-5xl px-4 mx-auto lg:px-6">
                 <div className="flex items-center gap-3 mb-2">
-                  <Settings className="w-8 h-8" />
+                  <Settings className="w-8 h-8 text-primary fill-none" />
                   <h1 className="text-2xl font-bold">Settings</h1>
                 </div>
                 <p className="mb-6 text-muted-foreground">

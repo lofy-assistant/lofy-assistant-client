@@ -201,56 +201,56 @@ export function ReminderDialog({
             </div>
           </div>
 
-          <DialogFooter className="flex justify-between sm:justify-between">
-            <Button
-              variant="destructive"
-              size="sm"
-              onClick={() => setShowDeleteDialog(true)}
-              disabled={isSaving}
-            >
-              <Trash2 className="h-4 w-4 mr-2" />
-              Delete
-            </Button>
-            
-            <div className="flex gap-2">
-              {isEditing ? (
-                <>
-                  <Button
-                    variant="outline"
-                    onClick={() => setIsEditing(false)}
-                    disabled={isSaving}
-                  >
-                    Cancel
-                  </Button>
-                  <Button onClick={handleSave} disabled={isSaving || isCompleted}>
-                    {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    Save Changes
-                  </Button>
-                </>
-              ) : (
-                <Button onClick={() => setIsEditing(true)} disabled={isCompleted}>
+          <DialogFooter className="flex-col-reverse sm:flex-row gap-2 sm:gap-0">
+            {!isEditing ? (
+              <div className="flex flex-row gap-2 w-full sm:w-auto">
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={() => setShowDeleteDialog(true)}
+                  className="flex-1 sm:flex-initial sm:mr-auto"
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Delete
+                </Button>
+                <Button onClick={() => setIsEditing(true)} disabled={isCompleted} className="flex-1 sm:flex-initial">
                   Edit
                 </Button>
-              )}
-            </div>
+              </div>
+            ) : (
+              <div className="flex gap-2 w-full sm:w-auto">
+                <Button
+                  variant="outline"
+                  onClick={() => setIsEditing(false)}
+                  disabled={isSaving}
+                  className="flex-1 sm:flex-initial"
+                >
+                  Cancel
+                </Button>
+                <Button onClick={handleSave} disabled={isSaving || isCompleted} className="flex-1 sm:flex-initial">
+                  {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  Save Changes
+                </Button>
+              </div>
+            )}
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-        <AlertDialogContent>
+        <AlertDialogContent className="max-w-md">
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription>
               This action cannot be undone. This will permanently delete the reminder.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+          <AlertDialogFooter className="flex-row gap-2">
+            <AlertDialogCancel disabled={isDeleting} className="flex-1 sm:flex-initial mt-0">Cancel</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDelete}
               disabled={isDeleting}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              className="flex-1 sm:flex-initial bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               {isDeleting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Delete

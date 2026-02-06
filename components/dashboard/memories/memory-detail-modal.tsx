@@ -3,29 +3,14 @@
 import { useState, useEffect } from "react";
 import { format } from "date-fns";
 import { toast } from "sonner";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Loader2, Trash2, Calendar } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
+import { Loader2, Trash2, Calendar, Clock, Copy } from "lucide-react";
 
 interface Memory {
   id: number;
@@ -42,12 +27,7 @@ interface MemoryDetailModalProps {
   onUpdate: () => void;
 }
 
-export function MemoryDetailModal({
-  memory,
-  open,
-  onOpenChange,
-  onUpdate,
-}: MemoryDetailModalProps) {
+export function MemoryDetailModal({ memory, open, onOpenChange, onUpdate }: MemoryDetailModalProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -126,151 +106,116 @@ export function MemoryDetailModal({
     setIsEditing(false);
   };
 
+  const handleCopy = async () => {
+    if (!memory) return;
+    try {
+      await navigator.clipboard.writeText(memory.content);
+      toast.success("Content copied to clipboard");
+    } catch (error) {
+      toast.error("Failed to copy content");
+    }
+  };
+
   if (!memory) return null;
 
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+        <DialogContent className="w-[calc(100%-2rem)] max-w-2xl max-h-[75vh] overflow-hidden flex flex-col">
           <DialogHeader>
-            <DialogTitle>
-              {isEditing ? "Edit Memory" : "Memory Details"}
-            </DialogTitle>
-            <DialogDescription>
-              {isEditing
-                ? "Make changes to your memory"
-                : "View your memory details"}
-            </DialogDescription>
+            <DialogTitle className="text-xl sm:text-2xl">{isEditing ? "Edit Memory" : memory.title || "Untitled Memory"}</DialogTitle>
+            {!isEditing && (
+              <DialogDescription className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm pt-2">
+                <span className="flex items-center gap-1.5">
+                  <Calendar className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+                  {format(new Date(memory.created_at), "MMM d, yyyy")}
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <Clock className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+                  {format(new Date(memory.created_at), "h:mm a")}
+                </span>
+              </DialogDescription>
+            )}
           </DialogHeader>
 
-          <div className="space-y-4">
-            {/* Title */}
-            <div className="space-y-2">
-              <Label htmlFor="title">Title</Label>
-              {isEditing ? (
-                <Input
-                  id="title"
-                  value={formData.title}
-                  onChange={(e) =>
-                    setFormData({ ...formData, title: e.target.value })
-                  }
-                  placeholder="Enter memory title"
-                />
-              ) : (
-                <p className="text-sm font-medium">
-                  {memory.title || "Untitled Memory"}
-                </p>
-              )}
-            </div>
+          <Separator className="my-4" />
 
-            {/* Content */}
-            <div className="space-y-2">
-              <Label htmlFor="content">Content</Label>
-              {isEditing ? (
-                <Textarea
-                  id="content"
-                  value={formData.content}
-                  onChange={(e) =>
-                    setFormData({ ...formData, content: e.target.value })
-                  }
-                  placeholder="Enter memory content"
-                  rows={10}
-                  className="resize-none"
-                />
-              ) : (
-                <p className="text-sm text-muted-foreground whitespace-pre-wrap">
-                  {memory.content}
-                </p>
-              )}
-            </div>
-
-            {/* Metadata */}
-            {!isEditing && (
-              <div className="grid grid-cols-2 gap-4 pt-4 border-t">
-                <div className="space-y-1">
-                  <Label className="text-xs text-muted-foreground">
-                    Created
+          <div className="flex-1 overflow-y-auto px-1">
+            {isEditing ? (
+              <div className="space-y-4">
+                {/* Title Input */}
+                <div className="space-y-2">
+                  <Label htmlFor="title" className="text-sm font-medium">
+                    Title
                   </Label>
-                  <div className="flex items-center gap-2 text-sm">
-                    <Calendar className="h-4 w-4" />
-                    <span>
-                      {format(new Date(memory.created_at), "MMM d, yyyy h:mm a")}
-                    </span>
-                  </div>
+                  <Input id="title" value={formData.title} onChange={(e) => setFormData({ ...formData, title: e.target.value })} placeholder="Untitled Memory" className="text-base" />
                 </div>
-                <div className="space-y-1">
-                  <Label className="text-xs text-muted-foreground">
-                    Updated
+
+                {/* Content Input */}
+                <div className="space-y-2">
+                  <Label htmlFor="content" className="text-sm font-medium">
+                    Content
                   </Label>
-                  <div className="flex items-center gap-2 text-sm">
-                    <Calendar className="h-4 w-4" />
-                    <span>
-                      {format(new Date(memory.updated_at), "MMM d, yyyy h:mm a")}
-                    </span>
-                  </div>
+                  <Textarea id="content" value={formData.content} onChange={(e) => setFormData({ ...formData, content: e.target.value })} placeholder="Enter your memory content here..." rows={5} className="resize-none text-sm sm:text-base leading-relaxed" />
                 </div>
               </div>
+            ) : (
+              <>
+                {/* Content Display */}
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-sm font-medium">Content</Label>
+                    <Button variant="outline" size="sm" onClick={handleCopy} className="h-8 gap-2">
+                      <Copy className="h-3.5 w-3.5" />
+                      Copy
+                    </Button>
+                  </div>
+                  <div className="prose prose-sm sm:prose max-w-none">
+                    <p className="text-sm sm:text-base text-foreground whitespace-pre-wrap leading-relaxed">{memory.content}</p>
+                  </div>
+                </div>
+              </>
             )}
           </div>
 
-          <DialogFooter className="flex items-center justify-between">
-            <div>
-              {!isEditing && (
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  onClick={() => setShowDeleteDialog(true)}
-                >
+          <Separator className="my-4" />
+
+          <DialogFooter className="flex-col-reverse sm:flex-row gap-2 sm:gap-0">
+            {!isEditing ? (
+              <div className="flex flex-row gap-2 w-full sm:w-auto">
+                <Button variant="destructive" size="sm" onClick={() => setShowDeleteDialog(true)} className="flex-1 sm:flex-initial sm:mr-auto">
                   <Trash2 className="h-4 w-4 mr-2" />
                   Delete
                 </Button>
-              )}
-            </div>
-            <div className="flex gap-2">
-              {isEditing ? (
-                <>
-                  <Button
-                    variant="outline"
-                    onClick={handleCancel}
-                    disabled={isSaving}
-                  >
-                    Cancel
-                  </Button>
-                  <Button onClick={handleSave} disabled={isSaving}>
-                    {isSaving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                    Save Changes
-                  </Button>
-                </>
-              ) : (
-                <>
-                  <Button variant="outline" onClick={() => onOpenChange(false)}>
-                    Close
-                  </Button>
-                  <Button onClick={() => setIsEditing(true)}>Edit</Button>
-                </>
-              )}
-            </div>
+                <Button onClick={() => setIsEditing(true)} className="flex-1 sm:flex-initial">
+                  Edit
+                </Button>
+              </div>
+            ) : (
+              <div className="flex gap-2 w-full sm:w-auto sm:ml-auto">
+                <Button variant="outline" onClick={handleCancel} disabled={isSaving} className="flex-1 sm:flex-initial">
+                  Cancel
+                </Button>
+                <Button onClick={handleSave} disabled={isSaving} className="flex-1 sm:flex-initial">
+                  {isSaving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                  Save Changes
+                </Button>
+              </div>
+            )}
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-        <AlertDialogContent>
+        <AlertDialogContent className="max-w-md">
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete your
-              memory.
-            </AlertDialogDescription>
+            <AlertDialogDescription>This action cannot be undone. This will permanently delete your memory.</AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDelete}
-              disabled={isDeleting}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
+          <AlertDialogFooter className="flex-row gap-2">
+            <AlertDialogCancel disabled={isDeleting} className="flex-1 sm:flex-initial mt-0">Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} disabled={isDeleting} className="flex-1 sm:flex-initial bg-destructive text-destructive-foreground hover:bg-destructive/90">
               {isDeleting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
               Delete
             </AlertDialogAction>

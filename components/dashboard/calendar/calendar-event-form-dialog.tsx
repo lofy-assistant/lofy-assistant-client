@@ -288,37 +288,38 @@ export function CalendarEventFormDialog({
             </Select>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="start_time">Start Time</Label>
-            <Input
-              id="start_time"
-              type={formData.is_all_day ? "date" : "datetime-local"}
-              value={formData.is_all_day ? formData.start_time.split('T')[0] : formData.start_time}
-              onChange={(e) => handleStartTimeChange(
-                formData.is_all_day 
-                  ? `${e.target.value}T00:00` 
-                  : e.target.value
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="start_time">Start Time</Label>
+              <Input
+                id="start_time"
+                type={formData.is_all_day ? "date" : "datetime-local"}
+                value={formData.is_all_day ? formData.start_time.split('T')[0] : formData.start_time}
+                onChange={(e) => handleStartTimeChange(
+                  formData.is_all_day 
+                    ? `${e.target.value}T00:00` 
+                    : e.target.value
+                )}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="end_time">End Time</Label>
+              <Input
+                id="end_time"
+                type={formData.is_all_day ? "date" : "datetime-local"}
+                value={formData.is_all_day ? formData.end_time.split('T')[0] : formData.end_time}
+                onChange={(e) => handleEndTimeChange(e.target.value)}
+                disabled={formData.is_all_day}
+                required
+                className={formData.is_all_day ? "cursor-not-allowed opacity-60" : ""}
+              />
+              {formData.is_all_day && (
+                <p className="text-xs text-muted-foreground">
+                  End date is automatically set to match the start date for all-day events
+                </p>
               )}
-              required
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="end_time">End Time</Label>
-            <Input
-              id="end_time"
-              type={formData.is_all_day ? "date" : "datetime-local"}
-              value={formData.is_all_day ? formData.end_time.split('T')[0] : formData.end_time}
-              onChange={(e) => handleEndTimeChange(e.target.value)}
-              disabled={formData.is_all_day}
-              required
-              className={formData.is_all_day ? "cursor-not-allowed opacity-60" : ""}
-            />
-            {formData.is_all_day && (
-              <p className="text-xs text-muted-foreground">
-                End date is automatically set to match the start date for all-day events
-              </p>
-            )}
+            </div>
           </div>
 
           <div className="flex justify-between gap-2">
