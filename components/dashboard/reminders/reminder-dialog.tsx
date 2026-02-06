@@ -201,34 +201,36 @@ export function ReminderDialog({
             </div>
           </div>
 
-          <DialogFooter className="flex justify-between sm:justify-between">
-            <Button
-              variant="destructive"
-              size="sm"
-              onClick={() => setShowDeleteDialog(true)}
-              disabled={isSaving}
-            >
-              <Trash2 className="h-4 w-4 mr-2" />
-              Delete
-            </Button>
-            
-            <div className="flex gap-2">
+          <DialogFooter className="flex-col-reverse sm:flex-row gap-2 sm:gap-0">
+            {!isEditing && (
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={() => setShowDeleteDialog(true)}
+                className="w-full sm:w-auto sm:mr-auto"
+              >
+                <Trash2 className="h-4 w-4 mr-2" />
+                Delete
+              </Button>
+            )}
+            <div className="flex gap-2 w-full sm:w-auto">
               {isEditing ? (
                 <>
                   <Button
                     variant="outline"
                     onClick={() => setIsEditing(false)}
                     disabled={isSaving}
+                    className="flex-1 sm:flex-initial"
                   >
                     Cancel
                   </Button>
-                  <Button onClick={handleSave} disabled={isSaving || isCompleted}>
+                  <Button onClick={handleSave} disabled={isSaving || isCompleted} className="flex-1 sm:flex-initial">
                     {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                     Save Changes
                   </Button>
                 </>
               ) : (
-                <Button onClick={() => setIsEditing(true)} disabled={isCompleted}>
+                <Button onClick={() => setIsEditing(true)} disabled={isCompleted} className="flex-1 sm:flex-initial">
                   Edit
                 </Button>
               )}
