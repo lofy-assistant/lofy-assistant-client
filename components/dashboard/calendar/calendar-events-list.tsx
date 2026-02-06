@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { format } from "date-fns";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, Clock, Loader2 } from "lucide-react";
+import { Calendar, Clock, Loader2, Repeat } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { CalendarEventDialog } from "@/components/dashboard/calendar/calendar-event-dialog";
 import { CalendarEventFormDialog } from "@/components/dashboard/calendar/calendar-event-form-dialog";
@@ -21,6 +21,20 @@ interface CalendarEvent {
   end_time: string;
   is_all_day: boolean;
   recurrence?: string | null;
+}
+
+/** Extract FREQ= from RRULE and return a short label (e.g. "Weekly"). */
+function recurrenceLabel(r: string | null | undefined): string | null {
+  if (!r) return null;
+  const match = r.replace(/^RRULE:/i, "").match(/FREQ=([A-Za-z]+)/);
+  if (!match) return null;
+  const labels: Record<string, string> = {
+    DAILY: "Daily",
+    WEEKLY: "Weekly",
+    MONTHLY: "Monthly",
+    YEARLY: "Yearly",
+  };
+  return labels[match[1].toUpperCase()] ?? null;
 }
 
 export function CalendarEventsList() {
@@ -119,6 +133,18 @@ export function CalendarEventsList() {
     return eventEndTime >= now;
   });
 
+  // Group events by date (yyyy-MM-dd), sorted by date
+  const eventsByDate = useMemo(() => {
+    const map = new Map<string, CalendarEvent[]>();
+    for (const event of filteredEvents) {
+      const key = format(new Date(event.start_time), "yyyy-MM-dd");
+      if (!map.has(key)) map.set(key, []);
+      map.get(key)!.push(event);
+    }
+    const entries = Array.from(map.entries()).sort(([a], [b]) => a.localeCompare(b));
+    return entries;
+  }, [filteredEvents]);
+
   if (loading) {
     return (
       <Card>
@@ -207,44 +233,71 @@ export function CalendarEventsList() {
           </CardContent>
         </Card>
       ) : (
-        <div className="grid gap-3 sm:gap-4">
-          {filteredEvents.map((event) => {
-            const startDate = new Date(event.start_time);
-            const endDate = new Date(event.end_time);
-            const isToday = format(startDate, "yyyy-MM-dd") === format(new Date(), "yyyy-MM-dd");
+        <div className="grid gap-8">
+          {eventsByDate.map(([dateKey, dayEvents]) => {
+            const startDate = new Date(dayEvents[0].start_time);
+            const isToday = dateKey === format(new Date(), "yyyy-MM-dd");
 
             return (
-              <Card key={`${event.id}-${event.start_time}`} className="transition-all cursor-pointer rounded-xl hover:shadow-md active:scale-[0.98]" onClick={() => handleEventClick(event)}>
-                <CardContent className="p-0">
-                  <div className="flex items-center gap-2 sm:gap-3">
-                    {/* Date Section */}
-                    <div className="flex flex-col items-center justify-center w-16 py-3 border-r sm:w-24 sm:py-4">
-                      <Badge variant={isToday ? "orange" : "default"} className="mb-1 sm:mb-2 text-[10px] sm:text-xs">
-                        {format(startDate, "EEE")}
-                      </Badge>
-                      <div className="text-xl font-bold sm:text-2xl">{format(startDate, "d")}</div>
-                      <div className="text-[10px] sm:text-xs text-muted-foreground">{format(startDate, "MMM yyyy")}</div>
-                    </div>
-
-                    {/* Content Section */}
-                    <div className="flex-1 min-w-0 p-3 sm:p-4">
-                      <h3 className="mb-2 text-sm font-semibold sm:text-base line-clamp-1">{event.title}</h3>
-
-                      {event.description && (
-                        <>
-                          <p className="mb-2 text-xs sm:mb-3 sm:text-sm text-muted-foreground line-clamp-2">{event.description}</p>
-                          <Separator className="mb-2 sm:mb-3" />
-                        </>
-                      )}
-
-                      <div className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground">
-                        <Clock className="w-3 h-3 sm:w-4 sm:h-4 shrink-0" />
-                        <span className="truncate">{event.is_all_day ? "All day" : `${format(startDate, "h:mm a")} - ${format(endDate, "h:mm a")}`}</span>
-                      </div>
-                    </div>
+              <div key={dateKey} className="space-y-3">
+                {/* Clean date header */}
+                <div className="flex items-baseline gap-3 px-1">
+                  <h3 className="text-xl font-bold sm:text-2xl">{format(startDate, "d")}</h3>
+                  <div className="flex items-baseline gap-2">
+                    <span className={`text-sm font-medium ${isToday ? "text-orange-600" : "text-muted-foreground"}`}>{format(startDate, "EEEE")}</span>
+                    <span className="text-xs text-muted-foreground">{format(startDate, "MMMM yyyy")}</span>
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+
+                {/* Event cards */}
+                <div className="space-y-2">
+                  {dayEvents.map((event) => {
+                    const eventStart = new Date(event.start_time);
+                    const eventEnd = new Date(event.end_time);
+                    const recLabel = recurrenceLabel(event.recurrence);
+
+                    return (
+                      <Card key={`${event.id}-${event.start_time}`} className="transition-all cursor-pointer hover:shadow-md border-l-4 border-l-primary/20 hover:border-l-primary" onClick={() => handleEventClick(event)}>
+                        <CardContent className="p-4">
+                          <div className="flex items-start gap-3">
+                            {/* Time column */}
+                            <div className="flex flex-col items-end pt-0.5 w-16 shrink-0">
+                              <span className="text-sm font-medium">{event.is_all_day ? "All day" : format(eventStart, "h:mm")}</span>
+                              {!event.is_all_day && <span className="text-xs text-muted-foreground">{format(eventStart, "a")}</span>}
+                            </div>
+
+                            <Separator orientation="vertical" className="h-12" />
+
+                            {/* Content */}
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-start justify-between gap-2 mb-1">
+                                <h3 className="font-semibold line-clamp-1">{event.title}</h3>
+                                {recLabel && (
+                                  <Badge variant="default" className="shrink-0 text-[10px] gap-1">
+                                    <Repeat className="w-3 h-3" />
+                                    {recLabel}
+                                  </Badge>
+                                )}
+                              </div>
+
+                              {event.description && <p className="text-sm text-muted-foreground line-clamp-1 mb-2">{event.description}</p>}
+
+                              {!event.is_all_day && (
+                                <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                                  <Clock className="w-3 h-3" />
+                                  <span>
+                                    {format(eventStart, "h:mm a")} - {format(eventEnd, "h:mm a")}
+                                  </span>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
+                </div>
+              </div>
             );
           })}
         </div>
