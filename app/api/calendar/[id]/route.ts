@@ -16,7 +16,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
 
     const eventId = parseInt(params.id);
     const body = await request.json();
-    const { title, description, start_time, end_time } = body;
+    const { title, description, start_time, end_time, recurrence, is_all_day, timezone } = body;
 
     const event = await prisma.calendar_events.findUnique({
       where: { id: eventId },
@@ -29,15 +29,27 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     const newStartTime = new Date(start_time);
     const startTimeChanged = event.start_time.getTime() !== newStartTime.getTime();
 
-    // Update the calendar event
+    const updateData: {
+      title: string;
+      description: string | null;
+      start_time: Date;
+      end_time: Date;
+      recurrence?: string | null;
+      is_all_day?: boolean;
+      timezone?: string;
+    } = {
+      title,
+      description: description ?? event.description,
+      start_time: newStartTime,
+      end_time: new Date(end_time),
+    };
+    if (recurrence !== undefined) updateData.recurrence = recurrence || null;
+    if (is_all_day !== undefined) updateData.is_all_day = is_all_day;
+    if (timezone !== undefined) updateData.timezone = timezone;
+
     const updatedEvent = await prisma.calendar_events.update({
       where: { id: eventId },
-      data: {
-        title,
-        description,
-        start_time: newStartTime,
-        end_time: new Date(end_time),
-      },
+      data: updateData,
     });
 
     // Update the reminder if start time changed and reminder exists

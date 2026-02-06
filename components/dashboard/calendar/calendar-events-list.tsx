@@ -20,6 +20,7 @@ interface CalendarEvent {
   start_time: string;
   end_time: string;
   is_all_day: boolean;
+  recurrence?: string | null;
 }
 
 export function CalendarEventsList() {
