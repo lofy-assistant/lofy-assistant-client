@@ -273,9 +273,9 @@ export function CalendarEventsList() {
                               <div className="flex items-start justify-between gap-1.5 sm:gap-2 mb-1">
                                 <h3 className="text-sm sm:text-base font-semibold line-clamp-1 break-words">{event.title}</h3>
                                 {recLabel && (
-                                  <Badge variant="default" className="shrink-0 text-[9px] sm:text-[10px] gap-0.5 sm:gap-1">
-                                    <Repeat className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
-                                    <span className="hidden xs:inline">{recLabel}</span>
+                                  <Badge variant="default" className="shrink-0 text-[10px] gap-1">
+                                    <Repeat className="w-3 h-3" />
+                                    {recLabel}
                                   </Badge>
                                 )}
                               </div>

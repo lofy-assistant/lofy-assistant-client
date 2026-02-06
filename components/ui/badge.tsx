@@ -6,14 +6,14 @@ import { cn } from "@/lib/utils";
 
 const badgeVariants = cva("inline-flex items-center rounded-full border px-3 py-1 text-xs font-medium whitespace-nowrap gap-1 transition-colors", {
   variants: {
-    variant: {
-      default: "text-foreground",
-      primary: "border-transparent bg-primary text-primary-foreground",
-      emerald: "border-transparent bg-emerald-200/80 text-foreground",
-      indigo: "border-transparent bg-sky-200/80 text-foreground",
-      orange: "border-transparent bg-orange-200/70 text-foreground",
-      destructive: "border-transparent bg-destructive text-foreground",
-    },
+      variant: {
+        default: "text-foreground",
+        primary: "border-transparent bg-primary text-white",
+        emerald: "border-transparent bg-emerald-200/80 text-foreground",
+        indigo: "border-transparent bg-sky-200/80 text-foreground",
+        orange: "border-transparent bg-orange-200/70 text-foreground",
+        destructive: "border-transparent bg-destructive text-white",
+      },
   },
   defaultVariants: {
     variant: "default",

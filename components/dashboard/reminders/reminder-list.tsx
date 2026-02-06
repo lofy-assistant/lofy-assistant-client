@@ -275,12 +275,12 @@ export function ReminderList() {
                             <div className="flex-1 min-w-0">
                               <div className="flex items-start justify-between gap-2 mb-1">
                                 <h3 className="font-semibold line-clamp-2">{reminder.message}</h3>
-                                <div className="flex items-center gap-1.5 shrink-0">
-                                  <Badge variant={getStatusColor(reminder.status)} className="text-[10px]">
+                                <div className="flex flex-col gap-1 shrink-0 min-w-[80px]">
+                                  <Badge variant={getStatusColor(reminder.status)} className="text-[10px] w-full justify-center">
                                     {reminder.status.charAt(0).toUpperCase() + reminder.status.slice(1)}
                                   </Badge>
                                   {recLabel && (
-                                    <Badge variant="default" className="text-[10px] gap-1">
+                                    <Badge variant="default" className="text-[10px] gap-1 w-full justify-center">
                                       <Repeat className="w-3 h-3" />
                                       {recLabel}
                                     </Badge>

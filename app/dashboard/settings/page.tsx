@@ -13,7 +13,6 @@ export default function SettingsPage() {
     <SidebarProvider
       style={
         {
-          "--sidebar-width": "calc(var(--spacing) * 48)",
           "--header-height": "calc(var(--spacing) * 12)",
         } as React.CSSProperties
       }
