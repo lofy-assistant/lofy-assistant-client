@@ -22,14 +22,10 @@ export default function IntegrationsPage() {
             <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
               <div className="w-full max-w-7xl px-4 mx-auto lg:px-6">
                 <div className="flex items-center gap-3 mb-2">
-                  <div className="flex size-10 items-center justify-center rounded-lg border bg-muted/50">
-                    <IconPlug className="size-5 text-muted-foreground" />
-                  </div>
+                  <IconPlug className="w-8 h-8 text-primary fill-none" />
                   <h1 className="text-2xl font-bold">Integrations</h1>
                 </div>
-                <p className="mb-6 text-muted-foreground">
-                  Connect your favorite apps to your Lofy account and get more done.
-                </p>
+                <p className="mb-6 text-muted-foreground">Connect your favorite apps to your Lofy account and get more done.</p>
                 <Separator className="mb-6" />
                 <IntegrationCard />
 
