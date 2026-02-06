@@ -244,12 +244,12 @@ export function ReminderList() {
 
             return (
               <div key={dateKey} className="space-y-3">
-                {/* Clean date header */}
-                <div className="flex items-baseline gap-3 px-1">
+                {/* Clean date header — day, day name, month & year in primary when today */}
+                <div className={`flex items-baseline gap-3 px-1 ${isToday ? "text-primary" : ""}`}>
                   <h3 className="text-xl font-bold sm:text-2xl">{format(startDate, "d")}</h3>
                   <div className="flex items-baseline gap-2">
-                    <span className={`text-sm font-medium ${isToday ? "text-orange-600" : "text-muted-foreground"}`}>{format(startDate, "EEEE")}</span>
-                    <span className="text-xs text-muted-foreground">{format(startDate, "MMMM yyyy")}</span>
+                    <span className={`text-sm font-medium ${isToday ? "" : "text-muted-foreground"}`}>{format(startDate, "EEEE")}</span>
+                    <span className={`text-xs ${isToday ? "" : "text-muted-foreground"}`}>{format(startDate, "MMMM yyyy")}</span>
                   </div>
                 </div>
 
@@ -277,7 +277,7 @@ export function ReminderList() {
                                 <h3 className="font-semibold line-clamp-2">{reminder.message}</h3>
                                 <div className="flex items-center gap-1.5 shrink-0">
                                   <Badge variant={getStatusColor(reminder.status)} className="text-[10px]">
-                                    {reminder.status}
+                                    {reminder.status.charAt(0).toUpperCase() + reminder.status.slice(1)}
                                   </Badge>
                                   {recLabel && (
                                     <Badge variant="default" className="text-[10px] gap-1">

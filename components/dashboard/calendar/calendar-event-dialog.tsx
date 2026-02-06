@@ -156,22 +156,23 @@ export function CalendarEventDialog({ event, open, onOpenChange, onUpdate }: Cal
               {isEditing ? <Textarea id="description" value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} rows={3} /> : <p className="text-sm text-muted-foreground">{event.description || "No description"}</p>}
             </div>
 
-            <div className="grid gap-2">
-              <Label htmlFor="start_time">Start Time</Label>
-              {isEditing ? (
-                <Input id="start_time" type="datetime-local" value={format(new Date(formData.start_time), "yyyy-MM-dd'T'HH:mm")} onChange={(e) => setFormData({ ...formData, start_time: new Date(e.target.value).toISOString() })} />
-              ) : (
-                <p className="text-sm">{format(new Date(event.start_time), "PPP 'at' p")}</p>
-              )}
-            </div>
-
-            <div className="grid gap-2">
-              <Label htmlFor="end_time">End Time</Label>
-              {isEditing ? (
-                <Input id="end_time" type="datetime-local" value={format(new Date(formData.end_time), "yyyy-MM-dd'T'HH:mm")} onChange={(e) => setFormData({ ...formData, end_time: new Date(e.target.value).toISOString() })} />
-              ) : (
-                <p className="text-sm">{format(new Date(event.end_time), "PPP 'at' p")}</p>
-              )}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid gap-2">
+                <Label htmlFor="start_time">Start Time</Label>
+                {isEditing ? (
+                  <Input id="start_time" type="datetime-local" value={format(new Date(formData.start_time), "yyyy-MM-dd'T'HH:mm")} onChange={(e) => setFormData({ ...formData, start_time: new Date(e.target.value).toISOString() })} />
+                ) : (
+                  <p className="text-sm">{format(new Date(event.start_time), "PPP 'at' p")}</p>
+                )}
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="end_time">End Time</Label>
+                {isEditing ? (
+                  <Input id="end_time" type="datetime-local" value={format(new Date(formData.end_time), "yyyy-MM-dd'T'HH:mm")} onChange={(e) => setFormData({ ...formData, end_time: new Date(e.target.value).toISOString() })} />
+                ) : (
+                  <p className="text-sm">{format(new Date(event.end_time), "PPP 'at' p")}</p>
+                )}
+              </div>
             </div>
 
             <div className="grid gap-2">
@@ -196,48 +197,45 @@ export function CalendarEventDialog({ event, open, onOpenChange, onUpdate }: Cal
           </div>
 
           <DialogFooter className="flex-col-reverse sm:flex-row gap-2 sm:gap-0">
-            {!isEditing && (
-              <Button
-                variant="destructive"
-                size="sm"
-                onClick={() => setShowDeleteDialog(true)}
-                className="w-full sm:w-auto sm:mr-auto"
-              >
-                <Trash2 className="h-4 w-4 mr-2" />
-                Delete
-              </Button>
+            {!isEditing ? (
+              <div className="flex flex-row gap-2 w-full sm:w-auto">
+                <Button variant="destructive" size="sm" onClick={() => setShowDeleteDialog(true)} className="flex-1 sm:flex-initial sm:mr-auto">
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Delete
+                </Button>
+                <Button onClick={() => setIsEditing(true)} className="flex-1 sm:flex-initial">
+                  Edit
+                </Button>
+              </div>
+            ) : (
+              <div className="flex gap-2 w-full sm:w-auto">
+                <Button variant="outline" onClick={() => setIsEditing(false)} disabled={isSaving} className="flex-1 sm:flex-initial">
+                  Cancel
+                </Button>
+                <Button onClick={handleSave} disabled={isSaving} className="flex-1 sm:flex-initial">
+                  {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  Save Changes
+                </Button>
+              </div>
             )}
-            <div className="flex gap-2 w-full sm:w-auto">
-              {isEditing ? (
-                <>
-                  <Button variant="outline" onClick={() => setIsEditing(false)} disabled={isSaving} className="flex-1 sm:flex-initial">
-                    Cancel
-                  </Button>
-                  <Button onClick={handleSave} disabled={isSaving} className="flex-1 sm:flex-initial">
-                    {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    Save Changes
-                  </Button>
-                </>
-              ) : (
-                <Button onClick={() => setIsEditing(true)} className="flex-1 sm:flex-initial">Edit</Button>
-              )}
-            </div>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-        <AlertDialogContent>
+        <AlertDialogContent className="max-w-md">
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the event
+              This action cannot be undone. This will permanently delete the event.
               {/* "{event?.title}". */}
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete} disabled={isDeleting} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+          <AlertDialogFooter className="flex-row gap-2">
+            <AlertDialogCancel disabled={isDeleting} className="flex-1 sm:flex-initial mt-0">
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} disabled={isDeleting} className="flex-1 sm:flex-initial bg-destructive text-destructive-foreground hover:bg-destructive/90">
               {isDeleting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Delete
             </AlertDialogAction>

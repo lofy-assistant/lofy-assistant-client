@@ -240,12 +240,12 @@ export function CalendarEventsList() {
 
             return (
               <div key={dateKey} className="space-y-3">
-                {/* Clean date header */}
-                <div className="flex items-baseline gap-3 px-1">
+                {/* Clean date header — day, day name, month & year in primary when today */}
+                <div className={`flex items-baseline gap-3 px-1 ${isToday ? "text-primary" : ""}`}>
                   <h3 className="text-xl font-bold sm:text-2xl">{format(startDate, "d")}</h3>
                   <div className="flex items-baseline gap-2">
-                    <span className={`text-sm font-medium ${isToday ? "text-orange-600" : "text-muted-foreground"}`}>{format(startDate, "EEEE")}</span>
-                    <span className="text-xs text-muted-foreground">{format(startDate, "MMMM yyyy")}</span>
+                    <span className={`text-sm font-medium ${isToday ? "" : "text-muted-foreground"}`}>{format(startDate, "EEEE")}</span>
+                    <span className={`text-xs ${isToday ? "" : "text-muted-foreground"}`}>{format(startDate, "MMMM yyyy")}</span>
                   </div>
                 </div>
 

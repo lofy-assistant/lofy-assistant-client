@@ -309,7 +309,7 @@ export function IntegrationCard() {
   const getStatusBadge = (status: Integration["status"]) => {
     switch (status) {
       case "connected":
-        return <Badge variant="emerald">Connected</Badge>;
+        return <Badge variant="primary">Connected</Badge>;
       case "disconnected":
         return <Badge variant="default">Disconnected</Badge>;
       case "error":

@@ -121,7 +121,7 @@ export function MemoryDetailModal({ memory, open, onOpenChange, onUpdate }: Memo
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-w-2xl max-h-[75vh] overflow-hidden flex flex-col">
+        <DialogContent className="w-[calc(100%-2rem)] max-w-2xl max-h-[75vh] overflow-hidden flex flex-col">
           <DialogHeader>
             <DialogTitle className="text-xl sm:text-2xl">{isEditing ? "Edit Memory" : memory.title || "Untitled Memory"}</DialogTitle>
             {!isEditing && (
@@ -181,48 +181,41 @@ export function MemoryDetailModal({ memory, open, onOpenChange, onUpdate }: Memo
           <Separator className="my-4" />
 
           <DialogFooter className="flex-col-reverse sm:flex-row gap-2 sm:gap-0">
-            {!isEditing && (
-              <Button variant="destructive" size="sm" onClick={() => setShowDeleteDialog(true)} className="w-full sm:w-auto sm:mr-auto">
-                <Trash2 className="h-4 w-4 mr-2" />
-                Delete
-              </Button>
+            {!isEditing ? (
+              <div className="flex flex-row gap-2 w-full sm:w-auto">
+                <Button variant="destructive" size="sm" onClick={() => setShowDeleteDialog(true)} className="flex-1 sm:flex-initial sm:mr-auto">
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Delete
+                </Button>
+                <Button onClick={() => setIsEditing(true)} className="flex-1 sm:flex-initial">
+                  Edit
+                </Button>
+              </div>
+            ) : (
+              <div className="flex gap-2 w-full sm:w-auto sm:ml-auto">
+                <Button variant="outline" onClick={handleCancel} disabled={isSaving} className="flex-1 sm:flex-initial">
+                  Cancel
+                </Button>
+                <Button onClick={handleSave} disabled={isSaving} className="flex-1 sm:flex-initial">
+                  {isSaving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                  Save Changes
+                </Button>
+              </div>
             )}
-            <div className="flex gap-2 w-full sm:w-auto">
-              {isEditing ? (
-                <>
-                  <Button variant="outline" onClick={handleCancel} disabled={isSaving} className="flex-1 sm:flex-initial">
-                    Cancel
-                  </Button>
-                  <Button onClick={handleSave} disabled={isSaving} className="flex-1 sm:flex-initial">
-                    {isSaving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                    Save Changes
-                  </Button>
-                </>
-              ) : (
-                <>
-                  <Button variant="outline" onClick={() => onOpenChange(false)} className="flex-1 sm:flex-initial">
-                    Close
-                  </Button>
-                  <Button onClick={() => setIsEditing(true)} className="flex-1 sm:flex-initial">
-                    Edit
-                  </Button>
-                </>
-              )}
-            </div>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-        <AlertDialogContent>
+        <AlertDialogContent className="max-w-md">
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription>This action cannot be undone. This will permanently delete your memory.</AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete} disabled={isDeleting} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+          <AlertDialogFooter className="flex-row gap-2">
+            <AlertDialogCancel disabled={isDeleting} className="flex-1 sm:flex-initial mt-0">Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} disabled={isDeleting} className="flex-1 sm:flex-initial bg-destructive text-destructive-foreground hover:bg-destructive/90">
               {isDeleting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
               Delete
             </AlertDialogAction>
