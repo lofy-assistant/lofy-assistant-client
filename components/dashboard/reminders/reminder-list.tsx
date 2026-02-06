@@ -10,13 +10,7 @@ import { ReminderFormDialog } from "@/components/dashboard/reminders/reminder-fo
 import { format } from "date-fns";
 import { Separator } from "@/components/ui/separator";
 
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface Reminder {
   id: number;
@@ -37,12 +31,8 @@ export function ReminderList() {
 
   // Filter state
   const currentDate = new Date();
-  const [selectedMonth, setSelectedMonth] = useState<string>(
-    (currentDate.getMonth() + 1).toString()
-  );
-  const [selectedYear, setSelectedYear] = useState<string>(
-    currentDate.getFullYear().toString()
-  );
+  const [selectedMonth, setSelectedMonth] = useState<string>((currentDate.getMonth() + 1).toString());
+  const [selectedYear, setSelectedYear] = useState<string>(currentDate.getFullYear().toString());
   const [selectedStatus, setSelectedStatus] = useState<string>("pending");
 
   const fetchReminders = async () => {
@@ -65,9 +55,7 @@ export function ReminderList() {
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         console.error("Failed to fetch reminders:", response.status, errorData);
-        throw new Error(
-          errorData.error || `Failed to fetch reminders (${response.status})`
-        );
+        throw new Error(errorData.error || `Failed to fetch reminders (${response.status})`);
       }
 
       const data = await response.json();
@@ -141,9 +129,7 @@ export function ReminderList() {
       <Card>
         <CardContent className="flex flex-col items-center justify-center py-12">
           <Loader2 className="w-12 h-12 mb-4 animate-spin text-muted-foreground" />
-          <p className="text-center text-muted-foreground">
-            Loading reminders...
-          </p>
+          <p className="text-center text-muted-foreground">Loading reminders...</p>
         </CardContent>
       </Card>
     );
@@ -205,10 +191,7 @@ export function ReminderList() {
             </Select>
           </div>
           <div className="w-full sm:w-auto sm:ml-auto">
-            <Button
-              onClick={() => setIsFormDialogOpen(true)}
-              className="w-full sm:w-auto"
-            >
+            <Button onClick={() => setIsFormDialogOpen(true)} className="w-full sm:w-auto">
               <Plus className="w-4 h-4 mr-2" />
               Add Reminder
             </Button>
@@ -222,8 +205,7 @@ export function ReminderList() {
           <CardContent className="flex flex-col items-center justify-center py-12">
             <Bell className="w-12 h-12 mb-4 text-muted-foreground" />
             <p className="px-4 text-center text-muted-foreground">
-              No reminders found for{" "}
-              {months[parseInt(selectedMonth) - 1]?.label} {selectedYear}
+              No reminders found for {months[parseInt(selectedMonth) - 1]?.label} {selectedYear}
             </p>
           </CardContent>
         </Card>
@@ -231,44 +213,26 @@ export function ReminderList() {
         <div className="grid gap-3 sm:gap-4">
           {reminders.map((reminder) => {
             const reminderDate = new Date(reminder.reminder_time);
-            const isToday =
-              format(reminderDate, "yyyy-MM-dd") ===
-              format(new Date(), "yyyy-MM-dd");
+            const isToday = format(reminderDate, "yyyy-MM-dd") === format(new Date(), "yyyy-MM-dd");
 
             return (
-              <Card
-                key={reminder.id}
-                className="transition-all cursor-pointer rounded-xl hover:shadow-md active:scale-[0.98]"
-                onClick={() => handleReminderClick(reminder)}
-              >
+              <Card key={`${reminder.id}-${reminder.reminder_time}`} className="transition-all cursor-pointer rounded-xl hover:shadow-md active:scale-[0.98]" onClick={() => handleReminderClick(reminder)}>
                 <CardContent className="p-0">
                   <div className="flex items-center gap-2 sm:gap-3">
                     {/* Date Section */}
                     <div className="flex flex-col items-center justify-center w-16 py-3 border-r sm:w-24 sm:py-4">
-                      <Badge
-                        variant={isToday ? "orange" : "default"}
-                        className="mb-1 sm:mb-2 text-[10px] sm:text-xs"
-                      >
+                      <Badge variant={isToday ? "orange" : "default"} className="mb-1 sm:mb-2 text-[10px] sm:text-xs">
                         {format(reminderDate, "EEE")}
                       </Badge>
-                      <div className="text-xl font-bold sm:text-2xl">
-                        {format(reminderDate, "d")}
-                      </div>
-                      <div className="text-[10px] sm:text-xs text-muted-foreground">
-                        {format(reminderDate, "MMM yyyy")}
-                      </div>
+                      <div className="text-xl font-bold sm:text-2xl">{format(reminderDate, "d")}</div>
+                      <div className="text-[10px] sm:text-xs text-muted-foreground">{format(reminderDate, "MMM yyyy")}</div>
                     </div>
 
                     {/* Content Section */}
                     <div className="flex-1 min-w-0 p-3 sm:p-4">
                       <div className="flex items-start justify-between gap-2 mb-2">
-                        <h3 className="flex-1 text-sm font-semibold sm:text-base line-clamp-2">
-                          {reminder.message}
-                        </h3>
-                        <Badge
-                          variant={getStatusColor(reminder.status)}
-                          className="ml-2 text-[10px] sm:text-xs shrink-0"
-                        >
+                        <h3 className="flex-1 text-sm font-semibold sm:text-base line-clamp-2">{reminder.message}</h3>
+                        <Badge variant={getStatusColor(reminder.status)} className="ml-2 text-[10px] sm:text-xs shrink-0">
                           {reminder.status}
                         </Badge>
                       </div>
@@ -286,18 +250,9 @@ export function ReminderList() {
             );
           })}
 
-          <ReminderDialog
-            reminder={selectedReminder}
-            open={dialogOpen}
-            onOpenChange={setDialogOpen}
-            onUpdate={handleUpdate}
-          />
+          <ReminderDialog reminder={selectedReminder} open={dialogOpen} onOpenChange={setDialogOpen} onUpdate={handleUpdate} />
 
-          <ReminderFormDialog
-            open={isFormDialogOpen}
-            onOpenChange={setIsFormDialogOpen}
-            onClose={handleFormDialogClose}
-          />
+          <ReminderFormDialog open={isFormDialogOpen} onOpenChange={setIsFormDialogOpen} onClose={handleFormDialogClose} />
         </div>
       )}
     </div>

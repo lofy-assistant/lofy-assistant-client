@@ -51,6 +51,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     // - Message: use new message if provided, else existing message
     // - Reminder time: use new reminder_time
     // - Status: copy from existing reminder
+    // - Recurrence: preserve from existing reminder so future occurrences still show
     const newMessage = message !== undefined ? message : oldReminder.message;
     const newReminder = await prisma.reminders.create({
       data: {
@@ -58,6 +59,8 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
         message: newMessage,
         reminder_time: new Date(reminder_time),
         status: oldReminder.status,
+        recurrence: oldReminder.recurrence,
+        next_recurrence: oldReminder.next_recurrence,
       },
     });
 
