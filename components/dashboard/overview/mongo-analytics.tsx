@@ -116,9 +116,6 @@ export function MongoAnalytics() {
                         Your conversation statistics
                     </p>
                 </div>
-                <Badge variant="indigo" className="text-xs">
-                    MongoDB
-                </Badge>
             </div>
 
             {/* Stats Grid */}
