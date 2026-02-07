@@ -26,10 +26,20 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const userId = session.userId;
+    const { userId } = session;
 
     // Connect to MongoDB
     await connectMongo();
+
+    // Debug: Log userId and check if messages exist
+    console.log("[Analytics] userId from session:", userId);
+    const sampleMessage = await Message.findOne({ user_id: userId }).lean();
+    console.log("[Analytics] Sample message found:", sampleMessage ? "yes" : "no");
+    if (!sampleMessage) {
+      // Check if any messages exist at all
+      const anyMessage = await Message.findOne({}).lean();
+      console.log("[Analytics] Any message in collection:", anyMessage ? anyMessage.user_id : "none");
+    }
 
     // Get all analytics data in parallel
     const [

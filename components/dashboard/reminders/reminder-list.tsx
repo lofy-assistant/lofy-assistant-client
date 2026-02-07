@@ -5,8 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Plus, Bell, Clock, Loader2, Repeat } from "lucide-react";
-import { ReminderDialog } from "@/components/dashboard/reminders/reminder-dialog";
-import { ReminderFormDialog } from "@/components/dashboard/reminders/reminder-form-dialog";
+import { ReminderAddDialog, ReminderEditDialog } from "@/components/dashboard/reminders/reminder-form";
 import { format } from "date-fns";
 import { Separator } from "@/components/ui/separator";
 
@@ -303,9 +302,9 @@ export function ReminderList() {
             );
           })}
 
-          <ReminderDialog reminder={selectedReminder} open={dialogOpen} onOpenChange={setDialogOpen} onUpdate={handleUpdate} />
+          <ReminderEditDialog reminder={selectedReminder} open={dialogOpen} onOpenChange={setDialogOpen} onSuccess={handleUpdate} />
 
-          <ReminderFormDialog open={isFormDialogOpen} onOpenChange={setIsFormDialogOpen} onClose={handleFormDialogClose} />
+          <ReminderAddDialog open={isFormDialogOpen} onOpenChange={setIsFormDialogOpen} onSuccess={handleFormDialogClose} />
         </div>
       )}
     </div>

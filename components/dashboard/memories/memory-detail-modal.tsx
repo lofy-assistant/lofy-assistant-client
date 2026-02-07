@@ -183,7 +183,7 @@ export function MemoryDetailModal({ memory, open, onOpenChange, onUpdate }: Memo
           <DialogFooter className="flex-col-reverse sm:flex-row gap-2 sm:gap-0">
             {!isEditing ? (
               <div className="flex flex-row gap-2 w-full sm:w-auto">
-                <Button variant="destructive" size="sm" onClick={() => setShowDeleteDialog(true)} className="flex-1 sm:flex-initial sm:mr-auto">
+                <Button variant="destructive" onClick={() => setShowDeleteDialog(true)} className="flex-1 sm:flex-initial sm:mr-auto">
                   <Trash2 className="h-4 w-4 mr-2" />
                   Delete
                 </Button>

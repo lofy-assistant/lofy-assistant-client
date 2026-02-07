@@ -6,8 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, Clock, Loader2, Repeat } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
-import { CalendarEventDialog } from "@/components/dashboard/calendar/calendar-event-dialog";
-import { CalendarEventFormDialog } from "@/components/dashboard/calendar/calendar-event-form-dialog";
+import { CalendarAddEventDialog, CalendarEditEventDialog } from "@/components/dashboard/calendar/calendar-event-form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -101,7 +100,6 @@ export function CalendarEventsList() {
   };
 
   const handleFormDialogClose = () => {
-    setIsFormDialogOpen(false);
     fetchEvents();
   };
 
@@ -304,9 +302,9 @@ export function CalendarEventsList() {
       )}
 
       {/* Dialogs - Always rendered */}
-      <CalendarEventDialog event={selectedEvent} open={dialogOpen} onOpenChange={setDialogOpen} onUpdate={handleUpdate} />
+      <CalendarEditEventDialog event={selectedEvent} open={dialogOpen} onOpenChange={setDialogOpen} onSuccess={handleUpdate} />
 
-      <CalendarEventFormDialog open={isFormDialogOpen} onOpenChange={setIsFormDialogOpen} onClose={handleFormDialogClose} />
+      <CalendarAddEventDialog open={isFormDialogOpen} onOpenChange={setIsFormDialogOpen} onSuccess={handleFormDialogClose} />
     </div>
   );
 }
