@@ -118,16 +118,19 @@ export async function GET(request: NextRequest) {
     const byUser = allMessages.filter((m) => m.role === "user").length;
     const byAssistant = allMessages.filter((m) => m.role === "assistant").length;
 
-    // Messages this week (in UTC window) - used for quick metric, UI uses days/tz elsewhere
+    // only consider user messages for days active / streaks
+    const userMessages = allMessages.filter((m) => m.role === "user");
+
+    // Messages this week (in user's timezone) — keep as overall messages if desired
     const now = new Date();
     const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
     const messagesThisWeek = allMessages.filter(
       (m) => new Date(m.created_at) >= sevenDaysAgo
     ).length;
 
-    // Days active and longest streak (in user's timezone)
+    // Days active and longest streak (in user's timezone) — use user messages only
     const uniqueDays = new Set<string>();
-    allMessages.forEach((m) => {
+    userMessages.forEach((m) => {
       uniqueDays.add(getDateStringInTimezone(new Date(m.created_at), userTimezone));
     });
     const daysActive = uniqueDays.size;
@@ -158,7 +161,7 @@ export async function GET(request: NextRequest) {
 
     // Fetch overview counts from Postgres (prisma)
     const sevenDaysAgoPrisma = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-    
+
     const [
       totalMemories,
       totalReminders,
