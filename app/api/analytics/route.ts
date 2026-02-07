@@ -29,16 +29,34 @@ export async function GET(request: NextRequest) {
     const { userId } = session;
 
     // Connect to MongoDB
-    await connectMongo();
+    const mongooseInstance = await connectMongo();
 
     // Debug: Log userId and check if messages exist
     console.log("[Analytics] userId from session:", userId);
     const sampleMessage = await Message.findOne({ user_id: userId }).lean();
     console.log("[Analytics] Sample message found:", sampleMessage ? "yes" : "no");
-    if (!sampleMessage) {
-      // Check if any messages exist at all
-      const anyMessage = await Message.findOne({}).lean();
-      console.log("[Analytics] Any message in collection:", anyMessage ? anyMessage.user_id : "none");
+
+    // Additional diagnostics: log DB name, collections, and direct messages count
+    try {
+      const db = mongooseInstance.connection?.db;
+      if (db) {
+        console.log("[Analytics] Connected MongoDB database:", db.databaseName);
+
+        const collections = await db.listCollections().toArray();
+        console.log("[Analytics] Collections:", collections.map((c) => c.name));
+
+        const directCount = await db.collection('messages').countDocuments();
+        console.log("[Analytics] messages.countDocuments (direct):", directCount);
+
+        if (!sampleMessage && directCount === 0) {
+          const anyMessage = await db.collection('messages').findOne();
+          console.log("[Analytics] Any message in collection (raw):", anyMessage ? anyMessage.user_id : "none");
+        }
+      } else {
+        console.log("[Analytics] MongoDB db connection not ready");
+      }
+    } catch (diagErr) {
+      console.error('[Analytics] MongoDB diagnostics failed:', diagErr);
     }
 
     // Get all analytics data in parallel
