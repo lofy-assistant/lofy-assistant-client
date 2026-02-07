@@ -2,7 +2,40 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from '@/lib/database';
 import { verifySession } from "@/lib/session";
 import { connectMongo } from "@/lib/database";
-import { Message } from "@/lib/models";
+import { Message, User } from "@/lib/models";
+
+// Helper to get hour in a specific IANA timezone
+function getHourInTimezone(date: Date, timezone: string): number {
+  try {
+    const formatter = new Intl.DateTimeFormat('en-US', {
+      hour: 'numeric',
+      hour12: false,
+      timeZone: timezone,
+    });
+    const hour = parseInt(formatter.format(date), 10);
+    // Intl returns 24 for midnight in some cases, normalize to 0
+    return hour === 24 ? 0 : hour;
+  } catch {
+    // Fallback to UTC if timezone is invalid
+    return date.getUTCHours();
+  }
+}
+
+// Helper to get date string (YYYY-MM-DD) in a specific IANA timezone
+function getDateStringInTimezone(date: Date, timezone: string): string {
+  try {
+    const formatter = new Intl.DateTimeFormat('en-CA', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      timeZone: timezone,
+    });
+    return formatter.format(date); // returns YYYY-MM-DD
+  } catch {
+    // Fallback to UTC if timezone is invalid
+    return date.toISOString().split('T')[0];
+  }
+}
 
 export const dynamic = 'force-dynamic';
 
@@ -43,7 +76,6 @@ export async function GET(request: NextRequest) {
       // MongoDB message analytics
       totalUserMessages,
       totalAssistantMessages,
-      daysActive,
     ] = await Promise.all([
       // Total counts from PostgreSQL
       prisma.memories.count({ where: { user_id: userId } }),
@@ -86,12 +118,6 @@ export async function GET(request: NextRequest) {
       // MongoDB message analytics (using model; keep errors surfaced)
       Message.countDocuments({ user_id: userId, role: "user" }),
       Message.countDocuments({ user_id: userId, role: "assistant" }),
-      // Days active calculation
-      (async () => {
-        const messages = await Message.find({ user_id: userId }, { created_at: 1 }).lean();
-        const uniqueDays = new Set(messages.map((msg) => new Date(msg.created_at).toISOString().split('T')[0]));
-        return uniqueDays.size;
-      })(),
     ]);
 
     // Additional MongoDB analytics
@@ -109,19 +135,29 @@ export async function GET(request: NextRequest) {
       { created_at: 1, role: 1 }
     ).lean();
 
-    // Calculate messages by hour (0-23)
+    // Fetch user's timezone from MongoDB User model
+    const mongoUser = await User.findOne({ user_id: userId }, { timezone: 1 }).lean();
+    const userTimezone = mongoUser?.timezone || 'UTC';
+
+    // Calculate messages by hour (0-23) in user's local timezone
     const messagesByHour: number[] = new Array(24).fill(0);
     allMessages.forEach((msg) => {
-      const hour = new Date(msg.created_at).getHours();
+      const hour = getHourInTimezone(new Date(msg.created_at), userTimezone);
       messagesByHour[hour]++;
     });
 
-    // Calculate longest conversation streak (consecutive days) - only user messages count
+    // Calculate longest conversation streak (consecutive days) in user's timezone - only user messages count
     const uniqueDates = [...new Set(
       allMessages
         .filter((msg) => msg.role === "user")
-        .map((msg) => new Date(msg.created_at).toISOString().split('T')[0])
+        .map((msg) => getDateStringInTimezone(new Date(msg.created_at), userTimezone))
     )].sort();
+
+    // Recalculate daysActive using user's timezone
+    const allUniqueDates = new Set(
+      allMessages.map((msg) => getDateStringInTimezone(new Date(msg.created_at), userTimezone))
+    );
+    const daysActiveLocal = allUniqueDates.size;
     
     let longestStreak = 0;
     let currentStreak = 1;
@@ -145,7 +181,7 @@ export async function GET(request: NextRequest) {
 
     // Calculate total messages
     const totalMessages = totalUserMessages + totalAssistantMessages;
-    const averageMessagesPerActiveDay = daysActive > 0 ? totalMessages / daysActive : 0;
+    const averageMessagesPerActiveDay = daysActiveLocal > 0 ? totalMessages / daysActiveLocal : 0;
 
     return NextResponse.json({
       overview: {
@@ -165,7 +201,7 @@ export async function GET(request: NextRequest) {
         total: totalMessages,
         byUser: totalUserMessages,
         byAssistant: totalAssistantMessages,
-        daysActive,
+        daysActive: daysActiveLocal,
         messagesThisWeek,
         averageMessagesPerActiveDay: Math.round(averageMessagesPerActiveDay * 10) / 10,
         longestStreak,
