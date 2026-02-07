@@ -1,7 +1,7 @@
 import { PrismaClient } from './generated/prisma'
 import { PrismaPg } from '@prisma/adapter-pg'
 import { Pool } from 'pg'
-import type { Mongoose } from 'mongoose'
+import type { Mongoose, ConnectOptions } from 'mongoose'
 import mongoose from 'mongoose'
 
 declare global {
@@ -16,6 +16,8 @@ declare global {
 // Validate environment variables
 const DATABASE_URL = process.env.DATABASE_URL as string
 const MONGODB_URI = process.env.MONGODB_URI as string
+// Optional: allow explicit DB name via env `MONGODB_NAME` (recommended for production)
+const MONGODB_NAME = process.env.MONGODB_NAME as string | undefined
 
 if (!DATABASE_URL) {
   throw new Error('Please define the DATABASE_URL environment variable')
@@ -44,31 +46,48 @@ if (!cached) {
 }
 
 export async function connectMongo() {
+  // Read requested DB name at call time (serverless-friendly)
+  const expectedDbName = process.env.MONGODB_NAME || MONGODB_NAME
+
+  // If we already have a connection and it's for the expected DB, return it
   if (cached.conn) {
-    return cached.conn
+    const currentDbName = mongoose.connection?.db?.databaseName
+    if (expectedDbName && currentDbName !== expectedDbName) {
+      // Force reconnect to correct DB
+      try {
+        await mongoose.disconnect()
+      } catch (e) {
+        console.warn('DB disconnect warning:', e)
+      }
+      cached.conn = null
+      cached.promise = null
+    } else {
+      return cached.conn
+    }
   }
 
   if (!cached.promise) {
-    cached.promise = mongoose.connect(MONGODB_URI, {
-      bufferCommands: false,
-    }).then(() => {
-      console.log('✅ MongoDB connected successfully')
-      return mongoose
-    }).catch((error) => {
-      console.error('❌ MongoDB connection error:', error)
-      cached.promise = null
-      throw error
-    })
+    const dbName = process.env.MONGODB_NAME || MONGODB_NAME
+    const connectOptions: ConnectOptions = { bufferCommands: false }
+    if (dbName) connectOptions.dbName = dbName
+
+    cached.promise = mongoose
+      .connect(MONGODB_URI, connectOptions)
+      .then(() => mongoose)
+      .catch((error) => {
+        cached.promise = null
+        console.error('MongoDB connection error:', error)
+        throw error
+      })
   }
 
   try {
     cached.conn = await cached.promise
+    return cached.conn
   } catch (e) {
     cached.promise = null
     throw e
   }
-
-  return cached.conn
 }
 
 // Cache in development

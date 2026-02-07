@@ -28,36 +28,8 @@ export async function GET(request: NextRequest) {
 
     const { userId } = session;
 
-    // Connect to MongoDB
-    const mongooseInstance = await connectMongo();
-
-    // Debug: Log userId and check if messages exist
-    console.log("[Analytics] userId from session:", userId);
-    const sampleMessage = await Message.findOne({ user_id: userId }).lean();
-    console.log("[Analytics] Sample message found:", sampleMessage ? "yes" : "no");
-
-    // Additional diagnostics: log DB name, collections, and direct messages count
-    try {
-      const db = mongooseInstance.connection?.db;
-      if (db) {
-        console.log("[Analytics] Connected MongoDB database:", db.databaseName);
-
-        const collections = await db.listCollections().toArray();
-        console.log("[Analytics] Collections:", collections.map((c) => c.name));
-
-        const directCount = await db.collection('messages').countDocuments();
-        console.log("[Analytics] messages.countDocuments (direct):", directCount);
-
-        if (!sampleMessage && directCount === 0) {
-          const anyMessage = await db.collection('messages').findOne();
-          console.log("[Analytics] Any message in collection (raw):", anyMessage ? anyMessage.user_id : "none");
-        }
-      } else {
-        console.log("[Analytics] MongoDB db connection not ready");
-      }
-    } catch (diagErr) {
-      console.error('[Analytics] MongoDB diagnostics failed:', diagErr);
-    }
+    // Connect to MongoDB (minimal logging)
+    await connectMongo();
 
     // Get all analytics data in parallel
     const [
@@ -111,26 +83,12 @@ export async function GET(request: NextRequest) {
         },
       }),
 
-      // MongoDB message analytics
-      // Total messages from user
+      // MongoDB message analytics (using model; keep errors surfaced)
       Message.countDocuments({ user_id: userId, role: "user" }),
-      
-      // Total messages from assistant
       Message.countDocuments({ user_id: userId, role: "assistant" }),
-      
-      // Days active - count unique days with at least one message
       (async () => {
-        const messages = await Message.find(
-          { user_id: userId },
-          { created_at: 1 }
-        ).lean();
-        
-        const uniqueDays = new Set(
-          messages.map(msg => 
-            new Date(msg.created_at).toISOString().split('T')[0]
-          )
-        );
-        
+        const messages = await Message.find({ user_id: userId }, { created_at: 1 }).lean();
+        const uniqueDays = new Set(messages.map((msg) => new Date(msg.created_at).toISOString().split('T')[0]));
         return uniqueDays.size;
       })(),
     ]);
