@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { prisma } from '@/lib/database';
 import { hashPhone } from "@/lib/hash-phone";
 
 export const runtime = "nodejs";

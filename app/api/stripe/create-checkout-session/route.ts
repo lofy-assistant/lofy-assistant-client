@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import { cookies } from "next/headers";
 import { verifySession } from "@/lib/session";
-import { prisma } from "@/lib/prisma";
+import { prisma } from '@/lib/database';
 import { plans, resolveCurrency, resolveCurrencyFromIP } from "@/lib/stripe-plans";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);

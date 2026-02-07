@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { prisma } from '@/lib/database';
 import { verifySession } from "@/lib/session";
+import { connectMongo } from "@/lib/database";
+import { Message } from "@/lib/models";
 
 export const dynamic = 'force-dynamic';
 
@@ -26,6 +28,9 @@ export async function GET(request: NextRequest) {
 
     const userId = session.userId;
 
+    // Connect to MongoDB
+    await connectMongo();
+
     // Get all analytics data in parallel
     const [
       totalMemories,
@@ -35,8 +40,12 @@ export async function GET(request: NextRequest) {
       upcomingEvents,
       thisWeekMemories,
       thisWeekEvents,
+      // MongoDB message analytics
+      totalUserMessages,
+      totalAssistantMessages,
+      daysActive,
     ] = await Promise.all([
-      // Total counts
+      // Total counts from PostgreSQL
       prisma.memories.count({ where: { user_id: userId } }),
       prisma.reminders.count({ where: { user_id: userId } }),
       prisma.calendar_events.count({ where: { user_id: userId } }),
@@ -73,7 +82,33 @@ export async function GET(request: NextRequest) {
           },
         },
       }),
+
+      // MongoDB message analytics
+      // Total messages from user
+      Message.countDocuments({ user_id: userId, role: "user" }),
+      
+      // Total messages from assistant
+      Message.countDocuments({ user_id: userId, role: "assistant" }),
+      
+      // Days active - count unique days with at least one message
+      (async () => {
+        const messages = await Message.find(
+          { user_id: userId },
+          { created_at: 1 }
+        ).lean();
+        
+        const uniqueDays = new Set(
+          messages.map(msg => 
+            new Date(msg.created_at).toISOString().split('T')[0]
+          )
+        );
+        
+        return uniqueDays.size;
+      })(),
     ]);
+
+    // Calculate total messages
+    const totalMessages = totalUserMessages + totalAssistantMessages;
 
     return NextResponse.json({
       overview: {
@@ -88,6 +123,12 @@ export async function GET(request: NextRequest) {
           memories: thisWeekMemories,
           events: thisWeekEvents,
         },
+      },
+      messages: {
+        total: totalMessages,
+        byUser: totalUserMessages,
+        byAssistant: totalAssistantMessages,
+        daysActive,
       },
     });
   } catch (error) {

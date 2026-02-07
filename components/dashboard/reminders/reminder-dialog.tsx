@@ -1,8 +1,8 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { format } from "date-fns"
-import { toast } from "sonner"
+import { useState, useEffect } from "react";
+import { format } from "date-fns";
+import { toast } from "sonner";
 import {
   Dialog,
   DialogContent,
@@ -10,7 +10,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog"
+} from "@/components/ui/dialog";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -20,26 +20,26 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Badge } from "@/components/ui/badge"
-import { Loader2, Trash2 } from "lucide-react"
+} from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
+import { Loader2, Trash2 } from "lucide-react";
 
 interface Reminder {
-  id: number
-  message: string
-  reminder_time: string
-  status: string
+  id: number;
+  message: string;
+  reminder_time: string;
+  status: string;
 }
 
 interface ReminderDialogProps {
-  reminder: Reminder | null
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  onUpdate: () => void
+  reminder: Reminder | null;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onUpdate: () => void;
 }
 
 export function ReminderDialog({
@@ -48,15 +48,15 @@ export function ReminderDialog({
   onOpenChange,
   onUpdate,
 }: ReminderDialogProps) {
-  const [isEditing, setIsEditing] = useState(false)
-  const [isSaving, setIsSaving] = useState(false)
-  const [isDeleting, setIsDeleting] = useState(false)
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
-  
+  const [isEditing, setIsEditing] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+
   const [formData, setFormData] = useState({
     message: reminder?.message || "",
     reminder_time: reminder?.reminder_time || "",
-  })
+  });
 
   // Update form data when reminder changes
   useEffect(() => {
@@ -64,27 +64,27 @@ export function ReminderDialog({
       setFormData({
         message: reminder.message,
         reminder_time: reminder.reminder_time,
-      })
+      });
     }
-  }, [reminder])
+  }, [reminder]);
 
   // Convert UTC to local datetime string for datetime-local input
   const utcToLocal = (utcDate: string) => {
-    const date = new Date(utcDate)
-    const offset = date.getTimezoneOffset() * 60000
-    const localDate = new Date(date.getTime() - offset)
-    return localDate.toISOString().slice(0, 16)
-  }
+    const date = new Date(utcDate);
+    const offset = date.getTimezoneOffset() * 60000;
+    const localDate = new Date(date.getTime() - offset);
+    return localDate.toISOString().slice(0, 16);
+  };
 
   // Convert datetime-local input to UTC ISO string
   const localToUTC = (localDateTime: string) => {
-    return new Date(localDateTime).toISOString()
-  }
+    return new Date(localDateTime).toISOString();
+  };
 
   const handleSave = async () => {
-    if (!reminder) return
-    
-    setIsSaving(true)
+    if (!reminder) return;
+
+    setIsSaving(true);
     try {
       const response = await fetch(`/api/reminder/${reminder.id}`, {
         method: "PUT",
@@ -94,56 +94,60 @@ export function ReminderDialog({
           message: formData.message,
           reminder_time: localToUTC(utcToLocal(formData.reminder_time)),
         }),
-      })
+      });
 
-      if (!response.ok) throw new Error("Failed to update reminder")
+      if (!response.ok) throw new Error("Failed to update reminder");
 
-      toast.success("Reminder updated successfully")
-      setIsEditing(false)
-      onUpdate()
-      onOpenChange(false)
+      toast.success("Reminder updated successfully");
+      setIsEditing(false);
+      onUpdate();
+      onOpenChange(false);
     } catch (error) {
-      toast.error("Failed to update reminder")
+      toast.error("Failed to update reminder");
     } finally {
-      setIsSaving(false)
+      setIsSaving(false);
     }
-  }
+  };
 
   const handleDelete = async () => {
-    if (!reminder) return
-    
-    setIsDeleting(true)
+    if (!reminder) return;
+
+    setIsDeleting(true);
     try {
       const response = await fetch(`/api/reminder/${reminder.id}`, {
         method: "DELETE",
         credentials: "include",
-      })
+      });
 
-      if (!response.ok) throw new Error("Failed to delete reminder")
+      if (!response.ok) throw new Error("Failed to delete reminder");
 
-      toast.success("Reminder deleted successfully")
-      onUpdate()
-      onOpenChange(false)
-      setShowDeleteDialog(false)
+      toast.success("Reminder deleted successfully");
+      onUpdate();
+      onOpenChange(false);
+      setShowDeleteDialog(false);
     } catch (error) {
-      toast.error("Failed to delete reminder")
+      toast.error("Failed to delete reminder");
     } finally {
-      setIsDeleting(false)
+      setIsDeleting(false);
     }
-  }
+  };
 
-  if (!reminder) return null
+  if (!reminder) return null;
 
-  const isCompleted = reminder.status === "completed"
+  const isCompleted = reminder.status === "completed";
 
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="sm:max-w-[525px]">
           <DialogHeader>
-            <DialogTitle>{isEditing ? "Edit Reminder" : "Reminder Details"}</DialogTitle>
+            <DialogTitle>
+              {isEditing ? "Edit Reminder" : "Reminder Details"}
+            </DialogTitle>
             <DialogDescription>
-              {isEditing ? "Make changes to your reminder" : "View reminder information"}
+              {isEditing
+                ? "Make changes to your reminder"
+                : "View reminder information"}
             </DialogDescription>
           </DialogHeader>
 
@@ -154,7 +158,9 @@ export function ReminderDialog({
                 <Textarea
                   id="message"
                   value={formData.message}
-                  onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, message: e.target.value })
+                  }
                   rows={3}
                   disabled={isCompleted}
                 />
@@ -171,12 +177,17 @@ export function ReminderDialog({
                   type="datetime-local"
                   value={utcToLocal(formData.reminder_time)}
                   min={(() => {
-                    const now = new Date()
-                    const offset = now.getTimezoneOffset() * 60000
-                    const localDate = new Date(now.getTime() - offset)
-                    return localDate.toISOString().slice(0, 16)
+                    const now = new Date();
+                    const offset = now.getTimezoneOffset() * 60000;
+                    const localDate = new Date(now.getTime() - offset);
+                    return localDate.toISOString().slice(0, 16);
                   })()}
-                  onChange={(e) => setFormData({ ...formData, reminder_time: localToUTC(e.target.value) })}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      reminder_time: localToUTC(e.target.value),
+                    })
+                  }
                   disabled={isCompleted}
                 />
               ) : (
@@ -188,15 +199,20 @@ export function ReminderDialog({
 
             <div className="grid gap-2">
               <Label htmlFor="status">Status</Label>
-              <Badge 
+              <Badge
                 variant={
-                  reminder.status === "pending" ? "indigo" :
-                  reminder.status === "completed" ? "emerald" :
-                  reminder.status === "cancelled" ? "destructive" : "default"
+                  reminder.status === "pending"
+                    ? "indigo"
+                    : reminder.status === "completed"
+                      ? "emerald"
+                      : reminder.status === "cancelled"
+                        ? "destructive"
+                        : "default"
                 }
                 className="w-fit"
               >
-                {reminder.status.charAt(0).toUpperCase() + reminder.status.slice(1)}
+                {reminder.status.charAt(0).toUpperCase() +
+                  reminder.status.slice(1)}
               </Badge>
             </div>
           </div>
@@ -210,10 +226,13 @@ export function ReminderDialog({
                   onClick={() => setShowDeleteDialog(true)}
                   className="flex-1 sm:flex-initial sm:mr-auto"
                 >
-                  <Trash2 className="h-4 w-4 mr-2" />
                   Delete
                 </Button>
-                <Button onClick={() => setIsEditing(true)} disabled={isCompleted} className="flex-1 sm:flex-initial">
+                <Button
+                  onClick={() => setIsEditing(true)}
+                  disabled={isCompleted}
+                  className="flex-1 sm:flex-initial"
+                >
                   Edit
                 </Button>
               </div>
@@ -227,8 +246,14 @@ export function ReminderDialog({
                 >
                   Cancel
                 </Button>
-                <Button onClick={handleSave} disabled={isSaving || isCompleted} className="flex-1 sm:flex-initial">
-                  {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                <Button
+                  onClick={handleSave}
+                  disabled={isSaving || isCompleted}
+                  className="flex-1 sm:flex-initial"
+                >
+                  {isSaving && (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  )}
                   Save Changes
                 </Button>
               </div>
@@ -242,11 +267,17 @@ export function ReminderDialog({
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the reminder.
+              This action cannot be undone. This will permanently delete the
+              reminder.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="flex-row gap-2">
-            <AlertDialogCancel disabled={isDeleting} className="flex-1 sm:flex-initial mt-0">Cancel</AlertDialogCancel>
+            <AlertDialogCancel
+              disabled={isDeleting}
+              className="flex-1 sm:flex-initial mt-0"
+            >
+              Cancel
+            </AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDelete}
               disabled={isDeleting}
@@ -259,5 +290,5 @@ export function ReminderDialog({
         </AlertDialogContent>
       </AlertDialog>
     </>
-  )
+  );
 }

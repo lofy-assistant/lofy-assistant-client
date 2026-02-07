@@ -2,7 +2,8 @@ import { AppSidebar } from "@/components/app-sidebar";
 import { SiteHeader } from "@/components/site-header";
 import { Separator } from "@/components/ui/separator";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
-import { AnalyticsOverview } from "@/components/dashboard/analytics-overview";
+import { AnalyticsOverview } from "@/components/dashboard/overview/analytics-overview";
+import { MongoAnalytics } from "@/components/dashboard/overview/mongo-analytics";
 
 export default function Page() {
   return (
@@ -25,6 +26,8 @@ export default function Page() {
                 <p className="mb-6 text-muted-foreground">Here&apos;s a quick overview of your activities.</p>
                 <Separator className="mb-6" />
                 <AnalyticsOverview />
+                <Separator className="my-6" />
+                <MongoAnalytics />
               </div>
             </div>
           </div>

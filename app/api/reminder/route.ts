@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { rrulestr } from "rrule";
-import { prisma } from "@/lib/prisma";
+import { prisma } from '@/lib/database';
 import { verifySession } from "@/lib/session";
 
 // Helper: build date filter if month/year provided

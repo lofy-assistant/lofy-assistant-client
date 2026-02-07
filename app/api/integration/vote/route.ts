@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { verifySession } from "@/lib/session";
-import { prisma } from "@/lib/prisma";
+import { prisma } from '@/lib/database';
 
 const MAX_VOTES_PER_USER = 3;
 

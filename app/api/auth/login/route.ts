@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { prisma } from '@/lib/database';
 import { createSession } from "@/lib/session";
 import { hashPhone } from "@/lib/hash-phone";
 import { parsePhoneNumber, isValidPhoneNumber } from "libphonenumber-js";

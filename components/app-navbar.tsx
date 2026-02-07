@@ -10,7 +10,8 @@ import { cn } from "@/lib/utils";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { NavbarCenter, Navbar as NavbarComponent, NavbarLeft } from "@/components/ui/navbar";
 import Navigation from "@/components/ui/navigation";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 
 interface NavbarLink {
   text: string;
@@ -102,7 +103,7 @@ export default function AppNavbar({
         ? { text: "Dashboard", href: "/dashboard", isButton: false }
         : { text: "Login/Register", href: "/login", isButton: false },
       {
-        text: "Get Started",
+        text: "Chat with Lofy",
         href: "https://wa.me/60178230685?text=Hey%2C%20I%20just%20get%20started",
         isButton: true,
         variant: "default",
@@ -116,7 +117,7 @@ export default function AppNavbar({
       <div className="relative mx-auto max-w-7xl">
         <NavbarComponent>
           <NavbarLeft>
-            <Link href={homeUrl} className="flex items-center gap-2 text-xl font-bold">
+            <Link href={homeUrl} className="flex items-center gap-2 text-xl text-white font-bold">
               {logo}
               {name}
             </Link>
@@ -125,7 +126,7 @@ export default function AppNavbar({
           <NavbarCenter>
             {computedActions.map((action, index) =>
               action.isButton ? (
-                <Button key={index} variant={action.variant} asChild>
+                <Button key={index} variant={action.variant} className="hidden md:inline-flex" asChild>
                   <Link 
                     href={action.href}
                     target={action.href.startsWith('http') ? '_blank' : undefined}
@@ -147,9 +148,12 @@ export default function AppNavbar({
                 <Menu className="size-5" />
                 <span className="sr-only">Toggle navigation menu</span>
               </SheetTrigger>
-              <SheetContent side="right" className="w-full sm:max-w-full bg-background/98 backdrop-blur-xl border-none p-0">
-                <div className="flex flex-col h-full p-6">
-                  <div className="flex items-center justify-between mb-6">
+              <SheetContent side="left" className="w-full sm:w-96 overflow-y-auto">
+                <VisuallyHidden>
+                  <SheetTitle>Navigation Menu</SheetTitle>
+                </VisuallyHidden>
+                <div className="flex flex-col h-full">
+                  <div className="flex items-center justify-between mt-3 mb-6  px-2">
                     <Link href={homeUrl} className="flex items-center gap-2 text-2xl font-bold">
                       {logo}
                       {name}
@@ -220,7 +224,7 @@ export default function AppNavbar({
                         </Button>
                       ))}
                     </div>
-                    <p className="text-center text-xs text-muted-foreground mt-2">
+                    <p className="text-center text-xs text-muted-foreground my-4">
                       © {new Date().getFullYear()} {name}. All rights reserved.
                     </p>
                   </div>
