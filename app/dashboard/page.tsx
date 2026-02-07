@@ -16,7 +16,7 @@ export default function Page() {
       <AppSidebar variant="inset" />
       <SidebarInset>
         <SiteHeader />
-        <div className="flex flex-col flex-1">
+        <div className="flex flex-col flex-1 pb-40">
           <div className="@container/main flex flex-1 flex-col gap-2">
             <div className="flex flex-col gap-4 py-4 overflow-hidden md:gap-6 md:py-6">
               <div className="w-full max-w-5xl px-4 mx-auto lg:px-6">

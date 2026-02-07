@@ -86,6 +86,7 @@ export async function GET(request: NextRequest) {
       // MongoDB message analytics (using model; keep errors surfaced)
       Message.countDocuments({ user_id: userId, role: "user" }),
       Message.countDocuments({ user_id: userId, role: "assistant" }),
+      // Days active calculation
       (async () => {
         const messages = await Message.find({ user_id: userId }, { created_at: 1 }).lean();
         const uniqueDays = new Set(messages.map((msg) => new Date(msg.created_at).toISOString().split('T')[0]));
@@ -93,10 +94,58 @@ export async function GET(request: NextRequest) {
       })(),
     ]);
 
+    // Additional MongoDB analytics
+    const oneWeekAgo = new Date(new Date().setDate(new Date().getDate() - 7));
+    
+    // Messages this week
+    const messagesThisWeek = await Message.countDocuments({
+      user_id: userId,
+      created_at: { $gte: oneWeekAgo },
+    });
+
+    // Get all messages with timestamps for advanced analytics
+    const allMessages = await Message.find(
+      { user_id: userId },
+      { created_at: 1, role: 1 }
+    ).lean();
+
+    // Calculate messages by hour (0-23)
+    const messagesByHour: number[] = new Array(24).fill(0);
+    allMessages.forEach((msg) => {
+      const hour = new Date(msg.created_at).getHours();
+      messagesByHour[hour]++;
+    });
+
+    // Calculate longest conversation streak (consecutive days) - only user messages count
+    const uniqueDates = [...new Set(
+      allMessages
+        .filter((msg) => msg.role === "user")
+        .map((msg) => new Date(msg.created_at).toISOString().split('T')[0])
+    )].sort();
+    
+    let longestStreak = 0;
+    let currentStreak = 1;
+    
+    for (let i = 1; i < uniqueDates.length; i++) {
+      const prevDate = new Date(uniqueDates[i - 1]);
+      const currDate = new Date(uniqueDates[i]);
+      const diffDays = Math.round((currDate.getTime() - prevDate.getTime()) / (1000 * 60 * 60 * 24));
+      
+      if (diffDays === 1) {
+        currentStreak++;
+      } else {
+        longestStreak = Math.max(longestStreak, currentStreak);
+        currentStreak = 1;
+      }
+    }
+    longestStreak = Math.max(longestStreak, currentStreak);
+    if (uniqueDates.length === 0) longestStreak = 0;
+
 
 
     // Calculate total messages
     const totalMessages = totalUserMessages + totalAssistantMessages;
+    const averageMessagesPerActiveDay = daysActive > 0 ? totalMessages / daysActive : 0;
 
     return NextResponse.json({
       overview: {
@@ -117,6 +166,10 @@ export async function GET(request: NextRequest) {
         byUser: totalUserMessages,
         byAssistant: totalAssistantMessages,
         daysActive,
+        messagesThisWeek,
+        averageMessagesPerActiveDay: Math.round(averageMessagesPerActiveDay * 10) / 10,
+        longestStreak,
+        messagesByHour,
       },
     });
   } catch (error) {
