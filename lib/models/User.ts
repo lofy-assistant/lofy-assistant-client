@@ -33,9 +33,6 @@ const UserSchema = new Schema<IUser>(
   }
 );
 
-// Add indexes for better query performance
-UserSchema.index({ email: 1 });
-
 // Prevent model recompilation in development (Next.js hot reload)
 const User: Model<IUser> = mongoose.models.User || mongoose.model<IUser>('User', UserSchema);
 
