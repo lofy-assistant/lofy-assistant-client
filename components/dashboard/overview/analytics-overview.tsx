@@ -1,69 +1,15 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Brain,
-  Calendar,
-  Bell,
-  MessageSquare,
-  TrendingUp,
-  Clock,
-} from "lucide-react";
+import { Brain, Calendar, Bell, TrendingUp } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-
-interface AnalyticsData {
-  overview: {
-    totalMemories: number;
-    totalReminders: number;
-    totalEvents: number;
-    totalFeedbacks: number;
-    activeReminders: number;
-    upcomingEvents: number;
-  };
-  activity: {
-    thisWeek: {
-      memories: number;
-      events: number;
-      feedbacks: number;
-    };
-  };
-  recentMemories: Array<{
-    id: number;
-    title: string;
-    preview: string;
-    createdAt: string;
-  }>;
-  feedbacksByTag: Array<{
-    tag: string;
-    count: number;
-  }>;
-}
+import { useAnalytics } from "@/hooks/use-analytics";
 
 export function AnalyticsOverview() {
-  const [data, setData] = useState<AnalyticsData | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { overview, activity, isLoading: loading, error } = useAnalytics();
   const router = useRouter();
-
-  useEffect(() => {
-    async function fetchAnalytics() {
-      try {
-        const response = await fetch("/api/analytics");
-        if (response.ok) {
-          const analyticsData = await response.json();
-          setData(analyticsData);
-        }
-      } catch (error) {
-        console.error("Failed to fetch analytics:", error);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchAnalytics();
-  }, []);
 
   if (loading) {
     return (
@@ -84,7 +30,7 @@ export function AnalyticsOverview() {
     );
   }
 
-  if (!data) {
+  if (error || !overview || !activity) {
     return (
       <Card>
         <CardContent className="pt-6">
@@ -99,8 +45,8 @@ export function AnalyticsOverview() {
   const stats = [
     {
       title: "Total Memories",
-      value: data.overview.totalMemories,
-      change: data.activity.thisWeek.memories,
+      value: overview.totalMemories,
+      change: activity.thisWeek.memories,
       icon: Brain,
       color: "text-purple-500",
       bgColor: "bg-purple-500/10",
@@ -108,9 +54,9 @@ export function AnalyticsOverview() {
     },
     {
       title: "Calendar Events",
-      value: data.overview.totalEvents,
-      change: data.activity.thisWeek.events,
-      upcoming: data.overview.upcomingEvents,
+      value: overview.totalEvents,
+      change: activity.thisWeek.events,
+      upcoming: overview.upcomingEvents,
       icon: Calendar,
       color: "text-blue-500",
       bgColor: "bg-blue-500/10",
@@ -118,8 +64,8 @@ export function AnalyticsOverview() {
     },
     {
       title: "Reminders",
-      value: data.overview.totalReminders,
-      active: data.overview.activeReminders,
+      value: overview.totalReminders,
+      active: overview.activeReminders,
       icon: Bell,
       color: "text-orange-500",
       bgColor: "bg-orange-500/10",

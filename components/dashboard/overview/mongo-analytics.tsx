@@ -1,6 +1,5 @@
 "use client";
 
-import useSWR from "swr";
 import {
   Card,
   CardContent,
@@ -27,48 +26,11 @@ import {
 } from "@/components/ui/chart";
 import { XAxis, YAxis, CartesianGrid, Area, AreaChart } from "recharts";
 import { useIsMobile } from "@/hooks/use-mobile";
-
-interface MessageAnalytics {
-  total: number;
-  byUser: number;
-  byAssistant: number;
-  daysActive: number;
-  messagesThisWeek: number;
-  averageMessagesPerActiveDay: number;
-  longestStreak: number;
-  messagesByHour: number[];
-}
-
-const fetcher = (url: string) =>
-  fetch(url).then((res) => {
-    if (!res.ok) throw new Error("Failed to fetch analytics");
-    return res.json();
-  });
+import { useAnalytics } from "@/hooks/use-analytics";
 
 export function MongoAnalytics() {
   const isMobile = useIsMobile();
-
-  const { data, error, isValidating, mutate } = useSWR<{
-    messages: MessageAnalytics;
-    cached: boolean;
-  }>("/api/analytics", fetcher, {
-    revalidateOnFocus: false,
-    revalidateOnReconnect: false,
-    dedupingInterval: 60000, // 1 minute
-  });
-
-  const loading = !data && !error;
-  const analytics = data?.messages;
-
-  const handleRefresh = () => {
-    // Force refresh by calling the API with refresh=1 and revalidating SWR
-    mutate(
-      fetch("/api/analytics?refresh=1")
-        .then((res) => res.json())
-        .then((json) => json),
-      { revalidate: false }
-    );
-  };
+  const { messages: analytics, isLoading: loading, error, isValidating, isCached, refresh } = useAnalytics();
 
   if (loading) {
     return (
@@ -142,7 +104,7 @@ export function MongoAnalytics() {
           <h3 className="text-lg font-semibold">Message Analytics</h3>
           <p className="text-sm text-muted-foreground">
             Your conversation statistics
-            {data?.cached && (
+            {isCached && (
               <span className="ml-2 text-xs text-muted-foreground/70">
                 (cached)
               </span>
@@ -152,7 +114,7 @@ export function MongoAnalytics() {
         <Button
           variant="outline"
           size="sm"
-          onClick={handleRefresh}
+          onClick={refresh}
           disabled={isValidating}
           className="gap-2"
         >

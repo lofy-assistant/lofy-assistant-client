@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { verifySession } from "@/lib/session";
-import { connectMongo } from "@/lib/database";
+import { connectMongo, prisma } from "@/lib/database";
 import User from "@/lib/models/User";
 import mongoose from "mongoose";
 import { Redis } from "@upstash/redis";
@@ -20,7 +20,7 @@ function getDateStringInTimezone(date: Date, timezone: string): string {
   }
 }
 
-const CACHE_TTL = Number(process.env.ANALYTICS_CACHE_TTL) || 300; // 5 minutes default
+const CACHE_TTL = Number(process.env.CACHE_TTL) || 300; // 5 minutes default
 
 function getRedisClient(): Redis | null {
   const url = process.env.UPSTASH_REDIS_REST_URL;
@@ -118,7 +118,7 @@ export async function GET(request: NextRequest) {
     const byUser = allMessages.filter((m) => m.role === "user").length;
     const byAssistant = allMessages.filter((m) => m.role === "assistant").length;
 
-    // Messages this week (in user's timezone)
+    // Messages this week (in UTC window) - used for quick metric, UI uses days/tz elsewhere
     const now = new Date();
     const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
     const messagesThisWeek = allMessages.filter(
@@ -156,7 +156,47 @@ export async function GET(request: NextRequest) {
     const averageMessagesPerActiveDay =
       daysActive > 0 ? Math.round(total / daysActive) : 0;
 
+    // Fetch overview counts from Postgres (prisma)
+    const sevenDaysAgoPrisma = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+    
+    const [
+      totalMemories,
+      totalReminders,
+      totalEvents,
+      activeReminders,
+      upcomingEvents,
+      memoriesThisWeek,
+      eventsThisWeek,
+    ] = await Promise.all([
+      prisma.memories.count({ where: { user_id: userId } }),
+      prisma.reminders.count({ where: { user_id: userId } }),
+      prisma.calendar_events.count({ where: { user_id: userId } }),
+      prisma.reminders.count({
+        where: { user_id: userId, status: "pending", reminder_time: { gte: new Date() } },
+      }),
+      prisma.calendar_events.count({ where: { user_id: userId, start_time: { gte: new Date() } } }),
+      prisma.memories.count({ where: { user_id: userId, created_at: { gte: sevenDaysAgoPrisma } } }),
+      prisma.calendar_events.count({ where: { user_id: userId, created_at: { gte: sevenDaysAgoPrisma } } }),
+    ]);
+
     const payload = {
+      overview: {
+        totalMemories,
+        totalReminders,
+        totalEvents,
+        totalFeedbacks: 0,
+        activeReminders,
+        upcomingEvents,
+      },
+      activity: {
+        thisWeek: {
+          memories: memoriesThisWeek,
+          events: eventsThisWeek,
+          feedbacks: 0,
+        },
+      },
+      recentMemories: [],
+      feedbacksByTag: [],
       messages: {
         total,
         byUser,
