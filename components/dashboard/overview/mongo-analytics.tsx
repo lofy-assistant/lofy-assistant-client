@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import useSWR from "swr";
 import {
   Card,
   CardContent,
@@ -9,6 +9,7 @@ import {
   CardDescription,
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
 import {
   MessageSquare,
   CalendarDays,
@@ -16,6 +17,7 @@ import {
   Flame,
   User,
   Bot,
+  RefreshCw,
 } from "lucide-react";
 import {
   ChartConfig,
@@ -37,28 +39,36 @@ interface MessageAnalytics {
   messagesByHour: number[];
 }
 
+const fetcher = (url: string) =>
+  fetch(url).then((res) => {
+    if (!res.ok) throw new Error("Failed to fetch analytics");
+    return res.json();
+  });
+
 export function MongoAnalytics() {
-  const [data, setData] = useState<MessageAnalytics | null>(null);
-  const [loading, setLoading] = useState(true);
   const isMobile = useIsMobile();
 
-  useEffect(() => {
-    async function fetchAnalytics() {
-      try {
-        const response = await fetch("/api/analytics");
-        if (response.ok) {
-          const analyticsData = await response.json();
-          setData(analyticsData.messages);
-        }
-      } catch (error) {
-        console.error("Failed to fetch message analytics:", error);
-      } finally {
-        setLoading(false);
-      }
-    }
+  const { data, error, isValidating, mutate } = useSWR<{
+    messages: MessageAnalytics;
+    cached: boolean;
+  }>("/api/analytics", fetcher, {
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+    dedupingInterval: 60000, // 1 minute
+  });
 
-    fetchAnalytics();
-  }, []);
+  const loading = !data && !error;
+  const analytics = data?.messages;
+
+  const handleRefresh = () => {
+    // Force refresh by calling the API with refresh=1 and revalidating SWR
+    mutate(
+      fetch("/api/analytics?refresh=1")
+        .then((res) => res.json())
+        .then((json) => json),
+      { revalidate: false }
+    );
+  };
 
   if (loading) {
     return (
@@ -90,7 +100,7 @@ export function MongoAnalytics() {
     );
   }
 
-  if (!data) {
+  if (error || !analytics) {
     return (
       <Card>
         <CardContent className="pt-6">
@@ -103,7 +113,7 @@ export function MongoAnalytics() {
   }
 
   // Prepare chart data for messages by hour
-  const chartData = data.messagesByHour.map((count, hour) => ({
+  const chartData = analytics.messagesByHour.map((count, hour) => ({
     hour: hour,
     messages: count,
   }));
@@ -116,8 +126,8 @@ export function MongoAnalytics() {
   } satisfies ChartConfig;
 
   // Find peak hour for insights
-  const peakHour = data.messagesByHour.indexOf(
-    Math.max(...data.messagesByHour),
+  const peakHour = analytics.messagesByHour.indexOf(
+    Math.max(...analytics.messagesByHour)
   );
   const peakHourLabel =
     peakHour >= 12
@@ -132,8 +142,25 @@ export function MongoAnalytics() {
           <h3 className="text-lg font-semibold">Message Analytics</h3>
           <p className="text-sm text-muted-foreground">
             Your conversation statistics
+            {data?.cached && (
+              <span className="ml-2 text-xs text-muted-foreground/70">
+                (cached)
+              </span>
+            )}
           </p>
         </div>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleRefresh}
+          disabled={isValidating}
+          className="gap-2"
+        >
+          <RefreshCw
+            className={`h-4 w-4 ${isValidating ? "animate-spin" : ""}`}
+          />
+          {isValidating ? "Refreshing..." : "Refresh"}
+        </Button>
       </div>
 
       {/* Stats Grid - 4 Cards */}
@@ -150,7 +177,7 @@ export function MongoAnalytics() {
           </CardHeader>
           <CardContent className="mt-auto">
             <div className="text-2xl font-bold">
-              {data.total.toLocaleString()}
+              {analytics.total.toLocaleString()}
             </div>
             <div className="mt-2 space-y-1">
               <div className="flex items-center justify-between text-xs">
@@ -158,7 +185,7 @@ export function MongoAnalytics() {
                   <User className="w-4 h-4" /> You
                 </span>
                 <span className="font-medium">
-                  {data.byUser.toLocaleString()}
+                  {analytics.byUser.toLocaleString()}
                 </span>
               </div>
               <div className="flex items-center justify-between text-xs">
@@ -166,7 +193,7 @@ export function MongoAnalytics() {
                   <Bot className="w-4 h-4" /> Lofy
                 </span>
                 <span className="font-medium">
-                  {data.byAssistant.toLocaleString()}
+                  {analytics.byAssistant.toLocaleString()}
                 </span>
               </div>
             </div>
@@ -185,7 +212,7 @@ export function MongoAnalytics() {
           </CardHeader>
           <CardContent className="mt-auto">
             <div className="text-2xl font-bold">
-              {data.messagesThisWeek.toLocaleString()}
+              {analytics.messagesThisWeek.toLocaleString()}
             </div>
             <p className="mt-1 text-xs text-muted-foreground">
               In the last 7 days
@@ -205,11 +232,11 @@ export function MongoAnalytics() {
           </CardHeader>
           <CardContent className="mt-auto">
             <div className="text-2xl font-bold">
-              {data.averageMessagesPerActiveDay}
+              {analytics.averageMessagesPerActiveDay}
             </div>
             <div className="mt-2 flex items-center justify-between text-xs">
               <span className="text-muted-foreground">Active days</span>
-              <span className="font-medium">{data.daysActive} days</span>
+              <span className="font-medium">{analytics.daysActive} days</span>
             </div>
           </CardContent>
         </Card>
@@ -225,9 +252,11 @@ export function MongoAnalytics() {
             </CardTitle>
           </CardHeader>
           <CardContent className="mt-auto">
-            <div className="text-2xl font-bold">{data.longestStreak} days</div>
+            <div className="text-2xl font-bold">
+              {analytics.longestStreak} days
+            </div>
             <p className="mt-1 text-xs text-muted-foreground">
-                Consecutive days messaging
+              Consecutive days messaging
             </p>
           </CardContent>
         </Card>
@@ -245,7 +274,7 @@ export function MongoAnalytics() {
                 See when you&apos;re most active throughout the day
               </CardDescription>
             </div>
-            {data.total > 0 && (
+            {analytics.total > 0 && (
               <div className="flex items-center gap-2 text-xs sm:text-sm">
                 <span className="text-muted-foreground">Peak:</span>
                 <span className="font-semibold text-primary">
@@ -317,7 +346,6 @@ export function MongoAnalytics() {
                 content={
                   <ChartTooltipContent
                     labelFormatter={(_, payload) => {
-                      // Get hour from the payload data
                       const hour = payload?.[0]?.payload?.hour;
                       if (hour === undefined || hour === null) return "";
                       const period = hour >= 12 ? "PM" : "AM";
