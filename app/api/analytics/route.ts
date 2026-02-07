@@ -31,10 +31,6 @@ export async function GET(request: NextRequest) {
     // Connect to MongoDB
     await connectMongo();
 
-    // Debug logging
-    console.log('Analytics API - User ID from session:', userId);
-    console.log('Analytics API - User ID type:', typeof userId);
-
     // Get all analytics data in parallel
     const [
       totalMemories,
@@ -111,19 +107,7 @@ export async function GET(request: NextRequest) {
       })(),
     ]);
 
-    // Debug MongoDB results
-    console.log('MongoDB Analytics Results:', {
-      totalUserMessages,
-      totalAssistantMessages,
-      daysActive,
-      userId
-    });
 
-    // Additional diagnostics - check if there are ANY messages and what user_ids exist
-    const totalMessagesInDB = await Message.countDocuments({});
-    const sampleMessages = await Message.find({}).limit(5).select('user_id role').lean();
-    console.log('Total messages in MongoDB:', totalMessagesInDB);
-    console.log('Sample messages with user_ids:', sampleMessages);
 
     // Calculate total messages
     const totalMessages = totalUserMessages + totalAssistantMessages;
