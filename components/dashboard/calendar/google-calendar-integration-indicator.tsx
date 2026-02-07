@@ -54,9 +54,9 @@ export function GoogleCalendarIntegrationIndicator() {
   return (
     <Button variant="outline" size="sm" asChild className="gap-1.5 h-7 text-xs">
       <Link href="/dashboard/integrations">
-        <Plug className="w-3 h-3" />
-        <span className="hidden sm:inline">Integrate Google</span>
-        <span className="sm:hidden">Integrate</span>
+        <Plug className="w-2 h-2" />
+        <span className="hidden sm:inline">Connect Google</span>
+        <span className="sm:hidden">Connect</span>
       </Link>
     </Button>
   );
