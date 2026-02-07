@@ -47,6 +47,7 @@ export function GoogleCalendarIntegrationIndicator() {
       <Badge variant="primary" className="gap-1 text-[10px] font-normal h-6">
         <Check className="w-3 h-3" />
         <span className="hidden sm:inline">Google Calendar</span>
+        <span className="sm:hidden">Connected</span>
       </Badge>
     );
   }
