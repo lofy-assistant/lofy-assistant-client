@@ -80,13 +80,14 @@ export default function PricingPage() {
   };
 
   const features = [
+    "Unlimited usage",
+    "Apps integration",
     "Limitless reminders",
-    "Smart calendar integration",
-    "Centralized task management",
-    "Save memories forever",
-    "AI-powered assistance",
-    "Multi-device sync",
+    "RAG powered memories",
+    "Multi personality companion",
     "Priority support",
+    "Advanced analytics",
+    "24/7 availability",
   ];
 
   return (
@@ -100,7 +101,7 @@ export default function PricingPage() {
             Simple, Transparent Pricing
           </h1>
           <p className="max-w-3xl mx-auto text-md md:text-xl text-gray-600">
-            Try it free for 14 days — no credit card required.
+            Unlock full Lofy capabilities. Try free for 14 days
           </p>
         </div>
 
@@ -140,7 +141,26 @@ export default function PricingPage() {
               <CardDescription className="text-base">
                 Everything you need to stay organized and productive
               </CardDescription>
-              <div className="mt-4">
+              
+              {/* Trial Info */}
+              <div className="mt-6 p-4 bg-emerald-50 rounded-lg border border-emerald-200">
+                <Badge variant="emerald" className="mb-2">
+                  14 Days Free Trial
+                </Badge>
+                <p className="text-sm text-gray-700 font-medium">
+                  Trial starts after your first message with Lofy
+                </p>
+                <a 
+                  href={`${process.env.NEXT_PUBLIC_APP_URL}/dashboard`}
+                  className="text-sm text-primary hover:underline inline-flex items-center gap-1 mt-1"
+                >
+                  Check dashboard for details →
+                </a>
+              </div>
+
+              {/* Pricing */}
+              <div className="mt-6">
+                <p className="text-sm text-gray-600 mb-2">Then</p>
                 <span className="text-5xl font-bold">
                   {currencySymbol}{billingCycle === "monthly" ? monthlyPrice : yearlyPrice}
                 </span>
@@ -149,20 +169,15 @@ export default function PricingPage() {
                 </span>
               </div>
               {billingCycle === "yearly" && (
-                <Badge variant="emerald" className="mx-auto mt-2">
-                  Save {currencySymbol}{monthlySavings}
-                </Badge>
+                <>
+                  <Badge variant="emerald" className="mx-auto mt-2">
+                    Save {currencySymbol}{monthlySavings}
+                  </Badge>
+                  <p className="text-sm text-gray-500 mt-1">
+                    {currencySymbol}{(yearlyPrice / 12).toFixed(2)} per month, billed annually
+                  </p>
+                </>
               )}
-              {billingCycle === "yearly" && (
-                <p className="text-sm text-gray-500">
-                  {currencySymbol}{(yearlyPrice / 12).toFixed(2)} per month, billed annually
-                </p>
-              )}
-              <div className="mt-1">
-                <Badge variant="emerald" className="text-sm">
-                  14 Days Free Trial
-                </Badge>
-              </div>
             </CardHeader>
             <CardContent>
               <ul className="space-y-3">
