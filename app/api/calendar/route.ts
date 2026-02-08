@@ -172,36 +172,115 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized - invalid session" }, { status: 401 });
     }
 
-    const body = await request.json();
-    const { title, description, start_time, end_time, timezone = "UTC", is_all_day = false, recurrence } = body;
+    type CreateEventBody = {
+      title?: string;
+      description?: string | null;
+      start_time?: string;
+      end_time?: string | null;
+      timezone?: string;
+      is_all_day?: boolean;
+      recurrence?: string | null;
+    };
 
-    if (!title || !start_time || !end_time) {
-      return NextResponse.json({ error: "Title, start_time, and end_time are required" }, { status: 400 });
+    const body = (await request.json()) as CreateEventBody;
+    const {
+      title,
+      description,
+      start_time,
+      end_time,
+      is_all_day = false,
+      recurrence,
+    } = body;
+
+    if (!title || !start_time) {
+      return NextResponse.json({ error: "Title and start_time are required" }, { status: 400 });
     }
 
-    const startTime = new Date(start_time);
-    const endTime = new Date(end_time);
-
-    // Validate that end time is after start time
-    if (endTime <= startTime) {
+    // If both start and end parse as valid dates, enforce end > start.
+    const parsedStart = new Date(start_time);
+    const parsedEnd = end_time ? new Date(end_time) : null;
+    if (
+      !isNaN(parsedStart.getTime()) &&
+      parsedEnd &&
+      !isNaN(parsedEnd.getTime()) &&
+      parsedEnd <= parsedStart
+    ) {
       return NextResponse.json({ error: "End time must be after start time" }, { status: 400 });
     }
 
-    // Create calendar event
-    const event = await prisma.calendar_events.create({
-      data: {
-        user_id: session.userId,
-        title,
-        description: description || null,
-        start_time: startTime,
-        end_time: endTime,
-        timezone,
-        is_all_day,
-        recurrence: recurrence || null,
-      },
-    });
+    type EventPayload = {
+      user_id: string;
+      title: string;
+      start_time: string;
+      is_all_day: boolean;
+      end_time?: string;
+      description?: string;
+      recurrence?: string;
+    };
 
-    return NextResponse.json({ event }, { status: 201 });
+    const payload: EventPayload = {
+      user_id: session.userId,
+      title,
+      start_time,
+      is_all_day,
+    };
+
+    if (end_time) payload.end_time = end_time;
+    if (description) payload.description = description;
+    if (recurrence) payload.recurrence = recurrence;
+
+    let apiRes: globalThis.Response;
+    try {
+      apiRes = await fetch(`${process.env.FASTAPI_URL}/web/events`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+    } catch (err) {
+      console.error("Network error calling events API:", err);
+      return NextResponse.json({ error: "Failed to reach events API" }, { status: 502 });
+    }
+
+    type ApiResponse = {
+      success?: boolean;
+      message?: string;
+      data?: {
+        event_id?: string;
+        title?: string;
+        start_time?: string;
+        end_time?: string;
+        google_calendar_synced?: boolean;
+      };
+      error?: string;
+    };
+
+    const text = await apiRes.text();
+    let data: ApiResponse | string | null = null;
+    try {
+      data = text ? (JSON.parse(text) as ApiResponse) : null;
+    } catch {
+      data = text;
+    }
+
+    if (apiRes.ok) {
+      // Expecting { success: true, message, data }
+      const resData = typeof data === "object" && data !== null ? data : null;
+      return NextResponse.json(
+        { success: true, message: resData?.message || "Event created", data: resData?.data || null },
+        { status: 200 },
+      );
+    }
+
+    if (apiRes.status === 409) {
+      return NextResponse.json({ error: data || "Conflict - duplicate event" }, { status: 409 });
+    }
+
+    if (apiRes.status === 400) {
+      return NextResponse.json({ error: data || "Bad request" }, { status: 400 });
+    }
+
+    console.error("Upstream events API error:", apiRes.status, data);
+    return NextResponse.json({ error: data || "Upstream API error" }, { status: 500 });
   } catch (error) {
     console.error("Calendar Creation Error:", error);
 
