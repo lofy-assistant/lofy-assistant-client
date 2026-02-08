@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { rrulestr } from "rrule";
 import { prisma } from '@/lib/database';
+import User from '@/lib/models/User';
 import { verifySession } from "@/lib/session";
 
 const buildDateFilter = (month?: string | null, year?: string | null) => {
@@ -215,6 +216,7 @@ export async function POST(request: NextRequest) {
       title: string;
       start_time: string;
       is_all_day: boolean;
+      timezone?: string;
       end_time?: string;
       description?: string;
       recurrence?: string;
@@ -225,6 +227,16 @@ export async function POST(request: NextRequest) {
       start_time,
       is_all_day,
     };
+
+    // Try to fetch user's timezone from MongoDB User model if present
+    try {
+      const mongoUser = await User.findOne({ user_id: session.userId }).exec();
+      if (mongoUser?.timezone) {
+        payload.timezone = mongoUser.timezone;
+      }
+    } catch (err) {
+      console.error("Failed to fetch user timezone from MongoDB:", err);
+    }
 
     if (end_time) payload.end_time = end_time;
     if (description) payload.description = description;
