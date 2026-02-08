@@ -53,10 +53,9 @@ export async function POST(req: NextRequest) {
     const currency = resolveCurrencyFromIP(country);
 
     // Payment methods based on currency
-    // FPX and GrabPay only work with MYR
-    const paymentMethodTypes: Stripe.Checkout.SessionCreateParams.PaymentMethodType[] = currency === "myr" 
-      ? ["card", "fpx", "grabpay", "link"]
-      : ["card", "link"];
+    // Note: FPX and GrabPay don't support subscription mode, only one-time payments
+    // Apple Pay and Google Pay are automatically enabled with "card"
+    const paymentMethodTypes: Stripe.Checkout.SessionCreateParams.PaymentMethodType[] = ["card", "link"];
 
     const stripeSession = await stripe.checkout.sessions.create({
       mode: "subscription",
