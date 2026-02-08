@@ -54,7 +54,7 @@ export async function POST(req: NextRequest) {
 
     const stripeSession = await stripe.checkout.sessions.create({
       mode: "subscription",
-      payment_method_collection: "if_required",
+      payment_method_types: ["card", "fpx", "grabpay", "link"],
       currency,
       line_items: [
         {
@@ -64,9 +64,6 @@ export async function POST(req: NextRequest) {
       ],
       success_url: `${baseUrl}/dashboard?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${baseUrl}/pricing`,
-      subscription_data: {
-        trial_period_days: 14,
-      },
       ...(customerEmail && { customer_email: customerEmail }),
       ...(userId && { metadata: { userId } }),
     });
