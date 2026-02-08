@@ -192,6 +192,9 @@ export async function POST(request: NextRequest) {
       recurrence,
     } = body;
 
+    // Debug: log exactly what the client sent
+    console.log("[Calendar POST] Received body:", JSON.stringify(body, null, 2));
+  
     if (!title || !start_time) {
       return NextResponse.json({ error: "Title and start_time are required" }, { status: 400 });
     }
@@ -209,7 +212,6 @@ export async function POST(request: NextRequest) {
     }
 
     type EventPayload = {
-      user_id: string;
       title: string;
       start_time: string;
       is_all_day: boolean;
@@ -219,7 +221,6 @@ export async function POST(request: NextRequest) {
     };
 
     const payload: EventPayload = {
-      user_id: session.userId,
       title,
       start_time,
       is_all_day,
@@ -229,9 +230,13 @@ export async function POST(request: NextRequest) {
     if (description) payload.description = description;
     if (recurrence) payload.recurrence = recurrence;
 
+    // Send user_id as query parameter to the upstream events API
+    const eventsUrl = `${process.env.FASTAPI_URL}/web/events?user_id=${encodeURIComponent(session.userId)}`;
+    console.log("[Calendar POST] Sending payload to external API:", eventsUrl, JSON.stringify(payload, null, 2));
+
     let apiRes: globalThis.Response;
     try {
-      apiRes = await fetch(`${process.env.FASTAPI_URL}/web/events`, {
+      apiRes = await fetch(eventsUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
