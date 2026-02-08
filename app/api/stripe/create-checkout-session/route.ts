@@ -52,9 +52,15 @@ export async function POST(req: NextRequest) {
     // Country from body (pricing page) or fallback to IP geo (Vercel x-vercel-ip-country).
     const currency = resolveCurrencyFromIP(country);
 
+    // Payment methods based on currency
+    // FPX and GrabPay only work with MYR
+    const paymentMethodTypes: Stripe.Checkout.SessionCreateParams.PaymentMethodType[] = currency === "myr" 
+      ? ["card", "fpx", "grabpay", "link"]
+      : ["card", "link"];
+
     const stripeSession = await stripe.checkout.sessions.create({
       mode: "subscription",
-      payment_method_types: ["card", "fpx", "grabpay", "link"],
+      payment_method_types: paymentMethodTypes,
       currency,
       line_items: [
         {
@@ -62,6 +68,11 @@ export async function POST(req: NextRequest) {
           quantity: 1,
         },
       ],
+      payment_method_options: {
+        card: {
+          request_three_d_secure: "automatic",
+        },
+      },
       success_url: `${baseUrl}/dashboard?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${baseUrl}/pricing`,
       ...(customerEmail && { customer_email: customerEmail }),
