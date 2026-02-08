@@ -46,9 +46,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL ||
-      process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` :
-      "http://localhost:3000";
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL;
 
     // Same price_id; Stripe picks amount from currency_options (USD/MYR) per session currency.
     // Country from body (pricing page) or fallback to IP geo (Vercel x-vercel-ip-country).
