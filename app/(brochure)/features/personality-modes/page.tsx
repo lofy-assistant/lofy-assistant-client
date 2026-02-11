@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 export default function PersonalityModesPage() {
   const personalities = [
     {
-      name: "Nice",
+      name: "Lofy",
       emoji: "😊",
       description: "Warm, supportive, and encouraging. Your friendly companion that celebrates your wins and gently guides you through challenges.",
       color: "bg-green-500/10 border-green-500/20",
@@ -25,14 +25,14 @@ export default function PersonalityModesPage() {
       examples: ["Oh, another reminder? I live for this.", "Consider it handled, obviously.", "You're welcome in advance."],
     },
     {
-      name: "Sarcastic",
+      name: "Chancellor",
       emoji: "🙄",
       description: "Dry humor and clever comebacks. For those who appreciate wit with their productivity.",
       color: "bg-purple-500/10 border-purple-500/20",
       examples: ["Wow, another meeting. Shocking.", "Sure, I'll remember that for you.", "Oh, you forgot again? Surprise."],
     },
     {
-      name: "Mean",
+      name: "Atlas",
       emoji: "😈",
       description: "Brutally honest tough love. No sugarcoating—just straight talk to keep you accountable and on track.",
       color: "bg-red-500/10 border-red-500/20",
@@ -114,7 +114,7 @@ export default function PersonalityModesPage() {
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground">
-                  Need a cheerleader? Go Nice. Need a drill sergeant? Go Mean. Match Lofy's energy to what keeps you productive.
+                  Need a cheerleader? Go Lofy. Need a drill sergeant? Go Atlas. Match Lofy's energy to what keeps you productive.
                 </p>
               </CardContent>
             </Card>
@@ -125,7 +125,7 @@ export default function PersonalityModesPage() {
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground">
-                  Productivity doesn't have to be boring. Sassy and Sarcastic modes add humor to your daily tasks.
+                  Productivity doesn't have to be boring. Sassy and Chancellor modes add humor to your daily tasks.
                 </p>
               </CardContent>
             </Card>
@@ -136,7 +136,7 @@ export default function PersonalityModesPage() {
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground">
-                  Change personalities on the fly. Just tell Lofy "be sassy" or "switch to nice mode" and it adapts instantly.
+                  Change personalities on the fly. Just tell Lofy "be sassy" or "switch to lofy mode" and it adapts instantly.
                 </p>
               </CardContent>
             </Card>
@@ -172,7 +172,7 @@ export default function PersonalityModesPage() {
               </div>
               <h3 className="text-xl font-bold mb-2">Pick Your Vibe</h3>
               <p className="text-muted-foreground">
-                Choose from Nice, Sassy, Sarcastic, or Mean in your settings or just ask Lofy to switch.
+                Choose from Lofy, Sassy, Chancellor, or Atlas in your settings or just ask Lofy to switch.
               </p>
             </div>
 
@@ -192,7 +192,7 @@ export default function PersonalityModesPage() {
               </div>
               <h3 className="text-xl font-bold mb-2">Mix It Up</h3>
               <p className="text-muted-foreground">
-                Change personalities whenever you want. Feeling spicy today? Go sassy. Need tough love? Switch to mean.
+                Change personalities whenever you want. Feeling spicy today? Go sassy. Need tough love? Switch to atlas.
               </p>
             </div>
           </div>

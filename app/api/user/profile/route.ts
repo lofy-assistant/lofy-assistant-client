@@ -101,12 +101,13 @@ export async function PATCH(request: NextRequest) {
     }
     
     if (type !== undefined) {
-      // Validate type is either "sassy" or "nice" or "chancellor" or "atlas"
-      if (type === "sassy" || type === "nice" || type === "chancellor" || type === "atlas") {
-        updateData.ai_persona = type;
+      // Validate type is either "sassy" or "lofy" or "chancellor" or "atlas" (accept "nice" as legacy → "lofy")
+      const normalizedType = type === "nice" ? "lofy" : type;
+      if (normalizedType === "sassy" || normalizedType === "lofy" || normalizedType === "chancellor" || normalizedType === "atlas") {
+        updateData.ai_persona = normalizedType;
       } else {
         return NextResponse.json(
-          { error: "Invalid type. Must be 'sassy' or 'nice' or 'chancellor' or 'atlas'" },
+          { error: "Invalid type. Must be 'sassy' or 'lofy' or 'chancellor' or 'atlas'" },
           { status: 400 }
         );
       }

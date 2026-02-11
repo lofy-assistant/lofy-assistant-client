@@ -35,7 +35,7 @@ export function ProfileSettings() {
   const [isSaving, setIsSaving] = useState(false);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [name, setName] = useState("");
-  const [type, setType] = useState<"sassy" | "nice" | "chancellor" | "atlas">("sassy");
+  const [type, setType] = useState<"sassy" | "lofy" | "chancellor" | "atlas">("sassy");
 
   useEffect(() => {
     fetchProfile();
@@ -49,7 +49,13 @@ export function ProfileSettings() {
       const data = await response.json();
       setProfile(data.user);
       setName(data.user.name || "");
-      setType((data.user.ai_persona as "sassy" | "nice" | "chancellor" | "atlas") || "sassy");
+      setType(
+        (data.user.ai_persona === "nice" ? "lofy" : data.user.ai_persona) as
+          | "sassy"
+          | "lofy"
+          | "chancellor"
+          | "atlas" || "sassy"
+      );
     } catch (error) {
       toast.error("Failed to load profile");
       console.error(error);
@@ -139,13 +145,13 @@ export function ProfileSettings() {
 
           <div className="space-y-2">
             <Label htmlFor="type">Lofy&apos;s Persona</Label>
-            <Select value={type} onValueChange={(value) => setType(value as "sassy" | "nice" | "chancellor" | "atlas")}>
+            <Select value={type} onValueChange={(value) => setType(value as "sassy" | "lofy" | "chancellor" | "atlas")}>
               <SelectTrigger id="type">
                 <SelectValue placeholder="Select type" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="sassy">Sassy</SelectItem>
-                <SelectItem value="nice">Nice</SelectItem>
+                <SelectItem value="lofy">Lofy</SelectItem>
                 <SelectItem value="chancellor">Chancellor</SelectItem>
                 <SelectItem value="atlas">Atlas</SelectItem>
               </SelectContent>
