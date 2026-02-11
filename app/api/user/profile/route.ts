@@ -3,17 +3,26 @@ import { prisma } from '@/lib/database';
 import { verifySession } from "@/lib/session";
 
 async function invalidatePersonalityCache(userId: string) {
-  const baseUrl = process.env.NEXT_PUBLIC_LOFY_CORE_URL || process.env.LOFY_CORE_URL;
-  if (!baseUrl) return;
+  const baseUrl = process.env.FASTAPI_URL;
+  if (!baseUrl) {
+    console.warn("[invalidatePersonalityCache] Skipped: FASTAPI_URL not configured");
+    return;
+  }
 
   try {
-    await fetch(`${baseUrl}/web/cache/invalidate-personality`, {
+    const response = await fetch(`${baseUrl}/web/cache/invalidate-personality`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ user_id: userId }),
     });
+
+    if (response.ok) {
+      console.log("[invalidatePersonalityCache] Success: personality cache invalidated for user", userId);
+    } else {
+      console.error("[invalidatePersonalityCache] Failed:", response.status, response.statusText, "for user", userId);
+    }
   } catch (err) {
-    console.error("Failed to invalidate personality cache:", err);
+    console.error("[invalidatePersonalityCache] Error:", err);
   }
 }
 
