@@ -2,6 +2,21 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from '@/lib/database';
 import { verifySession } from "@/lib/session";
 
+async function invalidatePersonalityCache(userId: string) {
+  const baseUrl = process.env.NEXT_PUBLIC_LOFY_CORE_URL || process.env.LOFY_CORE_URL;
+  if (!baseUrl) return;
+
+  try {
+    await fetch(`${baseUrl}/web/cache/invalidate-personality`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ user_id: userId }),
+    });
+  } catch (err) {
+    console.error("Failed to invalidate personality cache:", err);
+  }
+}
+
 export async function GET(request: NextRequest) {
   try {
     const token = request.cookies.get("session")?.value;
@@ -77,12 +92,12 @@ export async function PATCH(request: NextRequest) {
     }
     
     if (type !== undefined) {
-      // Validate type is either "sassy" or "nice" or "sarcastic" or "mean"
-      if (type === "sassy" || type === "nice" || type === "sarcastic" || type === "mean") {
+      // Validate type is either "sassy" or "nice" or "chancellor" or "atlas"
+      if (type === "sassy" || type === "nice" || type === "chancellor" || type === "atlas") {
         updateData.ai_persona = type;
       } else {
         return NextResponse.json(
-          { error: "Invalid type. Must be 'sassy' or 'nice' or 'sarcastic' or 'mean'" },
+          { error: "Invalid type. Must be 'sassy' or 'nice' or 'chancellor' or 'atlas'" },
           { status: 400 }
         );
       }
@@ -99,6 +114,11 @@ export async function PATCH(request: NextRequest) {
         ai_persona: true,
       },
     });
+
+    // Invalidate personality cache when ai_persona was updated
+    if (updateData.ai_persona !== undefined) {
+      await invalidatePersonalityCache(session.userId);
+    }
 
     return NextResponse.json({
       user: updatedUser,
