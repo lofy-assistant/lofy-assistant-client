@@ -35,7 +35,7 @@ export function ProfileSettings() {
   const [isSaving, setIsSaving] = useState(false);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [name, setName] = useState("");
-  const [type, setType] = useState<"sassy" | "lofy" | "chancellor" | "atlas">("sassy");
+  const [type, setType] = useState<"sassy" | "hope" | "chancellor" | "atlas">("sassy");
 
   useEffect(() => {
     fetchProfile();
@@ -49,13 +49,20 @@ export function ProfileSettings() {
       const data = await response.json();
       setProfile(data.user);
       setName(data.user.name || "");
-      setType(
-        (data.user.ai_persona === "nice" ? "lofy" : data.user.ai_persona) as
-          | "sassy"
-          | "lofy"
-          | "chancellor"
-          | "atlas" || "sassy"
-      );
+      const raw = data.user.ai_persona;
+      const mapped =
+        raw === "nice" || raw === "lofy"
+          ? "hope"
+          : raw === "sarcastic"
+            ? "chancellor"
+            : raw === "mean"
+              ? "atlas"
+              : raw;
+      const personaType: "sassy" | "hope" | "chancellor" | "atlas" =
+        ["sassy", "hope", "chancellor", "atlas"].includes(mapped || "")
+          ? (mapped as "sassy" | "hope" | "chancellor" | "atlas")
+          : "sassy";
+      setType(personaType);
     } catch (error) {
       toast.error("Failed to load profile");
       console.error(error);
@@ -145,15 +152,15 @@ export function ProfileSettings() {
 
           <div className="space-y-2">
             <Label htmlFor="type">Lofy&apos;s Persona</Label>
-            <Select value={type} onValueChange={(value) => setType(value as "sassy" | "lofy" | "chancellor" | "atlas")}>
+            <Select value={type} onValueChange={(value) => setType(value as "sassy" | "hope" | "chancellor" | "atlas")}>
               <SelectTrigger id="type">
                 <SelectValue placeholder="Select type" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="sassy">Sassy</SelectItem>
-                <SelectItem value="lofy">Lofy</SelectItem>
+                <SelectItem value="hope">Hope</SelectItem>
                 <SelectItem value="chancellor">Chancellor</SelectItem>
-                <SelectItem value="atlas">Atlas</SelectItem>
+                <SelectItem value="atlas">ATLAS</SelectItem>
               </SelectContent>
             </Select>
           </div>

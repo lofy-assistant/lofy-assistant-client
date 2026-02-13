@@ -11,32 +11,32 @@ import { Badge } from "@/components/ui/badge";
 export default function PersonalityModesPage() {
   const personalities = [
     {
-      name: "Lofy",
-      emoji: "😊",
-      description: "Warm, supportive, and encouraging. Your friendly companion that celebrates your wins and gently guides you through challenges.",
+      name: "Hope",
+      emoji: "🌱",
+      description: "Optimistic, resilient, and steady. Guides you through uncertainty with clarity and hope. Calm under pressure, encouraging but realistic—the most persistent mind in the room, not the loudest.",
       color: "bg-green-500/10 border-green-500/20",
-      examples: ["Great job on that task!", "You've got this!", "How can I help you today?"],
+      examples: ["Reminder set. One less thing to carry.", "There are risks involved. But none of them are irreversible.", "Let's break this down and move one step forward."],
     },
     {
       name: "Sassy",
       emoji: "💅",
-      description: "Confident, witty, and full of personality. Get things done with a side of flair and playful attitude.",
+      description: "Confident, playful, and slightly sassy. Your bestie with boundaries—light sass, friendly tone, and quick help. Teases the situation, never the person.",
       color: "bg-pink-500/10 border-pink-500/20",
-      examples: ["Oh, another reminder? I live for this.", "Consider it handled, obviously.", "You're welcome in advance."],
+      examples: ["Wow. Bold of you to rely on me again. Done.", "Okay okay, reminder set — relax.", "I got you. As usual."],
     },
     {
       name: "Chancellor",
-      emoji: "🙄",
-      description: "Dry humor and clever comebacks. For those who appreciate wit with their productivity.",
+      emoji: "👔",
+      description: "Discreet, loyal, and composed. A trusted advisor who speaks with quiet confidence. Measured, thoughtful, and tactful—serves with good judgment, not enthusiasm.",
       color: "bg-purple-500/10 border-purple-500/20",
-      examples: ["Wow, another meeting. Shocking.", "Sure, I'll remember that for you.", "Oh, you forgot again? Surprise."],
+      examples: ["Reminder set. I'll hold you to it.", "Added to calendar. You have a tight window tomorrow — worth noting.", "Memory stored. I'll remember."],
     },
     {
-      name: "Atlas",
-      emoji: "😈",
-      description: "Brutally honest tough love. No sugarcoating—just straight talk to keep you accountable and on track.",
-      color: "bg-red-500/10 border-red-500/20",
-      examples: ["Stop procrastinating already.", "Did you actually do it this time?", "I set 5 reminders. No excuses."],
+      name: "ATLAS",
+      emoji: "🧠",
+      description: "Composed, highly intelligent, and efficient. Cuts through the noise with clarity and precision. Calm, articulate, and confident—an intelligent partner who anticipates your needs.",
+      color: "bg-slate-500/10 border-slate-500/20",
+      examples: ["Reminder set for 3 PM. You're clear until then.", "Added to calendar. You've got three events back-to-back tomorrow — buffer time might help.", "Memory stored. I'll remember that."],
     },
   ];
 
@@ -114,7 +114,7 @@ export default function PersonalityModesPage() {
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground">
-                  Need a cheerleader? Go Lofy. Need a drill sergeant? Go Atlas. Match Lofy's energy to what keeps you productive.
+                  Need a steady guide through uncertainty? Go Hope. Need a composed, efficient partner? Go ATLAS. Match Lofy's energy to what keeps you productive.
                 </p>
               </CardContent>
             </Card>
@@ -125,7 +125,7 @@ export default function PersonalityModesPage() {
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground">
-                  Productivity doesn't have to be boring. Sassy and Chancellor modes add humor to your daily tasks.
+                  Productivity doesn't have to be boring. Sassy adds playful flair; Chancellor brings discreet wisdom. Pick the vibe that fits.
                 </p>
               </CardContent>
             </Card>
@@ -136,7 +136,7 @@ export default function PersonalityModesPage() {
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground">
-                  Change personalities on the fly. Just tell Lofy "be sassy" or "switch to lofy mode" and it adapts instantly.
+                  Change personalities on the fly. Just tell Lofy "be sassy" or "switch to hope mode" and it adapts instantly.
                 </p>
               </CardContent>
             </Card>
@@ -172,7 +172,7 @@ export default function PersonalityModesPage() {
               </div>
               <h3 className="text-xl font-bold mb-2">Pick Your Vibe</h3>
               <p className="text-muted-foreground">
-                Choose from Lofy, Sassy, Chancellor, or Atlas in your settings or just ask Lofy to switch.
+                Choose from Hope, Sassy, Chancellor, or ATLAS in your settings or just ask Lofy to switch.
               </p>
             </div>
 
@@ -192,7 +192,7 @@ export default function PersonalityModesPage() {
               </div>
               <h3 className="text-xl font-bold mb-2">Mix It Up</h3>
               <p className="text-muted-foreground">
-                Change personalities whenever you want. Feeling spicy today? Go sassy. Need tough love? Switch to atlas.
+                Change personalities whenever you want. Feeling playful? Go Sassy. Need calm efficiency? Switch to ATLAS.
               </p>
             </div>
           </div>
