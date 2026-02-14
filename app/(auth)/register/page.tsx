@@ -238,8 +238,8 @@ function RegisterForm() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center">
-      <Card className="min-w-sm mx-auto shadow-xl rounded-xl p-4">
+    <div className="min-h-[calc(100vh-4.5rem)] flex items-center justify-center">
+      <Card className="min-w-sm shadow-xl rounded-xl p-4">
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl font-bold text-center">
             Complete Your Profile

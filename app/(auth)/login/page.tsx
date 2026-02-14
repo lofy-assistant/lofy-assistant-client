@@ -124,78 +124,81 @@ function LoginForm() {
   };
 
   return (
-    <Card className="min-w-sm mx-auto shadow-xl rounded-xl p-4">
-      <CardHeader className="text-center">
-        <CardTitle className="text-2xl font-bold">Welcome Back</CardTitle>
-        <CardDescription>Enter your phone number and PIN to sign in</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <PhoneNumberInput
-              control={form.control}
-              dialCodeName="dialCode"
-              phoneNumberName="phoneNumber"
-              label="Phone Number"
-              phonePlaceholder="123456789"
-            />
+    <div className="min-h-[calc(100vh-4.5rem)] flex items-center justify-center">
+      <Card className="min-w-sm mx-auto shadow-xl rounded-xl p-4">
+        <CardHeader className="text-center">
+          <CardTitle className="text-2xl font-bold">Welcome Back</CardTitle>
+          <CardDescription>Enter your phone number and PIN to sign in</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              <PhoneNumberInput
+                control={form.control}
+                dialCodeName="dialCode"
+                phoneNumberName="phoneNumber"
+                label="Phone Number"
+                phonePlaceholder="123456789"
+              />
 
-            <FormField
-              control={form.control}
-              name="pin"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>6-Digit PIN</FormLabel>
-                  <FormControl>
-                    <InputOTP maxLength={6} value={field.value} onChange={field.onChange}>
-                      <InputOTPGroup className="gap-1">
-                        <InputOTPSlot index={0} />
-                        <InputOTPSlot index={1} />
-                        <InputOTPSlot index={2} />
-                        <InputOTPSlot index={3} />
-                        <InputOTPSlot index={4} />
-                        <InputOTPSlot index={5} />
-                      </InputOTPGroup>
-                    </InputOTP>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+              <FormField
+                control={form.control}
+                name="pin"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>6-Digit PIN</FormLabel>
+                    <FormControl>
+                      <InputOTP maxLength={6} value={field.value} onChange={field.onChange}>
+                        <InputOTPGroup className="gap-1">
+                          <InputOTPSlot index={0} />
+                          <InputOTPSlot index={1} />
+                          <InputOTPSlot index={2} />
+                          <InputOTPSlot index={3} />
+                          <InputOTPSlot index={4} />
+                          <InputOTPSlot index={5} />
+                        </InputOTPGroup>
+                      </InputOTP>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-            <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? "Signing in..." : "Sign In"}
-            </Button>
-
-            <div className="flex flex-col gap-2 mt-4">
-              <Button type="button" variant="outline" className="w-full" onClick={() => router.push("/register")}>
-                Create Account
+              <Button type="submit" className="w-full" disabled={isLoading}>
+                {isLoading ? "Signing in..." : "Sign In"}
               </Button>
-              <Button type="button" variant="ghost" className="w-full text-sm" onClick={() => router.push("/forgot-pin")}>
-                Forgot PIN?
-              </Button>
-            </div>
-          </form>
-        </Form>
-      </CardContent>
-    </Card>
+
+              <div className="flex flex-col gap-2 mt-4">
+                <Button type="button" variant="outline" className="w-full" onClick={() => router.push("/register")}>
+                  Create Account
+                </Button>
+                <Button type="button" variant="ghost" className="w-full text-sm" onClick={() => router.push("/forgot-pin")}>
+                  Forgot PIN?
+                </Button>
+              </div>
+            </form>
+          </Form>
+        </CardContent>
+      </Card>
+    </div>
   );
 }
 
 export default function LoginPage() {
   return (
-    <div className="min-h-screen flex items-center justify-center">
-      <Suspense
-        fallback={
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center">
           <Card className="min-w-sm mx-auto shadow-xl rounded-xl">
             <CardHeader className="text-center">
               <CardTitle className="text-2xl font-bold">Welcome Back</CardTitle>
               <CardDescription>Loading...</CardDescription>
             </CardHeader>
           </Card>
-        }>
-        <LoginForm />
-      </Suspense>
-    </div>
+        </div>
+      }
+    >
+      <LoginForm />
+    </Suspense>
   );
 }
