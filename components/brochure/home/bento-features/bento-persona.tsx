@@ -8,10 +8,10 @@ export default function BentoPersona() {
   // Define 5 different AI personas as abstract orbs with emoji personalities
   const personas = [
     { id: 1, delay: 0, size: 70, y: 20, emoji: "💅", label: "Sassy" },
-    { id: 2, delay: 0.2, size: 75, y: 0, emoji: "😈", label: "Mean" },
+    { id: 2, delay: 0.2, size: 75, y: 0, emoji: "🧠", label: "ATLAS" },
     { id: 3, delay: 0.4, size: 105, y: -10, emoji: "", label: "Neutral" },
-    { id: 4, delay: 0.6, size: 75, y: 0, emoji: "😊", label: "Nice" },
-    { id: 5, delay: 0.8, size: 70, y: 20, emoji: "🙄", label: "Sarcastic" },
+    { id: 4, delay: 0.6, size: 75, y: 0, emoji: "🌱", label: "Hope" },
+    { id: 5, delay: 0.8, size: 70, y: 20, emoji: "👔", label: "Chancellor" },
   ];
 
   return (

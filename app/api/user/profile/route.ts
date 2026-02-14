@@ -2,6 +2,30 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from '@/lib/database';
 import { verifySession } from "@/lib/session";
 
+async function invalidatePersonalityCache(userId: string) {
+  const baseUrl = process.env.FASTAPI_URL;
+  if (!baseUrl) {
+    console.warn("[invalidatePersonalityCache] Skipped: FASTAPI_URL not configured");
+    return;
+  }
+
+  try {
+    const response = await fetch(`${baseUrl}/web/cache/invalidate-personality`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ user_id: userId }),
+    });
+
+    if (response.ok) {
+      console.log("[invalidatePersonalityCache] Success: personality cache invalidated for user", userId);
+    } else {
+      console.error("[invalidatePersonalityCache] Failed:", response.status, response.statusText, "for user", userId);
+    }
+  } catch (err) {
+    console.error("[invalidatePersonalityCache] Error:", err);
+  }
+}
+
 export async function GET(request: NextRequest) {
   try {
     const token = request.cookies.get("session")?.value;
@@ -77,12 +101,13 @@ export async function PATCH(request: NextRequest) {
     }
     
     if (type !== undefined) {
-      // Validate type is either "sassy" or "nice" or "sarcastic" or "mean"
-      if (type === "sassy" || type === "nice" || type === "sarcastic" || type === "mean") {
-        updateData.ai_persona = type;
+      // Validate type is either "sassy" or "hope" or "chancellor" or "atlas" (accept "nice"/"lofy" as legacy → "hope")
+      const normalizedType = type === "nice" || type === "lofy" ? "hope" : type;
+      if (normalizedType === "sassy" || normalizedType === "hope" || normalizedType === "chancellor" || normalizedType === "atlas") {
+        updateData.ai_persona = normalizedType;
       } else {
         return NextResponse.json(
-          { error: "Invalid type. Must be 'sassy' or 'nice' or 'sarcastic' or 'mean'" },
+          { error: "Invalid type. Must be 'sassy' or 'hope' or 'chancellor' or 'atlas'" },
           { status: 400 }
         );
       }
@@ -99,6 +124,11 @@ export async function PATCH(request: NextRequest) {
         ai_persona: true,
       },
     });
+
+    // Invalidate personality cache when ai_persona was updated
+    if (updateData.ai_persona !== undefined) {
+      await invalidatePersonalityCache(session.userId);
+    }
 
     return NextResponse.json({
       user: updatedUser,
