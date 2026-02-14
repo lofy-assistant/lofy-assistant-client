@@ -203,14 +203,14 @@ export function MongoAnalytics() {
           </CardContent>
         </Card>
 
-        {/* Card 4: Longest Streak */}
+        {/* Card 4: Streak Stats */}
         <Card className="h-full py-4 transition-all hover:shadow-md flex flex-col">
           <CardHeader className="flex flex-row items-center space-y-0">
             <div className="p-2 rounded-full bg-orange-500/10">
               <Flame className="w-4 h-4 text-orange-500" />
             </div>
             <CardTitle className="text-sm font-medium">
-              Longest Streak
+              Streak Stats
             </CardTitle>
           </CardHeader>
           <CardContent className="mt-auto">
@@ -218,8 +218,16 @@ export function MongoAnalytics() {
               {analytics.longestStreak} days
             </div>
             <p className="mt-1 text-xs text-muted-foreground">
-              Consecutive days messaging
+              All-time longest streak
             </p>
+            <div className="mt-3 pt-3 border-t">
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-muted-foreground">Current streak</span>
+                <span className="font-medium text-orange-500">
+                  {analytics.currentStreak || 0} days
+                </span>
+              </div>
+            </div>
           </CardContent>
         </Card>
       </div>
@@ -349,6 +357,6 @@ export function MongoAnalytics() {
           </div>
         </CardContent>
       </Card>
-    </div>
+    </div >
   );
 }

@@ -135,10 +135,10 @@ export async function GET(request: NextRequest) {
     });
     const daysActive = uniqueDays.size;
 
-    // Calculate longest streak
+    // Calculate longest streak and current streak
     const sortedDays = Array.from(uniqueDays).sort();
     let longestStreak = 0;
-    let currentStreak = 1;
+    let tempStreak = 1;
 
     for (let i = 1; i < sortedDays.length; i++) {
       const prev = new Date(sortedDays[i - 1]);
@@ -146,14 +146,42 @@ export async function GET(request: NextRequest) {
       const diffDays = (curr.getTime() - prev.getTime()) / (1000 * 60 * 60 * 24);
 
       if (diffDays === 1) {
-        currentStreak++;
+        tempStreak++;
       } else {
-        longestStreak = Math.max(longestStreak, currentStreak);
-        currentStreak = 1;
+        longestStreak = Math.max(longestStreak, tempStreak);
+        tempStreak = 1;
       }
     }
-    longestStreak = Math.max(longestStreak, currentStreak);
+    longestStreak = Math.max(longestStreak, tempStreak);
     if (sortedDays.length === 0) longestStreak = 0;
+
+    // Calculate current streak (active streak including today or yesterday)
+    let currentActiveStreak = 0;
+    if (sortedDays.length > 0) {
+      const todayStr = getDateStringInTimezone(now, userTimezone);
+      const yesterdayStr = getDateStringInTimezone(
+        new Date(now.getTime() - 24 * 60 * 60 * 1000),
+        userTimezone
+      );
+      const mostRecentDay = sortedDays[sortedDays.length - 1];
+
+      // Check if the most recent day is today or yesterday
+      if (mostRecentDay === todayStr || mostRecentDay === yesterdayStr) {
+        // Count backwards from the most recent day
+        currentActiveStreak = 1;
+        for (let i = sortedDays.length - 2; i >= 0; i--) {
+          const curr = new Date(sortedDays[i + 1]);
+          const prev = new Date(sortedDays[i]);
+          const diffDays = (curr.getTime() - prev.getTime()) / (1000 * 60 * 60 * 24);
+
+          if (diffDays === 1) {
+            currentActiveStreak++;
+          } else {
+            break;
+          }
+        }
+      }
+    }
 
     // Average messages per active day
     const averageMessagesPerActiveDay =
@@ -208,6 +236,7 @@ export async function GET(request: NextRequest) {
         messagesThisWeek,
         averageMessagesPerActiveDay,
         longestStreak,
+        currentStreak: currentActiveStreak,
         messagesByHour,
       },
     };

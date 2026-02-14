@@ -9,6 +9,7 @@ export interface MessageAnalytics {
   messagesThisWeek: number;
   averageMessagesPerActiveDay: number;
   longestStreak: number;
+  currentStreak: number;
   messagesByHour: number[];
 }
 
