@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from '@/lib/database';
+import { createSession } from "@/lib/session";
 import { randomUUID } from "crypto";
 import { parsePhoneNumber, isValidPhoneNumber } from "libphonenumber-js";
 
@@ -69,6 +70,7 @@ export async function POST(request: NextRequest) {
       question1,
       question2,
       question3,
+      question4,
     }: {
       phone?: string;
       phoneNumber?: string;
@@ -78,6 +80,7 @@ export async function POST(request: NextRequest) {
       question1?: string;
       question2?: string;
       question3?: string;
+      question4?: string;
     } = body;
 
     // Handle both 'phone' and 'phoneNumber' fields
@@ -135,18 +138,24 @@ export async function POST(request: NextRequest) {
 
     // Prepare metadata with onboarding answers if provided
     const metadata =
-      question1 || question2 || question3
+      question1 || question2 || question3 || question4
         ? {
             onboarding: {
               question1: question1 || "",
               question2: question2 || "",
               question3: question3 || "",
+              question4: question4 || "",
               completedAt: new Date().toISOString(),
             },
           }
         : null;
 
     if (existingUser) {
+      // Prevent overwriting if user is already fully registered (has a PIN)
+      if (existingUser.pin) {
+        return NextResponse.json({ error: "User already registered with this phone number" }, { status: 409 });
+      }
+
       // Check if email is being changed and if it's already taken by another user
       if (email && email !== existingUser.email) {
         const emailExists = await prisma.users.findUnique({
@@ -171,7 +180,16 @@ export async function POST(request: NextRequest) {
         data: updateData,
       });
 
-      return NextResponse.json({ success: true, message: "Profile completed successfully", userId: updatedUser.id, isNewUser: false }, { status: 200 });
+      const response = NextResponse.json({ success: true, message: "Profile completed successfully", userId: updatedUser.id, isNewUser: false }, { status: 200 });
+      const token = await createSession(updatedUser.id);
+      response.cookies.set("session", token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        maxAge: 60 * 60 * 24,
+        path: "/",
+      });
+      return response;
     } else {
       // Check if email already exists
       if (email) {
@@ -197,7 +215,16 @@ export async function POST(request: NextRequest) {
         },
       });
 
-      return NextResponse.json({ success: true, message: "User registered successfully", userId: user.id, isNewUser: true }, { status: 201 });
+      const response = NextResponse.json({ success: true, message: "User registered successfully", userId: user.id, isNewUser: true }, { status: 201 });
+      const token = await createSession(user.id);
+      response.cookies.set("session", token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        maxAge: 60 * 60 * 24,
+        path: "/",
+      });
+      return response;
     }
   } catch (error) {
     console.error("Registration error:", error);

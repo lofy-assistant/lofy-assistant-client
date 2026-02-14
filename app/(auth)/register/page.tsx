@@ -42,6 +42,10 @@ import { motion } from "motion/react";
 import { Suspense } from "react";
 import { getCountriesWithMalaysiaFirst } from "@/lib/countries";
 import { PhoneNumberInput } from "@/components/phone-number-input";
+import {
+  SearchableSelect,
+  type SearchableSelectOption,
+} from "@/components/ui/searchable-select"
 
 const formSchema = z.object({
   name: z.string().min(1, "Please enter your name"),
@@ -55,11 +59,63 @@ const formSchema = z.object({
       if (!value) return false;
       return /^\d+$/.test(value);
     }, "Phone number must contain only digits"),
-  question1: z.string().min(1, "Please answer question 1"),
-  question2: z.string().min(1, "Please answer question 2"),
+  question1: z.string().min(1, "Please answer the question"),
+  question2: z.string().min(1, "Please answer the question"),
   question3: z.string().optional(),
+  question4: z.string().min(1, "Please answer the question"),
   pin: z.string().length(6, "Please enter a 6-digit PIN"),
 });
+
+const profession: SearchableSelectOption[] = [
+  { value: "software-engineer", label: "Software Engineer" },
+  { value: "data-scientist-ml-engineer", label: "Data Scientist / Machine Learning Engineer" },
+  { value: "devops-platform-engineer", label: "DevOps / Platform Engineer" },
+  { value: "cloud-architect", label: "Cloud Architect" },
+  { value: "cybersecurity-specialist", label: "Cybersecurity Specialist" },
+  { value: "qa-engineer-tester", label: "QA Engineer / Tester" },
+  { value: "it-support-sysadmin", label: "IT Support / Systems Administrator" },
+  { value: "hardware-electronics-engineer", label: "Hardware / Electronics Engineer" },
+  { value: "engineering-discipline-engineer", label: "Civil / Mechanical / Electrical Engineer" },
+  { value: "architect-built-environment", label: "Architect (Built Environment)" },
+
+  { value: "product-manager", label: "Product Manager" },
+  { value: "project-program-manager", label: "Project / Program Manager" },
+  { value: "business-analyst", label: "Business Analyst" },
+  { value: "operations-manager", label: "Operations Manager" },
+  { value: "consultant", label: "Consultant" },
+  { value: "entrepreneur-founder", label: "Entrepreneur / Founder" },
+
+  { value: "marketing-professional", label: "Marketing Professional" },
+  { value: "sales-professional", label: "Sales Professional" },
+  { value: "customer-success-support", label: "Customer Success / Customer Support" },
+  { value: "social-media-digital-marketing-manager", label: "Social Media / Digital Marketing Manager" },
+
+  { value: "accountant-auditor", label: "Accountant / Auditor" },
+  { value: "financial-analyst-investment-professional", label: "Financial Analyst / Investment Professional" },
+  { value: "lawyer-legal-professional", label: "Lawyer / Legal Professional" },
+  { value: "compliance-risk-officer", label: "Compliance / Risk Officer" },
+
+  { value: "doctor-physician", label: "Doctor / Physician" },
+  { value: "nurse-clinical-healthcare", label: "Nurse / Clinical Healthcare Staff" },
+  { value: "pharmacist-dentist-allied-health", label: "Pharmacist / Dentist / Allied Health Professional" },
+  { value: "psychologist-therapist-counselor", label: "Psychologist / Therapist / Counselor" },
+  { value: "medical-researcher", label: "Medical Researcher" },
+
+  { value: "teacher-lecturer-professor", label: "Teacher / Lecturer / Professor" },
+  { value: "research-scientist-academic", label: "Research Scientist / Academic Researcher" },
+
+  { value: "designer-creative", label: "Designer (Graphic / UX/UI / Creative)" },
+  { value: "content-creator-media", label: "Content Creator (Writer / Journalist / Media Producer)" },
+
+  { value: "technician-skilled-trades", label: "Technician / Skilled Trades Worker" },
+  { value: "construction-site-worker", label: "Construction / Engineering Site Worker" },
+  { value: "manufacturing-production-worker", label: "Manufacturing / Production Worker" },
+  { value: "logistics-transportation-worker", label: "Logistics / Transportation Worker" },
+  { value: "service-hospitality-retail-worker", label: "Service Industry / Hospitality / Retail Worker" },
+
+  { value: "government-public-ngo-worker", label: "Government / Public Sector / NGO Worker" },
+  { value: "student-intern-job-seeker", label: "Student / Intern / Job Seeker" },
+];
 
 type FormData = z.infer<typeof formSchema>;
 
@@ -80,6 +136,7 @@ function RegisterForm() {
       question1: "",
       question2: "",
       question3: "",
+      question4: "",
       pin: "",
     },
   });
@@ -126,7 +183,7 @@ function RegisterForm() {
   const handleNext = async () => {
     let fieldsToValidate: (keyof FormData)[] = [];
     if (currentStep === 1) fieldsToValidate = ["name", "email", "phoneNumber"];
-    if (currentStep === 2) fieldsToValidate = ["question1", "question2"];
+    if (currentStep === 2) fieldsToValidate = ["question1", "question2", "question4"];
 
     const isValid = await form.trigger(fieldsToValidate);
     if (!isValid) return;
@@ -168,9 +225,9 @@ function RegisterForm() {
           : "Profile completed successfully!"
       );
 
-      // Redirect to the original destination if present, otherwise to login
+      // Redirect to the original destination if present, otherwise to dashboard
       const redirect = searchParams.get("redirect");
-      router.push(redirect || "/login");
+      router.push(redirect || "/dashboard");
     } catch (error) {
       toast.error(
         error instanceof Error ? error.message : "Registration failed"
@@ -194,9 +251,8 @@ function RegisterForm() {
             {Array.from({ length: totalSteps }).map((_, index) => (
               <div
                 key={index}
-                className={`h-2 flex-1 rounded-full transition-all ${
-                  index + 1 <= currentStep ? "bg-primary" : "bg-muted"
-                }`}
+                className={`h-2 flex-1 rounded-full transition-all ${index + 1 <= currentStep ? "bg-primary" : "bg-muted"
+                  }`}
               />
             ))}
           </div>
@@ -258,6 +314,24 @@ function RegisterForm() {
                         <FormLabel>
                           What is your professional background?
                         </FormLabel>
+                        <SearchableSelect
+                          options={profession}
+                          value={field.value}
+                          onValueChange={field.onChange}
+                          placeholder="Select a profession..."
+                          searchPlaceholder="Search professions..."
+                          emptyMessage="No profession found."
+                        />
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="question4"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>What is your age group?</FormLabel>
                         <Select
                           onValueChange={field.onChange}
                           value={field.value}
@@ -265,22 +339,18 @@ function RegisterForm() {
                         >
                           <FormControl>
                             <SelectTrigger>
-                              <SelectValue placeholder="Select an option" />
+                              <SelectValue placeholder="Select an age group" />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            <SelectItem value="student">Student</SelectItem>
-                            <SelectItem value="full-time">
-                              Employed Full-Time
-                            </SelectItem>
-                            <SelectItem value="part-time">
-                              Employed Part-Time
-                            </SelectItem>
-                            <SelectItem value="self-employed">
-                              Self-employed
-                            </SelectItem>
-                            <SelectItem value="neet">NEET</SelectItem>
-                            <SelectItem value="other">Other</SelectItem>
+                            <SelectItem value="0-12">0-12</SelectItem>
+                            <SelectItem value="13-18">13-18</SelectItem>
+                            <SelectItem value="19-25">19-25</SelectItem>
+                            <SelectItem value="26-35">26-35</SelectItem>
+                            <SelectItem value="36-45">36-45</SelectItem>
+                            <SelectItem value="46-55">46-55</SelectItem>
+                            <SelectItem value="56-65">56-65</SelectItem>
+                            <SelectItem value="66+">66+</SelectItem>
                           </SelectContent>
                         </Select>
                         <FormMessage />
@@ -345,6 +415,7 @@ function RegisterForm() {
                       </FormItem>
                     )}
                   />
+
                 </div>
               )}
 
