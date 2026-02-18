@@ -1,0 +1,12 @@
+{
+  "rewrites": [
+    {
+      "source": "/guides",
+      "destination": "https://lofyai.mintlify.dev/docs"
+    },
+    {
+      "source": "/guides/:match*",
+      "destination": "https://lofyai.mintlify.dev/docs/:match*"
+    }
+  ]
+}
