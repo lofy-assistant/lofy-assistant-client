@@ -18,7 +18,7 @@ export function SiteHeader() {
             </a>
           </Button>
           <Button variant="ghost" asChild size="sm" className="flex">
-            <a href="/guide" rel="noopener noreferrer" target="_blank" className="dark:text-foreground">
+            <a href="/guides" rel="noopener noreferrer" target="_blank" className="dark:text-foreground">
               Guide
             </a>
           </Button>
