@@ -19,6 +19,7 @@ interface Reminder {
   created_at: string;
   updated_at: string;
   recurrence?: string | null;
+  next_recurrence?: string | null;
 }
 
 /** Extract FREQ= from RRULE and return a short label (e.g. "Weekly"). */
@@ -264,8 +265,12 @@ export function ReminderList() {
                           <div className="flex items-start gap-3">
                             {/* Time column */}
                             <div className="flex flex-col items-end pt-0.5 w-16 shrink-0">
-                              <span className="text-sm font-medium">{format(reminderTime, "h:mm")}</span>
-                              <span className="text-xs text-muted-foreground">{format(reminderTime, "a")}</span>
+                              <span className="text-sm font-medium">
+                                {format(reminder.recurrence && reminder.next_recurrence ? new Date(reminder.next_recurrence) : reminderTime, "h:mm")}
+                              </span>
+                              <span className="text-xs text-muted-foreground">
+                                {format(reminder.recurrence && reminder.next_recurrence ? new Date(reminder.next_recurrence) : reminderTime, "a")}
+                              </span>
                             </div>
 
                             <Separator orientation="vertical" className="h-12" />
@@ -289,7 +294,9 @@ export function ReminderList() {
 
                               <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                                 <Clock className="w-3 h-3" />
-                                <span>{format(reminderTime, "h:mm a")}</span>
+                                <span>
+                                  {format(reminder.recurrence && reminder.next_recurrence ? new Date(reminder.next_recurrence) : reminderTime, "h:mm a")}
+                                </span>
                               </div>
                             </div>
                           </div>
