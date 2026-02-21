@@ -14,38 +14,28 @@ interface WebhookSuccessResponse {
   success: boolean;
 }
 
-interface ExtendedSubscription extends Stripe.Subscription {
-  current_period_end: number;
-  current_period_start: number;
-}
-
-function toDate(epochSeconds: number | undefined | null): Date | null {
-  if (!epochSeconds) return null;
-  const d = new Date(epochSeconds * 1000);
+/**
+ * Extract current_period_end from a raw webhook subscription payload.
+ * Stripe SDK v20 removed this from the typed Subscription interface,
+ * but the webhook JSON payload still includes it.
+ */
+function extractPeriodEnd(rawObject: Record<string, unknown>): Date | null {
+  const ts = rawObject.current_period_end;
+  if (typeof ts !== "number" || ts <= 0) return null;
+  const d = new Date(ts * 1000);
   return Number.isNaN(d.getTime()) ? null : d;
 }
 
-/**
- * Resolve the customer email from a checkout session.
- * `customer_email` is only set if we passed it at session creation.
- * `customer_details.email` is always populated after the customer completes checkout.
- */
 function resolveEmail(session: Stripe.Checkout.Session): string | null {
   return session.customer_email ?? session.customer_details?.email ?? null;
 }
 
-/**
- * Find a user's pre-filled subscription record.
- * Tries userId first (from metadata), then falls back to email lookup.
- */
 async function findSubscriptionForUser(userId: string | undefined, email: string | null) {
-  // 1. By userId from metadata (most reliable)
   if (userId) {
     const record = await prisma.subscriptions.findFirst({ where: { user_id: userId } });
     if (record) return { record, resolvedUserId: userId };
   }
 
-  // 2. By email → user → subscription
   if (email) {
     const user = await prisma.users.findUnique({ where: { email } });
     if (user) {
@@ -83,7 +73,9 @@ export async function POST(req: NextRequest) {
       case "customer.subscription.updated": {
         console.log(`🔔 Handling ${eventType} event`);
 
-        const subscription = event.data.object as ExtendedSubscription;
+        // event.data.object is the raw webhook JSON — current_period_end exists here
+        const rawObject = event.data.object as unknown as Record<string, unknown>;
+        const subscription = event.data.object as Stripe.Subscription;
         const customerId = subscription.customer as string;
 
         if (!subscription.items.data[0]) {
@@ -91,19 +83,20 @@ export async function POST(req: NextRequest) {
         }
 
         const priceId = subscription.items.data[0].price.id;
-        const currentPeriodEnd = toDate(subscription.current_period_end);
-        if (!currentPeriodEnd) {
-          throw new Error("Invalid or missing current_period_end from Stripe");
-        }
+        const currentPeriodEnd = extractPeriodEnd(rawObject);
 
-        console.log("📊 Subscription:", {
+        console.log("📊 Subscription raw data:", {
           customerId,
           priceId,
           status: subscription.status,
-          currentPeriodEnd,
+          raw_current_period_end: rawObject.current_period_end,
+          parsed_current_period_end: currentPeriodEnd,
         });
 
-        // Find subscription by Stripe customer ID (only works after it's been linked)
+        if (!currentPeriodEnd) {
+          throw new Error("Missing current_period_end from Stripe webhook payload");
+        }
+
         const subscriptionRecord = await prisma.subscriptions.findUnique({
           where: { stripe_customer_id: customerId },
         });
@@ -128,7 +121,7 @@ export async function POST(req: NextRequest) {
       case "customer.subscription.deleted": {
         console.log("🔔 Handling customer.subscription.deleted event");
 
-        const subscription = event.data.object as ExtendedSubscription;
+        const subscription = event.data.object as Stripe.Subscription;
         const customerId = subscription.customer as string;
 
         await prisma.subscriptions.updateMany({
@@ -158,19 +151,42 @@ export async function POST(req: NextRequest) {
           subscription: session.subscription,
         });
 
-        // Fetch full subscription details from Stripe
-        const stripeSubscription = (await stripe.subscriptions.retrieve(
-          session.subscription as string
-        )) as unknown as ExtendedSubscription;
+        // Retrieve subscription with expanded latest_invoice to get period_end
+        const stripeSubscription = await stripe.subscriptions.retrieve(
+          session.subscription as string,
+          { expand: ["latest_invoice"] }
+        );
 
         if (!stripeSubscription.items.data[0]) {
           throw new Error("No items in Stripe subscription");
         }
 
         const priceId = stripeSubscription.items.data[0].price.id;
-        const currentPeriodEnd = toDate(stripeSubscription.current_period_end) ?? new Date();
 
-        // Find the user's pre-filled subscription (by userId or email)
+        // Get current_period_end from the latest invoice's period_end (reliable in SDK v20+),
+        // then fall back to the raw subscription object in case it's still present at runtime.
+        const rawSub = stripeSubscription as unknown as Record<string, unknown>;
+        const latestInvoice = stripeSubscription.latest_invoice as Stripe.Invoice | null;
+        const periodEndFromInvoice = latestInvoice?.period_end;
+        const periodEndFromRaw = rawSub.current_period_end;
+
+        const periodEndTimestamp = periodEndFromInvoice ?? periodEndFromRaw;
+
+        console.log("📊 Period end sources:", {
+          from_invoice_period_end: periodEndFromInvoice,
+          from_raw_current_period_end: periodEndFromRaw,
+          resolved: periodEndTimestamp,
+        });
+
+        let currentPeriodEnd: Date;
+        if (typeof periodEndTimestamp === "number" && periodEndTimestamp > 0) {
+          currentPeriodEnd = new Date(periodEndTimestamp * 1000);
+        } else {
+          console.error("❌ Could not resolve period end from Stripe. Using 1 month from now as fallback.");
+          currentPeriodEnd = new Date();
+          currentPeriodEnd.setMonth(currentPeriodEnd.getMonth() + 1);
+        }
+
         const { record: subscriptionRecord, resolvedUserId } = await findSubscriptionForUser(userId, email);
 
         if (subscriptionRecord) {
@@ -186,7 +202,6 @@ export async function POST(req: NextRequest) {
           });
           console.log("✅ Subscription linked and updated with Stripe details");
         } else if (resolvedUserId) {
-          // Pre-filled subscription missing (edge case) — create a new one
           console.log("➕ No pre-filled subscription found. Creating new...");
           await prisma.subscriptions.create({
             data: {
