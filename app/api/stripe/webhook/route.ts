@@ -15,15 +15,30 @@ interface WebhookSuccessResponse {
 }
 
 /**
- * Extract current_period_end from a raw webhook subscription payload.
- * Stripe SDK v20 removed this from the typed Subscription interface,
+ * Extract the effective period end from a raw webhook subscription payload.
+ * Prioritises trial_end (if the sub is trialing) over current_period_end.
+ * Stripe SDK v20 removed current_period_end from the typed interface,
  * but the webhook JSON payload still includes it.
  */
 function extractPeriodEnd(rawObject: Record<string, unknown>): Date | null {
+  const trialEnd = rawObject.trial_end;
+  if (typeof trialEnd === "number" && trialEnd > 0) {
+    const d = new Date(trialEnd * 1000);
+    if (!Number.isNaN(d.getTime())) return d;
+  }
+
   const ts = rawObject.current_period_end;
   if (typeof ts !== "number" || ts <= 0) return null;
   const d = new Date(ts * 1000);
   return Number.isNaN(d.getTime()) ? null : d;
+}
+
+/**
+ * Returns true when the given date is less than 1 hour from now,
+ * indicating Stripe hasn't moved it to the real billing-cycle end yet.
+ */
+function isPeriodEndPlaceholder(date: Date): boolean {
+  return date.getTime() < Date.now() + 3_600_000;
 }
 
 function resolveEmail(session: Stripe.Checkout.Session): string | null {
@@ -69,11 +84,42 @@ export async function POST(req: NextRequest) {
 
   try {
     switch (eventType) {
-      case "customer.subscription.created":
-      case "customer.subscription.updated": {
-        console.log(`🔔 Handling ${eventType} event`);
+      case "customer.subscription.created": {
+        console.log("🔔 Handling customer.subscription.created event");
 
-        // event.data.object is the raw webhook JSON — current_period_end exists here
+        const subscription = event.data.object as Stripe.Subscription;
+        const customerId = subscription.customer as string;
+        const rawObject = event.data.object as unknown as Record<string, unknown>;
+
+        console.log("📊 Subscription created (status may still be incomplete):", {
+          customerId,
+          status: subscription.status,
+          raw_current_period_end: rawObject.current_period_end,
+        });
+
+        const subscriptionRecord = await prisma.subscriptions.findUnique({
+          where: { stripe_customer_id: customerId },
+        });
+
+        if (subscriptionRecord) {
+          // Only update status — do NOT finalize current_period_end yet.
+          // The date Stripe sends here is often "now" because payment hasn't
+          // been confirmed. invoice.paid will carry the real future date.
+          await prisma.subscriptions.update({
+            where: { stripe_customer_id: customerId },
+            data: { subscription_status: subscription.status },
+          });
+          console.log("✅ Subscription status synced (period_end deferred to invoice.paid)");
+        } else {
+          console.log("⏸️ Subscription not found by customer ID (pending link in checkout.session.completed)");
+        }
+
+        break;
+      }
+
+      case "customer.subscription.updated": {
+        console.log("🔔 Handling customer.subscription.updated event");
+
         const rawObject = event.data.object as unknown as Record<string, unknown>;
         const subscription = event.data.object as Stripe.Subscription;
         const customerId = subscription.customer as string;
@@ -85,7 +131,7 @@ export async function POST(req: NextRequest) {
         const priceId = subscription.items.data[0].price.id;
         const currentPeriodEnd = extractPeriodEnd(rawObject);
 
-        console.log("📊 Subscription raw data:", {
+        console.log("📊 Subscription updated:", {
           customerId,
           priceId,
           status: subscription.status,
@@ -93,9 +139,77 @@ export async function POST(req: NextRequest) {
           parsed_current_period_end: currentPeriodEnd,
         });
 
-        if (!currentPeriodEnd) {
-          throw new Error("Missing current_period_end from Stripe webhook payload");
+        const subscriptionRecord = await prisma.subscriptions.findUnique({
+          where: { stripe_customer_id: customerId },
+        });
+
+        if (subscriptionRecord) {
+          const data: Record<string, unknown> = {
+            stripe_price_id: priceId,
+            subscription_status: subscription.status,
+          };
+
+          // Only write period_end when it's a real future date
+          if (currentPeriodEnd && !isPeriodEndPlaceholder(currentPeriodEnd)) {
+            data.current_period_end = currentPeriodEnd;
+          }
+
+          await prisma.subscriptions.update({
+            where: { stripe_customer_id: customerId },
+            data,
+          });
+          console.log("✅ Subscription updated successfully");
+        } else {
+          console.log("⏸️ Subscription not found by customer ID (pending link in checkout.session.completed)");
         }
+
+        break;
+      }
+
+      case "invoice.paid": {
+        console.log("🔔 Handling invoice.paid event");
+
+        const invoice = event.data.object as Stripe.Invoice;
+        const customerId =
+          typeof invoice.customer === "string"
+            ? invoice.customer
+            : invoice.customer?.id;
+
+        if (!customerId) {
+          console.log("⏭️ invoice.paid has no customer — skipping");
+          break;
+        }
+
+        const subscriptionId =
+          typeof invoice.parent?.subscription_details?.subscription === "string"
+            ? invoice.parent.subscription_details.subscription
+            : invoice.parent?.subscription_details?.subscription?.id ?? null;
+
+        if (!subscriptionId) {
+          console.log("⏭️ invoice.paid is not for a subscription — skipping");
+          break;
+        }
+
+        // Retrieve the subscription so we get the authoritative period_end
+        // now that payment has succeeded.
+        const stripeSubscription = await stripe.subscriptions.retrieve(subscriptionId);
+        const rawSub = stripeSubscription as unknown as Record<string, unknown>;
+        const currentPeriodEnd = extractPeriodEnd(rawSub);
+
+        console.log("📊 invoice.paid subscription data:", {
+          customerId,
+          subscriptionId,
+          status: stripeSubscription.status,
+          raw_current_period_end: rawSub.current_period_end,
+          parsed_current_period_end: currentPeriodEnd,
+        });
+
+        if (!currentPeriodEnd) {
+          console.error("❌ Could not resolve period_end after invoice.paid");
+          break;
+        }
+
+        const priceId = stripeSubscription.items.data[0]?.price.id;
 
         const subscriptionRecord = await prisma.subscriptions.findUnique({
           where: { stripe_customer_id: customerId },
@@ -105,14 +219,14 @@ export async function POST(req: NextRequest) {
           await prisma.subscriptions.update({
             where: { stripe_customer_id: customerId },
             data: {
-              stripe_price_id: priceId,
-              subscription_status: subscription.status,
+              ...(priceId ? { stripe_price_id: priceId } : {}),
+              subscription_status: stripeSubscription.status,
               current_period_end: currentPeriodEnd,
             },
           });
-          console.log("✅ Subscription updated successfully");
+          console.log("✅ Subscription period_end updated via invoice.paid");
         } else {
-          console.log("⏸️ Subscription not found by customer ID (pending link in checkout.session.completed)");
+          console.log("⏸️ Subscription not found by customer ID for invoice.paid");
         }
 
         break;
@@ -151,10 +265,8 @@ export async function POST(req: NextRequest) {
           subscription: session.subscription,
         });
 
-        // Retrieve subscription with expanded latest_invoice to get period_end
         const stripeSubscription = await stripe.subscriptions.retrieve(
-          session.subscription as string,
-          { expand: ["latest_invoice"] }
+          session.subscription as string
         );
 
         if (!stripeSubscription.items.data[0]) {
@@ -163,26 +275,21 @@ export async function POST(req: NextRequest) {
 
         const priceId = stripeSubscription.items.data[0].price.id;
 
-        // Get current_period_end from the latest invoice's period_end (reliable in SDK v20+),
-        // then fall back to the raw subscription object in case it's still present at runtime.
         const rawSub = stripeSubscription as unknown as Record<string, unknown>;
-        const latestInvoice = stripeSubscription.latest_invoice as Stripe.Invoice | null;
-        const periodEndFromInvoice = latestInvoice?.period_end;
-        const periodEndFromRaw = rawSub.current_period_end;
+        let currentPeriodEnd = extractPeriodEnd(rawSub);
 
-        const periodEndTimestamp = periodEndFromInvoice ?? periodEndFromRaw;
-
-        console.log("📊 Period end sources:", {
-          from_invoice_period_end: periodEndFromInvoice,
-          from_raw_current_period_end: periodEndFromRaw,
-          resolved: periodEndTimestamp,
+        console.log("📊 checkout.session.completed period end:", {
+          raw_current_period_end: rawSub.current_period_end,
+          parsed: currentPeriodEnd,
+          subscription_status: stripeSubscription.status,
         });
 
-        let currentPeriodEnd: Date;
-        if (typeof periodEndTimestamp === "number" && periodEndTimestamp > 0) {
-          currentPeriodEnd = new Date(periodEndTimestamp * 1000);
-        } else {
-          console.error("❌ Could not resolve period end from Stripe. Using 1 month from now as fallback.");
+        // If the period_end is essentially "now" (less than 1 hour in the
+        // future), Stripe hasn't finalised the billing cycle yet — the real
+        // date will arrive via invoice.paid. Use a +1 month fallback so the
+        // user isn't immediately locked out.
+        if (!currentPeriodEnd || isPeriodEndPlaceholder(currentPeriodEnd)) {
+          console.log("⚠️ period_end is a placeholder — applying +1 month fallback");
           currentPeriodEnd = new Date();
           currentPeriodEnd.setMonth(currentPeriodEnd.getMonth() + 1);
         }
