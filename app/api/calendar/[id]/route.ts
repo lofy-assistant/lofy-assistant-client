@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from '@/lib/database';
 import { verifySession } from "@/lib/session";
 
-export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const token = request.cookies.get("session")?.value;
     if (!token) {
@@ -14,7 +14,8 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
       return NextResponse.json({ error: "Invalid session" }, { status: 401 });
     }
 
-    const eventId = parseInt(params.id);
+    const { id } = await params;
+    const eventId = parseInt(id);
     const body = await request.json();
     const { title, description, start_time, end_time, recurrence, is_all_day, timezone } = body;
 
@@ -73,7 +74,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
   }
 }
 
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const token = request.cookies.get("session")?.value;
     if (!token) {
@@ -85,7 +86,8 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
       return NextResponse.json({ error: "Invalid session" }, { status: 401 });
     }
 
-    const eventId = parseInt(params.id);
+    const { id } = await params;
+    const eventId = parseInt(id);
 
     const event = await prisma.calendar_events.findUnique({
       where: { id: eventId },
