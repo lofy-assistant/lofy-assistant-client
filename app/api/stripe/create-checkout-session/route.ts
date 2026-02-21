@@ -3,7 +3,7 @@ import Stripe from "stripe";
 import { cookies } from "next/headers";
 import { verifySession } from "@/lib/session";
 import { prisma } from '@/lib/database';
-import { plans, resolveCurrency, resolveCurrencyFromIP } from "@/lib/stripe-plans";
+import { plans, resolveCurrencyFromIP } from "@/lib/stripe-plans";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
@@ -19,6 +19,7 @@ export async function POST(req: NextRequest) {
     // Optional: get user from session (guests can checkout without auth)
     let customerEmail: string | undefined;
     let userId: string | undefined;
+    let existingStripeCustomerId: string | undefined;
 
     const cookieStore = await cookies();
     const token = cookieStore.get("session")?.value;
@@ -32,6 +33,16 @@ export async function POST(req: NextRequest) {
         if (user?.email) {
           customerEmail = user.email;
           userId = user.id;
+
+          // Check for existing subscription with valid Stripe Customer ID
+          const subscription = await prisma.subscriptions.findFirst({
+            where: { user_id: user.id },
+            select: { stripe_customer_id: true }
+          });
+
+          if (subscription?.stripe_customer_id && subscription.stripe_customer_id.startsWith('cus_')) {
+            existingStripeCustomerId = subscription.stripe_customer_id;
+          }
         }
       }
     }
@@ -74,7 +85,7 @@ export async function POST(req: NextRequest) {
       },
       success_url: `${baseUrl}/dashboard?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${baseUrl}/pricing`,
-      ...(customerEmail && { customer_email: customerEmail }),
+      ...(existingStripeCustomerId ? { customer: existingStripeCustomerId } : (customerEmail && { customer_email: customerEmail })),
       ...(userId && { metadata: { userId } }),
     });
 
