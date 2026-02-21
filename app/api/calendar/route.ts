@@ -98,46 +98,56 @@ export async function GET(request: NextRequest) {
       where: {
         user_id: session.userId,
         ...dateFilter,
+        recurrence: null, // Only fetch non-recurring events for this specific month range
       },
       orderBy: { start_time: "asc" },
     });
 
+    // Fetch ALL recurring events to calculate their next occurrence relative to NOW
     const recurringEvents = await prisma.calendar_events.findMany({
       where: {
         user_id: session.userId,
         recurrence: { not: null },
-        start_time: { lte: endOfMonth },
       },
       orderBy: { start_time: "asc" },
     });
 
     const expanded: (CalendarEventRow & { start_time: Date; end_time: Date })[] = [];
 
+    // Add non-recurring events that are in the requested range
     for (const event of eventsInRange) {
-      if (event.recurrence) {
-        const occurrences = expandRecurringEvent(event as CalendarEventRow, startOfMonth, endOfMonth);
-        for (const occ of occurrences) {
-          expanded.push({
-            ...event,
-            start_time: occ.start_time,
-            end_time: occ.end_time,
-          });
-        }
-      } else {
-        expanded.push(event);
-      }
+      expanded.push(event);
     }
 
-    const recurringIdsInRange = new Set(eventsInRange.map((e) => e.id));
+    const now = new Date();
+    
+    // Process recurring events: find the first future occurrence
     for (const event of recurringEvents) {
-      if (recurringIdsInRange.has(event.id)) continue;
-      const occurrences = expandRecurringEvent(event as CalendarEventRow, startOfMonth, endOfMonth);
-      for (const occ of occurrences) {
-        expanded.push({
-          ...event,
-          start_time: occ.start_time,
-          end_time: occ.end_time,
+      if (!event.recurrence) continue;
+
+      try {
+        const rule = rrulestr(event.recurrence, {
+          dtstart: event.start_time,
+          unfold: true,
         });
+        
+        // Find the next occurrence strictly after NOW
+        const nextOccurrence = rule.after(now, true); // inc=true means if now matches exactly, include it? usually false for strict future. Let's start with true to include today if today is the day.
+        
+        if (nextOccurrence) {
+          // Check if this single occurrence falls within the requested month/year range
+          if (nextOccurrence >= startOfMonth && nextOccurrence <= endOfMonth) {
+              const durationMs = event.end_time.getTime() - event.start_time.getTime();
+              expanded.push({
+                ...event,
+                start_time: nextOccurrence,
+                end_time: new Date(nextOccurrence.getTime() + durationMs),
+              });
+          }
+        }
+      } catch (e) {
+        console.error(`Failed to parse recurrence for event ${event.id}`, e);
+        continue;
       }
     }
 

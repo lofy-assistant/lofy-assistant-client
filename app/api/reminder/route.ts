@@ -101,24 +101,22 @@ export async function GET(request: NextRequest) {
         user_id: session.userId,
         status,
         ...dateFilter,
+        recurrence: null, // Only fetch non-recurring reminders for this specific month range
       },
       orderBy: { reminder_time: "asc" },
     });
 
-    // For "pending": also fetch recurring reminders with any status so we can show future occurrences as pending.
-    // For "completed": only fetch recurring with status completed.
+    // Fetch ALL recurring reminders to calculate their next occurrence relative to NOW
     const recurringWhere =
       status === "pending"
         ? {
             user_id: session.userId,
             recurrence: { not: null },
-            reminder_time: { lte: endOfMonth },
           }
         : {
             user_id: session.userId,
             status,
             recurrence: { not: null },
-            reminder_time: { lte: endOfMonth },
           };
 
     const recurringReminders = await prisma.reminders.findMany({
@@ -128,39 +126,44 @@ export async function GET(request: NextRequest) {
 
     const expanded: ExpandedReminder[] = [];
 
+    // Add non-recurring reminders that are in the requested range
     for (const reminder of remindersInRange) {
-      if (reminder.recurrence) {
-        const occurrences = expandRecurringReminder(reminder as ReminderRow, startOfMonth, endOfMonth);
-        for (const occTime of occurrences) {
-          const isFuture = occTime >= now;
-          const effectiveStatus = isFuture ? "pending" : reminder.status;
-          if (status === "pending" && !isFuture) continue;
-          if (status === "completed" && isFuture) continue;
-          expanded.push({
-            ...reminder,
-            reminder_time: occTime,
-            effectiveStatus,
-          });
-        }
-      } else {
-        expanded.push(reminder);
-      }
+      expanded.push(reminder);
     }
 
-    const recurringIdsInRange = new Set(remindersInRange.map((r) => r.id));
+    // Process recurring reminders: find the first future occurrence
     for (const reminder of recurringReminders) {
-      if (recurringIdsInRange.has(reminder.id)) continue;
-      const occurrences = expandRecurringReminder(reminder as ReminderRow, startOfMonth, endOfMonth);
-      for (const occTime of occurrences) {
-        const isFuture = occTime >= now;
-        const effectiveStatus = isFuture ? "pending" : reminder.status;
-        if (status === "pending" && !isFuture) continue;
-        if (status === "completed" && isFuture) continue;
-        expanded.push({
-          ...reminder,
-          reminder_time: occTime,
-          effectiveStatus,
+      if (!reminder.recurrence) continue;
+
+      try {
+        const rule = rrulestr(reminder.recurrence, {
+          dtstart: reminder.reminder_time,
+          unfold: true,
         });
+
+        // Find the next occurrence relative to NOW
+        const nextOccurrence = rule.after(now, true);
+
+        if (nextOccurrence) {
+          const isFuture = nextOccurrence >= now;
+          
+          // Apply status filtering logic for the occurrence
+          if (status === "pending" && !isFuture) continue;
+          if (status === "completed" && isFuture) continue;
+
+          // Check if this single occurrence falls within the requested month/year range
+          if (nextOccurrence >= startOfMonth && nextOccurrence <= endOfMonth) {
+             const effectiveStatus = isFuture ? "pending" : reminder.status;
+             expanded.push({
+               ...reminder,
+               reminder_time: nextOccurrence,
+               effectiveStatus,
+             });
+          }
+        }
+      } catch (e) {
+        console.error(`Failed to parse recurrence for reminder ${reminder.id}`, e);
+        continue;
       }
     }
 
