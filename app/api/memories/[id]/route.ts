@@ -3,8 +3,9 @@ import { prisma } from '@/lib/database';
 import { verifySession } from "@/lib/session";
 import { decryptContent } from "@/lib/encryption";
 
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params;
     const token = request.cookies.get("session")?.value;
 
     if (!token) {
@@ -17,7 +18,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       return NextResponse.json({ error: "Unauthorized - invalid session" }, { status: 401 });
     }
 
-    const memoryId = parseInt(params.id);
+    const memoryId = parseInt(id);
 
     if (isNaN(memoryId)) {
       return NextResponse.json({ error: "Invalid memory ID" }, { status: 400 });
@@ -67,8 +68,9 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
   }
 }
 
-export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params;
     const token = request.cookies.get("session")?.value;
 
     if (!token) {
@@ -81,7 +83,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
       return NextResponse.json({ error: "Unauthorized - invalid session" }, { status: 401 });
     }
 
-    const memoryId = parseInt(params.id);
+    const memoryId = parseInt(id);
 
     if (isNaN(memoryId)) {
       return NextResponse.json({ error: "Invalid memory ID" }, { status: 400 });
@@ -124,8 +126,9 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
   }
 }
 
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params;
     const token = request.cookies.get("session")?.value;
 
     if (!token) {
@@ -138,7 +141,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
       return NextResponse.json({ error: "Unauthorized - invalid session" }, { status: 401 });
     }
 
-    const memoryId = parseInt(params.id);
+    const memoryId = parseInt(id);
 
     if (isNaN(memoryId)) {
       return NextResponse.json({ error: "Invalid memory ID" }, { status: 400 });

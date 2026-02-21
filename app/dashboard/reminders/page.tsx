@@ -11,15 +11,16 @@ import { Separator } from "@/components/ui/separator";
 export default async function RemindersPage({
   searchParams,
 }: {
-  searchParams: { phone?: string };
+  searchParams: Promise<{ phone?: string }>;
 }) {
+  const { phone } = await searchParams;
   const cookieStore = await cookies();
   const sessionToken = cookieStore.get("session")?.value;
 
   // Check if user is logged in and has query parameters
-  if (sessionToken && searchParams.phone) {
+  if (sessionToken && phone) {
     const session = await verifySession(sessionToken);
-    
+
     if (session) {
       // User is authenticated, redirect to clean URL without query params
       redirect("/dashboard/reminders");
@@ -27,8 +28,8 @@ export default async function RemindersPage({
   }
 
   // If not logged in but has phone parameter, redirect to login
-  if (!sessionToken && searchParams.phone) {
-    redirect(`/login?redirect=${encodeURIComponent("/dashboard/reminders")}&phone=${searchParams.phone}`);
+  if (!sessionToken && phone) {
+    redirect(`/login?redirect=${encodeURIComponent("/dashboard/reminders")}&phone=${phone}`);
   }
 
   return (

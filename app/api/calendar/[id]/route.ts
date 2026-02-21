@@ -15,59 +15,92 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     }
 
     const { id } = await params;
-    const eventId = parseInt(id);
     const body = await request.json();
-    const { title, description, start_time, end_time, recurrence, is_all_day, timezone } = body;
+    const { title, description, start_time, end_time, recurrence } = body;
 
-    const event = await prisma.calendar_events.findUnique({
-      where: { id: eventId },
-    });
+    // Construct the payload for the external API
+    // The external API expects UpdateEventInput which uses "new_" prefix for fields
+    
+    interface UpdateEventPayload {
+      event_id: number;
+      new_title?: string;
+      new_description?: string | null;
+      new_start_time?: string;
+      new_end_time?: string;
+      new_recurrence?: string | null;
+    }
 
-    if (!event || event.user_id !== session.userId) {
+    const payload: UpdateEventPayload = {
+      event_id: parseInt(id),
+    };
+
+    if (title) payload.new_title = title;
+    // Explicitly check for undefined to allow clearing description (sending null) if the API supports it, 
+    // but here we just map if present in body.
+    if (description !== undefined) payload.new_description = description;
+    if (start_time) payload.new_start_time = start_time; // expecting ISO string
+    if (end_time) payload.new_end_time = end_time;     // expecting ISO string
+    if (recurrence !== undefined) payload.new_recurrence = recurrence;
+    // Note: is_all_day and timezone are not part of the UpdateEventInput specification
+    // The backend handles timezone lookup via user_id
+
+    // Send user_id as query parameter
+    const eventsUrl = `${process.env.FASTAPI_URL}/web/events?user_id=${encodeURIComponent(session.userId)}`;
+    console.log("[Calendar PUT] Sending payload to external API:", eventsUrl, JSON.stringify(payload, null, 2));
+
+    let apiRes: globalThis.Response;
+    try {
+      apiRes = await fetch(eventsUrl, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+    } catch (err) {
+      console.error("Network error calling events API:", err);
+      return NextResponse.json({ error: "Failed to reach events API" }, { status: 502 });
+    }
+
+    type UpstreamResponse = {
+        event?: {
+            id: number;
+            title: string;
+            start_time: string;
+            end_time: string;
+             // Add other fields as needed based on actual API response
+            [key: string]: unknown;
+        };
+        detail?: string; // FastAPI error detail
+        error?: string;
+        [key: string]: unknown;
+    };
+
+    const text = await apiRes.text();
+    let data: UpstreamResponse | string | null = null;
+    try {
+      data = text ? (JSON.parse(text) as UpstreamResponse) : null;
+    } catch {
+      data = text;
+    }
+
+    if (apiRes.ok) {
+       // Assuming the external API returns the updated event or success message
+       // We might need to envelope it in { event: ... } to match the old API response format if the frontend expects it.
+       // The old API returned { event: updatedEvent }.
+       // The Python snippet returns `resp` from `_result_to_response(result)`.
+       // If successful, it likely returns the updated event data.
+       return NextResponse.json({ event: data });
+    }
+
+    if (apiRes.status === 404) {
       return NextResponse.json({ error: "Event not found" }, { status: 404 });
     }
 
-    const newStartTime = new Date(start_time);
-    const startTimeChanged = event.start_time.getTime() !== newStartTime.getTime();
+    // Narrow down error message
+    const errorMessage = (typeof data === 'object' && data !== null) ? (data.detail || data.error || "Upstream API error") : (typeof data === 'string' ? data : "Upstream API error");
 
-    const updateData: {
-      title: string;
-      description: string | null;
-      start_time: Date;
-      end_time: Date;
-      recurrence?: string | null;
-      is_all_day?: boolean;
-      timezone?: string;
-    } = {
-      title,
-      description: description ?? event.description,
-      start_time: newStartTime,
-      end_time: new Date(end_time),
-    };
-    if (recurrence !== undefined) updateData.recurrence = recurrence || null;
-    if (is_all_day !== undefined) updateData.is_all_day = is_all_day;
-    if (timezone !== undefined) updateData.timezone = timezone;
+    console.error("Upstream events API error:", apiRes.status, data);
+    return NextResponse.json({ error: errorMessage }, { status: apiRes.status });
 
-    const updatedEvent = await prisma.calendar_events.update({
-      where: { id: eventId },
-      data: updateData,
-    });
-
-    // Update the reminder if start time changed and reminder exists
-    if (startTimeChanged && event.reminder_id) {
-      // Calculate new reminder time: 30 minutes before start time
-      const newReminderTime = new Date(newStartTime.getTime() - 30 * 60 * 1000);
-
-      // Update the reminder in database
-      await prisma.reminders.update({
-        where: { id: event.reminder_id },
-        data: {
-          reminder_time: newReminderTime,
-        },
-      });
-    }
-
-    return NextResponse.json({ event: updatedEvent });
   } catch (error) {
     console.error("Error updating event:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
@@ -89,19 +122,65 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
     const { id } = await params;
     const eventId = parseInt(id);
 
-    const event = await prisma.calendar_events.findUnique({
-      where: { id: eventId },
-    });
+    // Construct the payload for the external API
+    // The external API expects DeleteEventInput
+    interface DeleteEventPayload {
+      event_id: number;
+    }
 
-    if (!event || event.user_id !== session.userId) {
+    const payload: DeleteEventPayload = {
+      event_id: eventId,
+    };
+
+    // Send user_id as query parameter
+    // Note: The python endpoint uses @routes.delete("/events"), so we use DELETE method
+    // If the fastify setup follows previous pattern, it should be /web/events
+    const eventsUrl = `${process.env.FASTAPI_URL}/web/events?user_id=${encodeURIComponent(session.userId)}`;
+    console.log("[Calendar DELETE] Sending payload to external API:", eventsUrl, JSON.stringify(payload, null, 2));
+
+    let apiRes: globalThis.Response;
+    try {
+      apiRes = await fetch(eventsUrl, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+    } catch (err) {
+      console.error("Network error calling events API:", err);
+      return NextResponse.json({ error: "Failed to reach events API" }, { status: 502 });
+    }
+
+    type UpstreamResponse = {
+        detail?: string; // FastAPI error detail
+        error?: string;
+        success?: boolean;
+        message?: string;
+        [key: string]: unknown;
+    };
+
+    const text = await apiRes.text();
+    let data : UpstreamResponse | string | null = null;
+    try {
+      data = text ? (JSON.parse(text) as UpstreamResponse) : null;
+    } catch {
+      data = text;
+    }
+
+    if (apiRes.ok) {
+       // If successful, return success
+       return NextResponse.json({ success: true, data });
+    }
+
+    if (apiRes.status === 404) {
       return NextResponse.json({ error: "Event not found" }, { status: 404 });
     }
 
-    await prisma.calendar_events.delete({
-      where: { id: eventId },
-    });
+     // Narrow down error message
+    const errorMessage = (typeof data === 'object' && data !== null) ? (data.detail || data.error || "Upstream API error") : (typeof data === 'string' ? data : "Upstream API error");
 
-    return NextResponse.json({ success: true });
+    console.error("Upstream events API error:", apiRes.status, data);
+    return NextResponse.json({ error: errorMessage }, { status: apiRes.status });
+
   } catch (error) {
     console.error("Error deleting event:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
