@@ -18,6 +18,8 @@ const PUBLIC_ROUTES = [
     '/api/auth/logout',
     '/api/auth/register',
     '/api/auth/check-pin',
+    '/api/stripe',   // checkout, webhooks – supports guest checkout
+    '/api/geo',     // pricing geo detection
 ];
 
 // Static file extensions to allow through
