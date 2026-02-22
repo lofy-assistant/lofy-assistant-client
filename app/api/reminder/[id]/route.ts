@@ -117,6 +117,14 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
       reminder_id: reminderId,
     };
 
+    // The backend expects user_id via query param, and executes tool with (uid, reminder_id=...)
+    // If the backend error says missing 'user_id', it might be due to how the tool is defined internally.
+    // However, looking at the python code provided:
+    // result = await tool.execute(uid, **body.model_dump(exclude_none=True))
+    // It passes uid as first arg.
+    // Maybe previously sending user_id in body caused conflict or was ignored.
+    // Let's stick to the cleanest interface: user_id in query, reminder_id in body.
+    
     const remindersUrl = `${process.env.FASTAPI_URL}/web/reminders?user_id=${encodeURIComponent(session.userId)}`;
     console.log("[Reminder DELETE] Sending payload to external API:", remindersUrl, JSON.stringify(payload, null, 2));
 
