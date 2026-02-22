@@ -1,36 +1,33 @@
-import { useMemo } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { motion } from "motion/react";
 import { Brain, Zap } from "lucide-react";
 
+interface Particle {
+  initialX: number;
+  initialY: number;
+  targetX: number;
+  targetY: number;
+  duration: number;
+  delay: number;
+}
+
 export function BentoMemory() {
-  // Generate random positions once
-  const particles = useMemo(() => {
-    return [...Array(12)].map(() => ({
-      initialX: (() => {
-        const r = Math.random();
-        return r * 100;
-      })(),
-      initialY: (() => {
-        const r = Math.random();
-        return r * 100;
-      })(),
-      targetX: (() => {
-        const r = Math.random();
-        return r * 100;
-      })(),
-      targetY: (() => {
-        const r = Math.random();
-        return r * 100;
-      })(),
-      duration: (() => {
-        const r = Math.random();
-        return r * 4 + 3;
-      })(),
-      delay: (() => {
-        const r = Math.random();
-        return r * 2;
-      })(),
-    }));
+  const [particles, setParticles] = useState<Particle[]>([]);
+
+  useEffect(() => {
+    // We need to generate particles on the client to avoid hydration mismatch
+    // Wrapping in a timeout or ensuring it runs after mount
+    const timer = setTimeout(() => {
+        setParticles([...Array(12)].map(() => ({
+            initialX: Math.random() * 100,
+            initialY: Math.random() * 100,
+            targetX: Math.random() * 100,
+            targetY: Math.random() * 100,
+            duration: Math.random() * 4 + 3,
+            delay: Math.random() * 2,
+          })));
+    }, 0);
+    return () => clearTimeout(timer);
   }, []);
 
   const dataStreams = useMemo(() => {
@@ -39,6 +36,12 @@ export function BentoMemory() {
       duration: 2 + i * 0.2, // Use deterministic, stable duration
     }));
   }, []);
+
+  if (particles.length === 0) {
+    return (
+      <div className="relative w-full h-full sm:aspect-3/1 aspect-2/1 overflow-hidden flex items-center justify-center bg-transparent" />
+    );
+  }
 
   return (
     <div className="relative w-full h-full sm:aspect-3/1 aspect-2/1 overflow-hidden flex items-center justify-center">
@@ -255,7 +258,7 @@ export function BentoMemory() {
 
       {/* Background ambient glow */}
       <motion.div
-        className="absolute inset-0 bg-gradient-to-r from-emerald-500/5 via-teal-500/5 to-indigo-500/5 blur-3xl"
+        className="absolute inset-0 bg-background blur-3xl"
         animate={{
           opacity: [0.3, 0.6, 0.3],
         }}

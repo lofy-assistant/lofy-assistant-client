@@ -199,23 +199,76 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized - invalid session" }, { status: 401 });
     }
 
-    const body = await request.json();
-    const { message, reminder_time, status = "pending" } = body;
+    type CreateReminderBody = {
+      message?: string;
+      reminder_time?: string;
+      recurrence?: string | null;
+    };
+
+    const body = (await request.json()) as CreateReminderBody;
+    const { message, reminder_time, recurrence } = body;
 
     if (!message || !reminder_time) {
       return NextResponse.json({ error: "Message and reminder_time are required" }, { status: 400 });
     }
 
-    const reminder = await prisma.reminders.create({
-      data: {
-        user_id: session.userId,
-        message,
-        reminder_time: new Date(reminder_time),
-        status,
-      },
-    });
+    const remindersUrl = `${process.env.FASTAPI_URL}/web/reminders?user_id=${encodeURIComponent(session.userId)}`;
+    
+    type ReminderPayload = {
+      message: string;
+      reminder_time: string;
+      recurrence?: string;
+    };
 
-    return NextResponse.json({ reminder }, { status: 201 });
+    // Construct payload for external API
+    const payload: ReminderPayload = {
+      message,
+      reminder_time,
+    };
+
+    if (recurrence) {
+      payload.recurrence = recurrence;
+    }
+
+    let apiRes;
+    try {
+      apiRes = await fetch(remindersUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+    } catch (err) {
+      console.error("Network error calling reminders API:", err);
+      return NextResponse.json({ error: "Failed to reach reminders API" }, { status: 502 });
+    }
+
+    const text = await apiRes.text();
+    let data;
+    try {
+      data = text ? JSON.parse(text) : null;
+    } catch {
+      data = text;
+    }
+
+    if (apiRes.ok) {
+       // Expecting { success: true, message, data }
+      return NextResponse.json(
+        { success: true, message: data?.message || "Reminder created", data: data?.data || null },
+        { status: 200 },
+      );
+    }
+
+    if (apiRes.status === 409) {
+      return NextResponse.json({ error: data?.detail || "Conflict - duplicate reminder" }, { status: 409 });
+    }
+
+    if (apiRes.status === 400) {
+      return NextResponse.json({ error: data?.detail || "Bad request" }, { status: 400 });
+    }
+    
+    console.error("Upstream reminders API error:", apiRes.status, data);
+    return NextResponse.json({ error: data?.detail || "Upstream API error" }, { status: 500 });
+
   } catch (error) {
     console.error("Reminder Creation Error:", error);
 

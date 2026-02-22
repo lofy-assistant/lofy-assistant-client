@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from '@/lib/database';
 import { verifySession } from "@/lib/session";
 
 export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -15,78 +14,80 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       return NextResponse.json({ error: "Invalid session" }, { status: 401 });
     }
 
-    const oldReminderId = parseInt(id);
-    const body = await request.json();
-    const { message, reminder_time } = body;
+    const reminderId = parseInt(id);
+    // Use proper typing for the incoming request body
+    interface UpdateReminderBody {
+      message?: string;
+      reminder_time?: string;
+      recurrence?: string | null;
+    }
 
-    // Step 1: Get existing reminder by reminder_id, verify ownership
-    const oldReminder = await prisma.reminders.findUnique({
-      where: { id: oldReminderId },
-    });
+    const body = (await request.json()) as UpdateReminderBody;
+    const { message, reminder_time, recurrence } = body;
 
-    if (!oldReminder || oldReminder.user_id !== session.userId) {
+    // Construct the payload for the external API
+    // The external API expects UpdateReminderInput with "new_" prefix for fields
+    interface UpdateReminderPayload {
+      reminder_id: number;
+      new_message?: string;
+      new_reminder_time?: string;
+      new_recurrence?: string | null;
+    }
+
+    const payload: UpdateReminderPayload = {
+      reminder_id: reminderId,
+    };
+
+    if (message) payload.new_message = message;
+    if (reminder_time) payload.new_reminder_time = reminder_time;
+    if (recurrence !== undefined) payload.new_recurrence = recurrence;
+
+    const remindersUrl = `${process.env.FASTAPI_URL}/web/reminders?user_id=${encodeURIComponent(session.userId)}`;
+    console.log("[Reminder PUT] Sending payload to external API:", remindersUrl, JSON.stringify(payload, null, 2));
+
+    let apiRes: globalThis.Response;
+    try {
+      apiRes = await fetch(remindersUrl, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+    } catch (err) {
+      console.error("Network error calling reminders API:", err);
+      return NextResponse.json({ error: "Failed to reach reminders API" }, { status: 502 });
+    }
+
+    type UpstreamResponse = {
+        success?: boolean;
+        message?: string;
+        data?: unknown;
+        detail?: string;
+        error?: string;
+        [key: string]: unknown;
+    };
+
+    const text = await apiRes.text();
+    let data: UpstreamResponse | string | null = null;
+    try {
+      data = text ? (JSON.parse(text) as UpstreamResponse) : null;
+    } catch {
+      data = text;
+    }
+
+    if (apiRes.ok) {
+       // Return the updated data structure
+       return NextResponse.json(data);
+    }
+
+    if (apiRes.status === 404) {
       return NextResponse.json({ error: "Reminder not found" }, { status: 404 });
     }
 
-    // Validation
-    // Validate message if provided
-    if (message !== undefined) {
-      if (typeof message !== "string") {
-        return NextResponse.json({ error: "Message must be a string" }, { status: 400 });
-      }
-      if (message.trim().length === 0) {
-        return NextResponse.json({ error: "Message cannot be empty" }, { status: 400 });
-      }
-      if (message.length > 500) {
-        return NextResponse.json({ error: "Message must be 500 characters or less" }, { status: 400 });
-      }
-    }
-    if (!reminder_time) {
-      return NextResponse.json({ error: "reminder_time is required" }, { status: 400 });
-    }
-    if (new Date(reminder_time) <= new Date()) {
-      return NextResponse.json({ error: "Reminder time must be in the future" }, { status: 400 });
-    }
+    const errorMessage = (typeof data === 'object' && data !== null) ? (data.detail || data.error || "Upstream API error") : (typeof data === 'string' ? data : "Upstream API error");
 
-    // Step 2: Create NEW reminder with:
-    // - Message: use new message if provided, else existing message
-    // - Reminder time: use new reminder_time
-    // - Status: copy from existing reminder
-    // - Recurrence: preserve from existing reminder so future occurrences still show
-    const newMessage = message !== undefined ? message : oldReminder.message;
-    const newReminder = await prisma.reminders.create({
-      data: {
-        user_id: session.userId,
-        message: newMessage,
-        reminder_time: new Date(reminder_time),
-        status: oldReminder.status,
-        recurrence: oldReminder.recurrence,
-        next_recurrence: oldReminder.next_recurrence,
-      },
-    });
+    console.error("Upstream reminders API error:", apiRes.status, data);
+    return NextResponse.json({ error: errorMessage }, { status: apiRes.status });
 
-    // Step 3: Check for calendar events and update them
-    const calendarEvents = await prisma.calendar_events.findMany({
-      where: { reminder_id: oldReminderId },
-    });
-
-    if (calendarEvents.length > 0) {
-      // Step 4: Update ALL calendar events to reference the new_reminder_id
-      await prisma.calendar_events.updateMany({
-        where: { reminder_id: oldReminderId },
-        data: { reminder_id: newReminder.id },
-      });
-      console.log(`Updated ${calendarEvents.length} calendar event(s) to reference new reminder ${newReminder.id}`);
-    }
-
-    // Step 5: Delete old reminder
-    await prisma.reminders.delete({
-      where: { id: oldReminderId },
-    });
-    console.log(`Deleted old reminder ${oldReminderId}`);
-
-    // Step 6: Return the new reminder (with new ID)
-    return NextResponse.json({ reminder: newReminder });
   } catch (error) {
     console.error("Error updating reminder:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
@@ -108,20 +109,58 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
 
     const reminderId = parseInt(id);
 
-    const reminder = await prisma.reminders.findUnique({
-      where: { id: reminderId },
-    });
+    interface DeleteReminderPayload {
+      reminder_id: number;
+    }
 
-    if (!reminder || reminder.user_id !== session.userId) {
+    const payload: DeleteReminderPayload = {
+      reminder_id: reminderId,
+    };
+
+    const remindersUrl = `${process.env.FASTAPI_URL}/web/reminders?user_id=${encodeURIComponent(session.userId)}`;
+    console.log("[Reminder DELETE] Sending payload to external API:", remindersUrl, JSON.stringify(payload, null, 2));
+
+    let apiRes: globalThis.Response;
+    try {
+      apiRes = await fetch(remindersUrl, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+    } catch (err) {
+      console.error("Network error calling reminders API:", err);
+      return NextResponse.json({ error: "Failed to reach reminders API" }, { status: 502 });
+    }
+
+    type UpstreamResponse = {
+        success?: boolean;
+        message?: string;
+        detail?: string;
+        error?: string;
+        [key: string]: unknown;
+    };
+
+    const text = await apiRes.text();
+    let data: UpstreamResponse | string | null = null;
+    try {
+      data = text ? (JSON.parse(text) as UpstreamResponse) : null;
+    } catch {
+      data = text;
+    }
+
+    if (apiRes.ok) {
+      return NextResponse.json({ success: true, data });
+    }
+
+    if (apiRes.status === 404) {
       return NextResponse.json({ error: "Reminder not found" }, { status: 404 });
     }
 
-    // Delete the reminder from database
-    await prisma.reminders.delete({
-      where: { id: reminderId },
-    });
+    const errorMessage = (typeof data === 'object' && data !== null) ? (data.detail || data.error || "Upstream API error") : (typeof data === 'string' ? data : "Upstream API error");
 
-    return NextResponse.json({ success: true });
+    console.error("Upstream reminders API error:", apiRes.status, data);
+    return NextResponse.json({ error: errorMessage }, { status: apiRes.status });
+
   } catch (error) {
     console.error("Error deleting reminder:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
