@@ -1,5 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifySession } from '@/lib/session';
+import { rateLimiter, authRateLimiter, checkRateLimit } from '@/lib/rate-limit';
+import { checkUserHasPin } from '@/lib/check-pin';
+
+// Prisma (via checkUserHasPin) requires Node.js runtime, not Edge
+export const runtime = 'nodejs';
 
 const COOKIE_NAME = 'session';
 
@@ -33,6 +38,37 @@ function applySecurityHeaders(response: NextResponse): NextResponse {
     response.headers.set('X-Content-Type-Options', 'nosniff');
     response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
     response.headers.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+    response.headers.set('X-DNS-Prefetch-Control', 'off');
+
+    // HSTS: enforce HTTPS for 1 year in production
+    if (process.env.NODE_ENV === 'production') {
+        response.headers.set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
+    }
+
+    // Content-Security-Policy
+    // - script-src: 'self' + Stripe (payment widget) + 'unsafe-inline'/'unsafe-eval' for Next.js hydration
+    // - style-src: 'self' + 'unsafe-inline' for Tailwind utility classes
+    // - img-src: 'self' + data URIs + blob (canvas/avatars) + Stripe
+    // - connect-src: 'self' + Stripe API
+    // - frame-src: Stripe embedded iframes
+    // - font-src: 'self' + data URIs
+    // - form-action 'self': prevents form hijacking to external origins
+    // - base-uri 'self': prevents <base> tag injection
+    // - frame-ancestors 'none': duplicates X-Frame-Options for CSP-aware browsers
+    const csp = [
+        `default-src 'self'`,
+        `script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com`,
+        `style-src 'self' 'unsafe-inline'`,
+        `img-src 'self' data: blob: https://*.stripe.com`,
+        `font-src 'self' data:`,
+        `connect-src 'self' https://api.stripe.com`,
+        `frame-src https://js.stripe.com https://hooks.stripe.com`,
+        `form-action 'self'`,
+        `base-uri 'self'`,
+        `frame-ancestors 'none'`,
+    ].join('; ');
+    response.headers.set('Content-Security-Policy', csp);
+
     return response;
 }
 
@@ -48,7 +84,37 @@ export async function proxy(request: NextRequest) {
         return NextResponse.next();
     }
 
-    // 2. Check if route is public
+    // 2. Apply rate limiting — derive identifier from IP
+    // Falls back to a pathname-scoped key so bots without a forwarded IP
+    // don't collapse all traffic into one shared 'anonymous' bucket.
+    const rawIp =
+        request.headers.get('x-real-ip') ||
+        request.headers.get('x-forwarded-for')?.split(',')[0]?.trim();
+    const ip = rawIp ?? `anonymous:${pathname}`;
+
+    // Stricter rate limit for auth-related routes
+    const isAuthRoute =
+        pathname.startsWith('/api/auth/') ||
+        pathname === '/login' ||
+        pathname === '/register' ||
+        pathname === '/forgot-pin' ||
+        pathname === '/reset-pin';
+
+    const limiter = isAuthRoute ? authRateLimiter : rateLimiter;
+    const rlResult = await checkRateLimit(limiter, ip);
+
+    if (rlResult.limited) {
+        // Guard against negative values from clock skew
+        const retryAfterSeconds = Math.max(0, Math.ceil((rlResult.reset - Date.now()) / 1000));
+        const response = new NextResponse('Too Many Requests', { status: 429 });
+        response.headers.set('Retry-After', String(retryAfterSeconds));
+        response.headers.set('X-RateLimit-Limit', String(rlResult.limit));
+        response.headers.set('X-RateLimit-Remaining', '0');
+        response.headers.set('X-RateLimit-Reset', String(rlResult.reset));
+        return applySecurityHeaders(response);
+    }
+
+    // 3. Check if route is public
     // Use exact match for static pages, and startsWith only for API endpoints or defined prefixes
     const isPublicRoute = PUBLIC_ROUTES.some((route) => {
         if (route.startsWith('/api/')) {
@@ -68,7 +134,7 @@ export async function proxy(request: NextRequest) {
         return applySecurityHeaders(NextResponse.next());
     }
 
-    // 3. All other routes require authentication
+    // 4. All other routes require authentication
     const token = request.cookies.get(COOKIE_NAME)?.value;
 
     if (!token) {
@@ -78,24 +144,18 @@ export async function proxy(request: NextRequest) {
 
         if (phone) {
             try {
-                const baseUrl = new URL(request.url).origin;
-                const checkPinResponse = await fetch(`${baseUrl}/api/auth/check-pin`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ phone }),
-                });
+                // Call DB directly — avoids a self-fetch back through middleware
+                // which would double-spend a rate-limit token and add latency.
+                const hasPin = await checkUserHasPin(phone);
+                const redirectPath = hasPin ? '/login' : '/register';
+                const redirectUrl = new URL(redirectPath, request.url);
 
-                if (checkPinResponse.ok) {
-                    const { hasPin } = await checkPinResponse.json();
-                    const redirectPath = hasPin ? '/login' : '/register';
-                    const redirectUrl = new URL(redirectPath, request.url);
-                    
-                    redirectUrl.searchParams.set('redirect', targetPath);
-                    redirectUrl.searchParams.set('phone', phone);
-                    return applySecurityHeaders(NextResponse.redirect(redirectUrl));
-                }
+                redirectUrl.searchParams.set('redirect', targetPath);
+                redirectUrl.searchParams.set('phone', phone);
+                return applySecurityHeaders(NextResponse.redirect(redirectUrl));
             } catch (error) {
                 console.error('Error checking PIN status in middleware:', error);
+                // Fall through to default login redirect on error
             }
         }
 
@@ -105,7 +165,7 @@ export async function proxy(request: NextRequest) {
         return applySecurityHeaders(NextResponse.redirect(redirectUrl));
     }
 
-    // 4. Verify the Token
+    // 5. Verify the Token
     const session = await verifySession(token);
 
     if (!session) {
@@ -127,7 +187,7 @@ export async function proxy(request: NextRequest) {
         return applySecurityHeaders(response);
     }
 
-    // 5. Authenticated Request - Add headers and return
+    // 6. Authenticated Request - Add headers and return
     const requestHeaders = new Headers(request.headers);
     requestHeaders.set('x-user-id', session.userId);
 
@@ -136,6 +196,14 @@ export async function proxy(request: NextRequest) {
             headers: requestHeaders,
         },
     });
+
+    // Forward rate-limit quota to clients so they can self-throttle.
+    // Skip when limit === 0, which means Redis was down and we failed open.
+    if (!rlResult.limited && rlResult.limit > 0) {
+        response.headers.set('X-RateLimit-Limit', String(rlResult.limit));
+        response.headers.set('X-RateLimit-Remaining', String(rlResult.remaining));
+        response.headers.set('X-RateLimit-Reset', String(rlResult.reset));
+    }
 
     return applySecurityHeaders(response);
 }
