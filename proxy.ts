@@ -3,9 +3,6 @@ import { verifySession } from '@/lib/session';
 import { rateLimiter, authRateLimiter, checkRateLimit } from '@/lib/rate-limit';
 import { checkUserHasPin } from '@/lib/check-pin';
 
-// Prisma (via checkUserHasPin) requires Node.js runtime, not Edge
-export const runtime = 'nodejs';
-
 const COOKIE_NAME = 'session';
 
 // Routes that don't require authentication
