@@ -1,7 +1,14 @@
-"use client";
-
 import React from "react";
 import Link from "next/link";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Features",
+  description: "Explore the powerful features of Lofy AI, including Apps Integration, Limitless Reminders, Save to Memory, and Personality Modes.",
+  alternates: {
+    canonical: "/features",
+  },
+};
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";

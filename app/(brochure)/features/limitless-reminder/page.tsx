@@ -1,8 +1,14 @@
-"use client";
-
-
+import { Metadata } from "next";
 import FeatureBreadcrumb from "@/components/brochure/features/feature-breadcrumb";
 import FeatureHeader from "@/components/brochure/features/feature-header";
+
+export const metadata: Metadata = {
+  title: "Limitless Reminders Feature",
+  description: "Tailor reminders to any specific task or calendar event with Lofy AI. Never miss an important deadline or appointment again.",
+  alternates: {
+    canonical: "/features/limitless-reminder",
+  },
+};
 
 import CTASection from "@/components/brochure/home/cta-section";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";

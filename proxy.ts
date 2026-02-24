@@ -102,12 +102,21 @@ export async function proxy(request: NextRequest) {
 
     if (rlResult.limited) {
         // Guard against negative values from clock skew
-        const retryAfterSeconds = Math.max(0, Math.ceil((rlResult.reset - Date.now()) / 1000));
+        // `rlResult.reset` may be in seconds or milliseconds depending on the
+        // upstream implementation. Normalize to milliseconds here.
+        let resetMs = rlResult.reset;
+        if (typeof resetMs === 'number' && resetMs > 0 && resetMs < 1e12) {
+            // values < 1e12 are likely seconds (Unix epoch), convert to ms
+            resetMs = resetMs * 1000;
+        }
+        const retryAfterSeconds = Math.max(0, Math.ceil((resetMs - Date.now()) / 1000));
         const response = new NextResponse('Too Many Requests', { status: 429 });
         response.headers.set('Retry-After', String(retryAfterSeconds));
         response.headers.set('X-RateLimit-Limit', String(rlResult.limit));
         response.headers.set('X-RateLimit-Remaining', '0');
-        response.headers.set('X-RateLimit-Reset', String(rlResult.reset));
+        // Expose reset as unix seconds for clients (standard practice)
+        const resetSeconds = Math.floor((typeof resetMs === 'number' ? resetMs : Date.now()) / 1000);
+        response.headers.set('X-RateLimit-Reset', String(resetSeconds));
         return applySecurityHeaders(response);
     }
 
@@ -199,7 +208,13 @@ export async function proxy(request: NextRequest) {
     if (!rlResult.limited && rlResult.limit > 0) {
         response.headers.set('X-RateLimit-Limit', String(rlResult.limit));
         response.headers.set('X-RateLimit-Remaining', String(rlResult.remaining));
-        response.headers.set('X-RateLimit-Reset', String(rlResult.reset));
+        // Normalize reset to seconds for consistency with the 429 case above.
+        let resetMs = rlResult.reset;
+        if (typeof resetMs === 'number' && resetMs > 0 && resetMs < 1e12) {
+            resetMs = resetMs * 1000;
+        }
+        const resetSeconds = Math.floor((typeof resetMs === 'number' ? resetMs : Date.now()) / 1000);
+        response.headers.set('X-RateLimit-Reset', String(resetSeconds));
     }
 
     return applySecurityHeaders(response);

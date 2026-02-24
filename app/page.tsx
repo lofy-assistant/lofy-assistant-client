@@ -1,12 +1,19 @@
-"use client";
-
+import { Metadata } from "next";
 import AppNavBar from "@/components/app-navbar";
 import Hero from "@/components/brochure/home/hero";
 import { BentoFeatures } from "@/components/brochure/home/bento-features/bento-features-grid";
-import Testimonials from "@/components/brochure/home/testimonials";
+// import Testimonials from "@/components/brochure/home/testimonials";
 import HowItWorks from "@/components/brochure/home/how-it-works";
 import CTASection from "@/components/brochure/home/cta-section";
 import Footer from "@/components/brochure/home/footer";
+
+export const metadata: Metadata = {
+  title: "Lofy AI - Your Personal AI Assistant",
+  description: "Lofy AI is your intelligent personal assistant designed to help you manage tasks, memories, and daily activities seamlessly.",
+  alternates: {
+    canonical: "/",
+  },
+};
 
 export default function Home() {
   return (

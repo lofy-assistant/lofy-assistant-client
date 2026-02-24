@@ -1,8 +1,14 @@
-"use client";
-
-
+import { Metadata } from "next";
 import FeatureBreadcrumb from "@/components/brochure/features/feature-breadcrumb";
 import FeatureHeader from "@/components/brochure/features/feature-header";
+
+export const metadata: Metadata = {
+  title: "Apps Integration Feature",
+  description: "Seamlessly connect your favorite apps and platforms like WhatsApp, Telegram, and Google Calendar with Lofy AI for a unified productivity experience.",
+  alternates: {
+    canonical: "/features/apps-integration",
+  },
+};
 
 import CTASection from "@/components/brochure/home/cta-section";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";

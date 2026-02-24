@@ -1,8 +1,14 @@
-"use client";
-
-
+import { Metadata } from "next";
 import FeatureBreadcrumb from "@/components/brochure/features/feature-breadcrumb";
 import FeatureHeader from "@/components/brochure/features/feature-header";
+
+export const metadata: Metadata = {
+  title: "Personality Modes Feature",
+  description: "Choose how Lofy AI interacts with you by selecting different personality modes tailored to your preferences.",
+  alternates: {
+    canonical: "/features/personality-modes",
+  },
+};
 
 import CTASection from "@/components/brochure/home/cta-section";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";

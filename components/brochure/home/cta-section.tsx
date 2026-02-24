@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { DitherShader } from "@/components/ui/dither-shader";
+// import { DitherShader } from "@/components/ui/dither-shader";
 
 export default function CTASection() {
   const whatsappNumber = "60178230685";
@@ -13,8 +13,8 @@ export default function CTASection() {
     <section className="relative overflow-hidden bg-background text-center py-10 md:py-20">
       <div className="max-w-7xl mx-auto md:px-8">
         <div className="relative overflow-hidden md:rounded-2xl border-y md:border border-neutral-800 shadow-2xl">
-          <DitherShader
-            src="https://images.unsplash.com/photo-1562408590-e32931084e23?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+          {/* <DitherShader
+            src="/assets/images/cta-bg.webp"
             gridSize={2}
             ditherMode="bayer"
             colorMode="duotone"
@@ -22,7 +22,7 @@ export default function CTASection() {
             secondaryColor="#34d399"
             threshold={0.45}
             className="min-w-full h-[60vh]"
-          />
+          /> */}
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-6">
             <div className="p-8 md:p-12 bg-black/30 backdrop-blur rounded-3xl border border-white/20 flex flex-col items-center gap-6">
               <h2 className="text-xl md:text-4xl font-medium leading-tight text-white drop-shadow-lg">
