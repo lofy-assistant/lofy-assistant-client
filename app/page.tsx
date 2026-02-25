@@ -4,9 +4,8 @@ import Hero from "@/components/brochure/home/hero";
 import { BentoFeatures } from "@/components/brochure/home/bento-features/bento-features-grid";
 // import Testimonials from "@/components/brochure/home/testimonials";
 import HowItWorks from "@/components/brochure/home/how-it-works";
-import CTASection from "@/components/brochure/home/cta-section";
 import Footer from "@/components/brochure/home/footer";
-
+import CTA from "@/components/brochure/home/cta";
 export const metadata: Metadata = {
   title: "Lofy AI - Your Personal AI Assistant",
   description: "Lofy AI is your intelligent personal assistant designed to help you manage tasks, memories, and daily activities seamlessly.",
@@ -28,7 +27,7 @@ export default function Home() {
 
       {/* <Testimonials /> */}
 
-      <CTASection />
+      <CTA />
 
       <Footer />
     </div>

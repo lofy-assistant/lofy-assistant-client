@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifySession } from '@/lib/session';
-import { rateLimiter, authRateLimiter, checkRateLimit } from '@/lib/rate-limit';
 import { checkUserHasPin } from '@/lib/check-pin';
 
 const COOKIE_NAME = 'session';
@@ -16,6 +15,7 @@ const PUBLIC_ROUTES = [
     '/guides',
     '/privacy-policy',
     '/terms',
+    '/gdpr',
     '/api/auth/login',
     '/api/auth/logout',
     '/api/auth/register',
@@ -81,49 +81,10 @@ export async function proxy(request: NextRequest) {
         return NextResponse.next();
     }
 
-    // 2. Apply rate limiting — derive identifier from IP
-    // Falls back to a pathname-scoped key so bots without a forwarded IP
-    // don't collapse all traffic into one shared 'anonymous' bucket.
-    const rawIp =
-        request.headers.get('x-real-ip') ||
-        request.headers.get('x-forwarded-for')?.split(',')[0]?.trim();
-    const ip = rawIp ?? `anonymous:${pathname}`;
-
-    // Stricter rate limit for auth-related routes
-    const isAuthRoute =
-        pathname.startsWith('/api/auth/') ||
-        pathname === '/login' ||
-        pathname === '/register' ||
-        pathname === '/forgot-pin' ||
-        pathname === '/reset-pin';
-
-    const limiter = isAuthRoute ? authRateLimiter : rateLimiter;
-    const rlResult = await checkRateLimit(limiter, ip);
-
-    if (rlResult.limited) {
-        // Guard against negative values from clock skew
-        // `rlResult.reset` may be in seconds or milliseconds depending on the
-        // upstream implementation. Normalize to milliseconds here.
-        let resetMs = rlResult.reset;
-        if (typeof resetMs === 'number' && resetMs > 0 && resetMs < 1e12) {
-            // values < 1e12 are likely seconds (Unix epoch), convert to ms
-            resetMs = resetMs * 1000;
-        }
-        const retryAfterSeconds = Math.max(0, Math.ceil((resetMs - Date.now()) / 1000));
-        const response = new NextResponse('Too Many Requests', { status: 429 });
-        response.headers.set('Retry-After', String(retryAfterSeconds));
-        response.headers.set('X-RateLimit-Limit', String(rlResult.limit));
-        response.headers.set('X-RateLimit-Remaining', '0');
-        // Expose reset as unix seconds for clients (standard practice)
-        const resetSeconds = Math.floor((typeof resetMs === 'number' ? resetMs : Date.now()) / 1000);
-        response.headers.set('X-RateLimit-Reset', String(resetSeconds));
-        return applySecurityHeaders(response);
-    }
-
     // 3. Check if route is public
     // Use exact match for static pages, and startsWith only for API endpoints or defined prefixes
     const isPublicRoute = PUBLIC_ROUTES.some((route) => {
-        if (route.startsWith('/api/')) {
+        if (route.startsWith('/api/') || route === '/features' || route === '/guides') {
             return pathname.startsWith(route);
         }
         return pathname === route;
@@ -202,20 +163,6 @@ export async function proxy(request: NextRequest) {
             headers: requestHeaders,
         },
     });
-
-    // Forward rate-limit quota to clients so they can self-throttle.
-    // Skip when limit === 0, which means Redis was down and we failed open.
-    if (!rlResult.limited && rlResult.limit > 0) {
-        response.headers.set('X-RateLimit-Limit', String(rlResult.limit));
-        response.headers.set('X-RateLimit-Remaining', String(rlResult.remaining));
-        // Normalize reset to seconds for consistency with the 429 case above.
-        let resetMs = rlResult.reset;
-        if (typeof resetMs === 'number' && resetMs > 0 && resetMs < 1e12) {
-            resetMs = resetMs * 1000;
-        }
-        const resetSeconds = Math.floor((typeof resetMs === 'number' ? resetMs : Date.now()) / 1000);
-        response.headers.set('X-RateLimit-Reset', String(resetSeconds));
-    }
 
     return applySecurityHeaders(response);
 }

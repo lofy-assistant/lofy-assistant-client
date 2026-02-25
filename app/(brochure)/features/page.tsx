@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import CTASection from "@/components/brochure/home/cta-section";
+import CTA from "@/components/brochure/home/cta";
 import { Badge } from "@/components/ui/badge";
 
 const Features = () => {
@@ -116,7 +116,7 @@ const Features = () => {
         </div>
       </section>
 
-      <CTASection />
+      <CTA />
 
     </div>
   );

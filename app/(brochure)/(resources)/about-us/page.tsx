@@ -3,7 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
 import { Sparkles, Brain, Calendar, MessageSquare, Zap, Heart, Cat, Shield, Users, Clock, Target, Lightbulb, ArrowRight, CheckCircle2 } from "lucide-react";
-import CTASection from "@/components/brochure/home/cta-section";
+import CTA from "@/components/brochure/home/cta";
 
 const stats = [
   { value: "5K+", label: "Reminders Sent" },
@@ -321,7 +321,7 @@ export default function AboutUsPage() {
           </div>
         </div>
       </section>
-      <CTASection />
+      <CTA />
     </div>
   );
 }

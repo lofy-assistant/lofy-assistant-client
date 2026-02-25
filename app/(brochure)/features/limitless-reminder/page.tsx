@@ -10,7 +10,7 @@ export const metadata: Metadata = {
   },
 };
 
-import CTASection from "@/components/brochure/home/cta-section";
+import CTA from "@/components/brochure/home/cta";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Bell, Calendar, Repeat, Clock, Zap, MessageSquare } from "lucide-react";
@@ -301,7 +301,7 @@ export default function LimitlessReminderPage() {
         </div>
       </section>
 
-      <CTASection />
+      <CTA />
 
     </div>
   );

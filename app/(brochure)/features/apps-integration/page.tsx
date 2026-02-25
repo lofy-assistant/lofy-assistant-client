@@ -10,7 +10,7 @@ export const metadata: Metadata = {
   },
 };
 
-import CTASection from "@/components/brochure/home/cta-section";
+import CTA from "@/components/brochure/home/cta";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
@@ -263,7 +263,7 @@ export default function AppsIntegrationPage() {
               </div>
               <h3 className="text-xl font-bold mb-2">Authorize Access</h3>
               <p className="text-muted-foreground">
-                Sign in to the app and grant Lofy the permissions it needs. You control what's shared.
+                Sign in to the app and grant Lofy the permissions it needs. You control what is shared.
               </p>
             </div>
 
@@ -273,14 +273,14 @@ export default function AppsIntegrationPage() {
               </div>
               <h3 className="text-xl font-bold mb-2">Start Using</h3>
               <p className="text-muted-foreground">
-                That's it! Your apps are now connected. Lofy handles the rest automatically.
+                That is it! Your apps are now connected. Lofy handles the rest automatically.
               </p>
             </div>
           </div>
         </div>
       </section>
 
-      <CTASection />
+      <CTA />
     </div>
   );
 }

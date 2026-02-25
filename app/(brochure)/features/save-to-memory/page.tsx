@@ -1,16 +1,9 @@
-import { Metadata } from "next";
+"use client";
+
+
 import FeatureBreadcrumb from "@/components/brochure/features/feature-breadcrumb";
 import FeatureHeader from "@/components/brochure/features/feature-header";
-
-export const metadata: Metadata = {
-  title: "Save to Memory Feature",
-  description: "Build a searchable archive of your mind with Lofy AI. Capture ideas, notes, and fleeting thoughts the moment they strike.",
-  alternates: {
-    canonical: "/features/save-to-memory",
-  },
-};
-
-import CTASection from "@/components/brochure/home/cta-section";
+import CTA from "@/components/brochure/home/cta";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Brain, Search, Sparkles, MessageSquare, FolderOpen, Lock } from "lucide-react";
@@ -255,7 +248,7 @@ export default function SaveToMemoryPage() {
         </div>
       </section>
 
-      <CTASection />
+      <CTA />
 
     </div>
   );
