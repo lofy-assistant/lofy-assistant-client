@@ -12,7 +12,7 @@ export function SiteHeader() {
         {/* <h1 className="text-base font-medium">Documents</h1> */}
         <div className="ml-auto flex items-center gap-2">
           <Button variant="outline" asChild size="sm" className="flex text-primary hover:text-primary hover:bg-primary/10 dark:hover:bg-primary/20 border-primary">
-            <a href="https://wa.me/60178230685" rel="noopener noreferrer" target="_blank" className="flex items-center justify-center gap-2">
+            <a href="https://wa.me/60105043846" rel="noopener noreferrer" target="_blank" className="flex items-center justify-center gap-2">
               <MessageCircle className="h-4 w-4" />
               <span>Chat with Lofy</span>
             </a>

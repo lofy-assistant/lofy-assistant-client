@@ -104,7 +104,7 @@ export default function AppNavbar({
         : { text: "Login/Register", href: "/login", isButton: false },
       {
         text: "Chat with Lofy",
-        href: "https://wa.me/60178230685?text=Hey%2C%20I%20just%20get%20started",
+        href: "https://wa.me/60105043846?text=Hey%2C%20I%20just%20get%20started",
         isButton: true,
         variant: "default",
       },
