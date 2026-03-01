@@ -144,9 +144,18 @@ export async function POST(req: NextRequest) {
         });
 
         if (subscriptionRecord) {
+          // If Stripe marks cancel_at_period_end = true, the raw status stays
+          // "active" — we encode it as "cancel_at_period_end" so the app UI
+          // can display the correct pending-cancellation state.
+          const cancelAtPeriodEnd = rawObject.cancel_at_period_end === true;
+          const resolvedStatus =
+            cancelAtPeriodEnd && subscription.status === "active"
+              ? "cancel_at_period_end"
+              : subscription.status;
+
           const data: Record<string, unknown> = {
             stripe_price_id: priceId,
-            subscription_status: subscription.status,
+            subscription_status: resolvedStatus,
           };
 
           // Only write period_end when it's a real future date
@@ -158,7 +167,7 @@ export async function POST(req: NextRequest) {
             where: { stripe_customer_id: customerId },
             data,
           });
-          console.log("✅ Subscription updated successfully");
+          console.log("✅ Subscription updated successfully, status:", resolvedStatus);
         } else {
           console.log("⏸️ Subscription not found by customer ID (pending link in checkout.session.completed)");
         }

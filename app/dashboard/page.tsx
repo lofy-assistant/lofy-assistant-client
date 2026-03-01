@@ -4,6 +4,7 @@ import { Separator } from "@/components/ui/separator";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { AnalyticsOverview } from "@/components/dashboard/overview/analytics-overview";
 import { MongoAnalytics } from "@/components/dashboard/overview/mongo-analytics";
+import { SubscriptionBanner } from "@/components/dashboard/overview/subscription-banner";
 
 export default function Page() {
   return (
@@ -25,6 +26,7 @@ export default function Page() {
                 </div>
                 <p className="mb-6 text-muted-foreground">Here&apos;s a quick overview of your activities.</p>
                 <Separator className="mb-6" />
+                <SubscriptionBanner />
                 <AnalyticsOverview />
                 <Separator className="my-6" />
                 <MongoAnalytics />
