@@ -116,7 +116,7 @@ export default function BentoIntegration() {
 
       {/* Center Node (Larger) */}
       <motion.div
-        className="absolute -translate-x-1/2 -translate-y-1/2 bg-linear-to-tr from-emerald-400/50 to-indigo-400/50 backdrop-blur-lg border-4 border-white/30 dark:border-gray-800/50 rounded-full p-1"
+        className="absolute -translate-x-1/2 -translate-y-1/2 bg-linear-to-tr from-emerald-200/40 to-indigo-200/40 backdrop-blur-lg border-4 border-white/30 dark:border-gray-800/50 rounded-full p-1"
         style={{
           left: `${centerX}%`,
           top: `${centerY}%`,

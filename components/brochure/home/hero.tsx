@@ -7,18 +7,8 @@ import { Badge } from "@/components/ui/badge";
 export default function Hero() {
   return (
     <section className="relative flex flex-col overflow-hidden min-h-svh bg-gradient-to-b from-neutral-900 via-stone-900 to-neutral-800">
-      <GrainyGradientBlob
-        size={800}
-        colors={["#4338CA", "#0f766e", "#14b8a6"]}
-        blur={180}
-        className="absolute -bottom-48 -right-48 pointer-events-none"
-      />
-      <GrainyGradientBlob
-        size={800}
-        colors={["#4338CA", "#0f766e", "#14b8a6"]}
-        blur={180}
-        className="absolute -bottom-48 -left-48 pointer-events-none"
-      />
+      <GrainyGradientBlob size={800} colors={["#4338CA", "#0f766e", "#14b8a6"]} blur={180} className="absolute -bottom-48 -right-48 pointer-events-none" />
+      <GrainyGradientBlob size={800} colors={["#4338CA", "#0f766e", "#14b8a6"]} blur={180} className="absolute -bottom-48 -left-48 pointer-events-none" />
 
       {/* Main content */}
       <div className="relative z-10 flex flex-col items-center justify-center flex-1 px-4 py-8 md:mt-20 mt-4">
@@ -44,17 +34,10 @@ export default function Hero() {
               {/* WhatsApp-style header */}
               <div className="bg-[#075E54] px-4 py-3 pt-8 flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full bg-background flex items-center justify-center overflow-hidden">
-                  <Image
-                    src="/assets/icons/lofy-logo-1.png"
-                    alt="Lofy AI"
-                    width={40}
-                    height={40}
-                  />
+                  <Image src="/assets/icons/lofy-logo-1.png" alt="Lofy AI" width={40} height={40} />
                 </div>
                 <div className="flex-1">
-                  <span className="text-base font-semibold text-white">
-                    Lofy AI
-                  </span>
+                  <span className="text-base font-semibold text-white">Lofy AI</span>
                   <p className="text-xs text-emerald-200">online</p>
                 </div>
               </div>
@@ -65,43 +48,60 @@ export default function Hero() {
                 style={{
                   backgroundImage:
                     "url(\"data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23c8c4be' fill-opacity='0.4'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E\")",
-                }}
-              >
+                }}>
                 {/* Chat messages */}
                 <div className="space-y-3">
                   {/* AI message */}
-                  <div className="flex justify-start">
+                  {/* <div className="flex justify-start">
                     <div className="bg-white rounded-lg rounded-tl-none p-3 max-w-[80%] shadow-sm relative">
-                      <p className="text-sm text-gray-800 leading-relaxed">
-                        Hey Mark, seems like your flight got delayed. Would you
-                        like to reschedule today&apos;s meeting to 3pm instead?
-                      </p>
+                      <p className="text-sm text-gray-800 leading-relaxed">Hey Mark, seems like your flight got delayed. Would you like to reschedule today&apos;s meeting to 3pm instead?</p>
                       <div className="flex items-center justify-end gap-1 mt-1">
-                        <span className="text-[10px] text-gray-500">
-                          10:30 AM
-                        </span>
+                        <span className="text-[10px] text-gray-500">10:30 AM</span>
                       </div>
                     </div>
-                  </div>
+                  </div> */}
 
                   {/* User message */}
-                  <div className="flex justify-end">
+                  {/* <div className="flex justify-end">
                     <div className="bg-[#DCF8C6] rounded-lg rounded-tr-none p-3 max-w-[80%] shadow-sm relative">
-                      <p className="text-sm text-gray-800 leading-relaxed">
-                        Thanks Lofy, but I got to pick up the kids so can you
-                        change it to 4pm instead?
-                      </p>
+                      <p className="text-sm text-gray-800 leading-relaxed">Thanks Lofy, but I got to pick up the kids so can you change it to 4pm instead?</p>
                       <div className="flex items-center justify-end gap-1 mt-1">
-                        <span className="text-[10px] text-gray-500">
-                          10:32 AM
-                        </span>
-                        <svg
-                          className="w-4 h-4 text-blue-500"
-                          viewBox="0 0 16 15"
-                          fill="currentColor"
-                        >
+                        <span className="text-[10px] text-gray-500">10:32 AM</span>
+                        <svg className="w-4 h-4 text-blue-500" viewBox="0 0 16 15" fill="currentColor">
                           <path d="M15.01 3.316l-.478-.372a.365.365 0 0 0-.51.063L8.666 9.88a.32.32 0 0 1-.484.032l-.358-.325a.32.32 0 0 0-.484.032l-.378.48a.418.418 0 0 0 .036.54l1.32 1.267a.32.32 0 0 0 .484-.034l6.272-8.048a.366.366 0 0 0-.064-.512zm-4.1 0l-.478-.372a.365.365 0 0 0-.51.063L4.566 9.88a.32.32 0 0 1-.484.032L1.89 7.77a.366.366 0 0 0-.516.005l-.423.433a.364.364 0 0 0 .006.514l3.255 3.185a.32.32 0 0 0 .484-.033l6.272-8.048a.365.365 0 0 0-.063-.51z" />
                         </svg>
+                      </div>
+                    </div>
+                  </div> */}
+
+                  {/* AI response */}
+                  {/* <div className="flex justify-start">
+                    <div className="bg-white rounded-lg rounded-tl-none p-3 max-w-[80%] shadow-sm relative">
+                      <p className="text-sm text-gray-800 leading-relaxed">Alright, I have rescheduled today&apos;s meeting to 4pm and have informed the participants through email 🍃</p>
+                      <div className="flex items-center justify-end gap-1 mt-1">
+                        <span className="text-[10px] text-gray-500">10:33 AM</span>
+                      </div>
+                    </div>
+                  </div> */}
+
+                  {/* User image + text message group */}
+                  <div className="flex flex-col items-end gap-0.5">
+                    <div className="flex justify-end">
+                      <div className="bg-[#DCF8C6] rounded-lg rounded-tr-none overflow-hidden max-w-[80%] shadow-sm relative">
+                        <Image src="/assets/schedule.jpeg" alt="Schedule" width={240} height={160} className="w-full object-cover" />
+                      </div>
+                    </div>
+
+                    {/* User message */}
+                    <div className="flex justify-end">
+                      <div className="bg-[#DCF8C6] rounded-lg rounded-tr-none p-3 max-w-[80%] shadow-sm relative">
+                        <p className="text-sm text-gray-800 leading-relaxed">Hey Lofy, can you add this schedule to my calendar?</p>
+                        <div className="flex items-center justify-end gap-1 mt-1">
+                          <span className="text-[10px] text-gray-500">10:32 AM</span>
+                          <svg className="w-4 h-4 text-blue-500" viewBox="0 0 16 15" fill="currentColor">
+                            <path d="M15.01 3.316l-.478-.372a.365.365 0 0 0-.51.063L8.666 9.88a.32.32 0 0 1-.484.032l-.358-.325a.32.32 0 0 0-.484.032l-.378.48a.418.418 0 0 0 .036.54l1.32 1.267a.32.32 0 0 0 .484-.034l6.272-8.048a.366.366 0 0 0-.064-.512zm-4.1 0l-.478-.372a.365.365 0 0 0-.51.063L4.566 9.88a.32.32 0 0 1-.484.032L1.89 7.77a.366.366 0 0 0-.516.005l-.423.433a.364.364 0 0 0 .006.514l3.255 3.185a.32.32 0 0 0 .484-.033l6.272-8.048a.365.365 0 0 0-.063-.51z" />
+                          </svg>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -109,14 +109,30 @@ export default function Hero() {
                   {/* AI response */}
                   <div className="flex justify-start">
                     <div className="bg-white rounded-lg rounded-tl-none p-3 max-w-[80%] shadow-sm relative">
-                      <p className="text-sm text-gray-800 leading-relaxed">
-                        Alright, I have rescheduled today&apos;s meeting to 4pm
-                        and have informed the participants through email 🍃
-                      </p>
+                      <p className="text-sm text-gray-800 leading-relaxed">Done! I&apos;ve created the events with a reminder set for 15 minutes before. It&apos;s synced to your Google Calendar. You&apos;re all set!</p>
                       <div className="flex items-center justify-end gap-1 mt-1">
-                        <span className="text-[10px] text-gray-500">
-                          10:33 AM
-                        </span>
+                        <span className="text-[10px] text-gray-500">10:33 AM</span>
+                      </div>
+                      <div className="mt-2 pt-2 border-t border-gray-100">
+                        <div className="flex items-center justify-center gap-1.5 text-[#075E54] text-sm font-medium py-0.5 select-none">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                          </svg>
+                          View Calendar
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* User message */}
+                  <div className="flex justify-end">
+                    <div className="bg-[#DCF8C6] rounded-lg rounded-tr-none p-3 max-w-[80%] shadow-sm relative">
+                      <p className="text-sm text-gray-800 leading-relaxed">Thanks Lofy!</p>
+                      <div className="flex items-center justify-end gap-1 mt-1">
+                        <span className="text-[10px] text-gray-500">10:33 AM</span>
+                        <svg className="w-4 h-4 text-blue-500" viewBox="0 0 16 15" fill="currentColor">
+                          <path d="M15.01 3.316l-.478-.372a.365.365 0 0 0-.51.063L8.666 9.88a.32.32 0 0 1-.484.032l-.358-.325a.32.32 0 0 0-.484.032l-.378.48a.418.418 0 0 0 .036.54l1.32 1.267a.32.32 0 0 0 .484-.034l6.272-8.048a.366.366 0 0 0-.064-.512zm-4.1 0l-.478-.372a.365.365 0 0 0-.51.063L4.566 9.88a.32.32 0 0 1-.484.032L1.89 7.77a.366.366 0 0 0-.516.005l-.423.433a.364.364 0 0 0 .006.514l3.255 3.185a.32.32 0 0 0 .484-.033l6.272-8.048a.365.365 0 0 0-.063-.51z" />
+                        </svg>
                       </div>
                     </div>
                   </div>
@@ -129,11 +145,7 @@ export default function Hero() {
                   <span className="text-sm text-gray-400">Type a message</span>
                 </div>
                 <div className="w-10 h-10 rounded-full bg-[#075E54] flex items-center justify-center">
-                  <svg
-                    className="w-5 h-5 text-white"
-                    fill="currentColor"
-                    viewBox="0 0 24 24"
-                  >
+                  <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z" />
                     <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z" />
                   </svg>
@@ -145,7 +157,7 @@ export default function Hero() {
 
         {/* Badge below mockup */}
         <Badge variant="default" className="mt-8 px-4 py-2 bg-gradient-to-r from-emerald-400/10 to-indigo-400/10 border-emerald-400/30 text-white backdrop-blur-sm">
-          ✨ AI Powered Productivity Tool
+          ✨ The AI That Manages Your Life
         </Badge>
       </div>
     </section>

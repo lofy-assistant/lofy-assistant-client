@@ -4,6 +4,7 @@ import Hero from "@/components/brochure/home/hero";
 import { BentoFeatures } from "@/components/brochure/home/bento-features/bento-features-grid";
 // import Testimonials from "@/components/brochure/home/testimonials";
 import HowItWorks from "@/components/brochure/home/how-it-works";
+import Security from "@/components/brochure/home/security";
 import Footer from "@/components/brochure/home/footer";
 import CTA from "@/components/brochure/home/cta";
 export const metadata: Metadata = {
@@ -22,6 +23,8 @@ export default function Home() {
       <Hero />
 
       <BentoFeatures />
+
+      <Security />
 
       <HowItWorks />
 
