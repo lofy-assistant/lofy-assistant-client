@@ -13,7 +13,7 @@ export function BentoFeatures() {
         <div className="mb-20 text-center">
           <h2 className="mb-6 py-1 text-4xl md:text-5xl font-bold text-transparent bg-linear-to-r from-gray-900 to-gray-700 bg-clip-text">Just Send It to Lofy</h2>
           <p className="max-w-5xl mx-auto leading-relaxed text-gray-600 text-sm md:text-md text-justify md:text-center lg:text-lg">
-            Lofy saves you time by letting you manage reminders, events, and notes just by messaging it—no app switching, all while understanding your context and working quietly in the background.
+            Lofy saves you time by letting you manage your work just by messaging it—no app switching, all while understanding your context and working quietly in the background.
           </p>
         </div>
         <BentoGrid className="md:auto-rows-[21.5rem]">
