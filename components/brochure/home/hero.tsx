@@ -88,7 +88,7 @@ export default function Hero() {
                   <div className="flex flex-col items-end gap-0.5">
                     <div className="flex justify-end">
                       <div className="bg-[#DCF8C6] rounded-lg rounded-tr-none overflow-hidden max-w-[80%] shadow-sm relative">
-                        <Image src="/assets/schedule.jpeg" alt="Schedule" width={240} height={160} className="w-full object-cover" />
+                        <Image src="/assets/images/schedule.jpeg" alt="Schedule" width={240} height={160} className="w-full object-cover" />
                       </div>
                     </div>
 
