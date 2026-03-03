@@ -3,6 +3,8 @@
 import Image from "next/image";
 import { GrainyGradientBlob } from "@/components/ui/grainy-gradient-blob";
 import { Badge } from "@/components/ui/badge";
+import { ArrowUpRight } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 export default function Hero() {
   return (
@@ -156,9 +158,15 @@ export default function Hero() {
         </div>
 
         {/* Badge below mockup */}
-        <Badge variant="default" className="mt-8 px-4 py-2 bg-gradient-to-r from-emerald-400/10 to-indigo-400/10 border-emerald-400/30 text-white backdrop-blur-sm">
+        {/* <Badge variant="default" className="mt-8 px-4 py-2 bg-gradient-to-r from-emerald-400/10 to-indigo-400/10 border-emerald-400/30 text-white backdrop-blur-sm">
           ✨ The AI That Manages Your Life
-        </Badge>
+        </Badge> */}
+        <Button onClick={() => window.open("https://wa.me/60105043846?text=Hey%20Lofy!", "_blank")} className="mt-8 px-4 py-2 relative text-sm font-medium rounded-full h-12 p-1 ps-6 pe-14 group transition-all duration-500 hover:ps-14 hover:pe-6 w-fit overflow-hidden cursor-pointer">
+          <span className="relative z-10 transition-all duration-500">Chat with Lofy</span>
+          <div className="absolute right-1 w-10 h-10 bg-background text-foreground rounded-full flex items-center justify-center transition-all duration-500 group-hover:right-[calc(100%-44px)] group-hover:rotate-45">
+            <ArrowUpRight size={16} />
+          </div>
+        </Button>
       </div>
     </section>
   );
