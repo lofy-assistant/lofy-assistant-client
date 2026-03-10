@@ -7,12 +7,10 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Form } from "@/components/ui/form";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import { getCountriesWithMalaysiaFirst } from "@/lib/countries";
+import { PhoneNumberInput } from "@/components/phone-number-input";
 
 const forgotPinSchema = z.object({
   dialCode: z.string().min(1, "Dial code is required"),
@@ -27,16 +25,6 @@ type ForgotPinFormValues = z.infer<typeof forgotPinSchema>;
 export default function ForgotPinPage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
-  const [countrySearch, setCountrySearch] = useState("");
-  const allCountries = getCountriesWithMalaysiaFirst();
-
-  // Filter countries based on search (by name or dial code)
-  const filteredCountries = countrySearch
-    ? allCountries.filter((country) => {
-        const searchLower = countrySearch.toLowerCase();
-        return country.name.toLowerCase().includes(searchLower) || country.dialCode.includes(countrySearch);
-      })
-    : allCountries;
 
   const form = useForm<ForgotPinFormValues>({
     resolver: zodResolver(forgotPinSchema),
@@ -49,7 +37,6 @@ export default function ForgotPinPage() {
   const onSubmit = async (data: ForgotPinFormValues) => {
     setIsLoading(true);
     try {
-      // Combine dial code + national number (e.g., "60" + "123456789" = "60123456789")
       const phoneNumber = `${data.dialCode}${data.phoneNumber}`;
 
       const response = await fetch("/api/auth/forgot-pin", {
@@ -90,59 +77,14 @@ export default function ForgotPinPage() {
         <CardContent className="space-y-4">
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              <div className="flex gap-2">
-                <FormField
-                  control={form.control}
-                  name="dialCode"
-                  render={({ field }) => (
-                    <FormItem className="w-32">
-                      <FormLabel>Country</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <div className="p-2">
-                            <Input
-                              placeholder="Search country..."
-                              value={countrySearch}
-                              onChange={(e) => setCountrySearch(e.target.value)}
-                              className="mb-2"
-                            />
-                          </div>
-                          {filteredCountries.map((country) => (
-                            <SelectItem key={country.dialCode} value={country.dialCode}>
-                              {country.flag} +{country.dialCode}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="phoneNumber"
-                  render={({ field }) => (
-                    <FormItem className="flex-1">
-                      <FormLabel>Phone Number</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="123456789"
-                          {...field}
-                          disabled={isLoading}
-                          autoComplete="tel"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
+              <PhoneNumberInput
+                control={form.control}
+                dialCodeName="dialCode"
+                phoneNumberName="phoneNumber"
+                label="Phone Number"
+                phonePlaceholder="123456789"
+                disabled={isLoading}
+              />
 
               <Button type="submit" className="w-full" disabled={isLoading}>
                 {isLoading ? (
