@@ -49,7 +49,15 @@ export default function ForgotPinPage() {
         }),
       });
 
-      const result = await response.json();
+      let result: { error?: string } = {};
+      const text = await response.text();
+      if (text) {
+        try {
+          result = JSON.parse(text);
+        } catch {
+          // Non-JSON response (e.g. HTML error page)
+        }
+      }
 
       if (!response.ok) {
         throw new Error(result.error || "Failed to send reset link");
