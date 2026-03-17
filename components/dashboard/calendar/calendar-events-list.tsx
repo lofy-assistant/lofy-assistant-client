@@ -49,6 +49,7 @@ export function CalendarEventsList() {
   const [selectedMonth, setSelectedMonth] = useState<string>((currentDate.getMonth() + 1).toString());
   const [selectedYear, setSelectedYear] = useState<string>(currentDate.getFullYear().toString());
   const [showPastEvents, setShowPastEvents] = useState(false);
+  const [showRecurrence, setShowRecurrence] = useState(false);
 
   const fetchEvents = useCallback(async () => {
     try {
@@ -56,6 +57,10 @@ export function CalendarEventsList() {
         month: selectedMonth,
         year: selectedYear,
       });
+
+      if (showRecurrence) {
+        params.set("showRecurrence", "true");
+      }
 
       const response = await fetch(`/api/calendar?${params.toString()}`, {
         method: "GET",
@@ -84,7 +89,7 @@ export function CalendarEventsList() {
     } finally {
       setLoading(false);
     }
-  }, [selectedMonth, selectedYear]);
+  }, [selectedMonth, selectedYear, showRecurrence]);
 
   useEffect(() => {
     fetchEvents();
@@ -207,11 +212,27 @@ export function CalendarEventsList() {
 
             {/* Bottom row: Checkbox and Button */}
             <div className="flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
-              <div className="flex items-center gap-2">
-                <Checkbox id="show-past-events" checked={showPastEvents} onCheckedChange={(checked) => setShowPastEvents(checked as boolean)} />
-                <label htmlFor="show-past-events" className="text-sm cursor-pointer select-none">
-                  Show past events
-                </label>
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+                <div className="flex items-center gap-2">
+                  <Checkbox
+                    id="show-past-events"
+                    checked={showPastEvents}
+                    onCheckedChange={(checked) => setShowPastEvents(checked as boolean)}
+                  />
+                  <label htmlFor="show-past-events" className="text-sm cursor-pointer select-none">
+                    Show past events
+                  </label>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Checkbox
+                    id="show-recurrence"
+                    checked={showRecurrence}
+                    onCheckedChange={(checked) => setShowRecurrence(checked as boolean)}
+                  />
+                  <label htmlFor="show-recurrence" className="text-sm cursor-pointer select-none">
+                    Show recurrence
+                  </label>
+                </div>
               </div>
               <Button onClick={() => setIsFormDialogOpen(true)} className="w-full sm:w-auto">
                 <Plus className="w-4 h-4 mr-2" />

@@ -3,6 +3,7 @@ import { prisma } from '@/lib/database';
 import { createSession } from "@/lib/session";
 import { hashPhone } from "@/lib/hash-phone";
 import { parsePhoneNumber, isValidPhoneNumber } from "libphonenumber-js";
+import { sendVerificationEmail } from "@/lib/email";
 
 export const runtime = "nodejs";
 
@@ -75,6 +76,36 @@ export async function POST(request: NextRequest) {
     if (!pinMatch) {
       console.log("❌ PIN mismatch");
       return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
+    }
+
+    // Block login if user has an email that hasn't been verified yet
+    if (user.email && !user.email_verified) {
+      // Auto-issue a fresh OTP so they can verify immediately
+      const array = new Uint32Array(1);
+      crypto.getRandomValues(array);
+      const otp = String(array[0] % 1_000_000).padStart(6, "0");
+      const encoder = new TextEncoder();
+      const hashBuffer = await crypto.subtle.digest("SHA-256", encoder.encode(otp));
+      const hashedOtp = Array.from(new Uint8Array(hashBuffer))
+        .map((b) => b.toString(16).padStart(2, "0"))
+        .join("");
+      const expires = new Date(Date.now() + 10 * 60 * 1000);
+
+      await prisma.users.update({
+        where: { id: user.id },
+        data: {
+          email_verification_token: hashedOtp,
+          email_verification_expires: expires,
+        },
+      });
+
+      await sendVerificationEmail(user.email, user.name ?? "there", otp);
+
+      console.log("📧 Email verification required for user:", user.id);
+      return NextResponse.json(
+        { needs_email_verification: true, userId: user.id, email: user.email },
+        { status: 403 }
+      );
     }
 
     // Update last login

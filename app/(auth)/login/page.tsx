@@ -15,6 +15,8 @@ import { Suspense } from "react";
 import { getCountriesWithMalaysiaFirst } from "@/lib/countries";
 import { PhoneNumberInput } from "@/components/phone-number-input";
 
+type VerificationState = { userId: string; email: string };
+
 const loginSchema = z.object({
   dialCode: z.string().min(1, "Dial code is required"),
   phoneNumber: z
@@ -32,6 +34,11 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 
 function LoginForm() {
   const [isLoading, setIsLoading] = useState(false);
+  const [verification, setVerification] = useState<VerificationState | null>(null);
+  const [verifyCode, setVerifyCode] = useState("");
+  const [isVerifying, setIsVerifying] = useState(false);
+  const [isResending, setIsResending] = useState(false);
+  const [resendCooldown, setResendCooldown] = useState(0);
   const router = useRouter();
   const searchParams = useSearchParams();
   const allCountries = getCountriesWithMalaysiaFirst();
@@ -44,6 +51,13 @@ function LoginForm() {
       pin: "",
     },
   });
+
+  // Resend cooldown countdown
+  useEffect(() => {
+    if (resendCooldown <= 0) return;
+    const timer = setTimeout(() => setResendCooldown((c) => c - 1), 1000);
+    return () => clearTimeout(timer);
+  }, [resendCooldown]);
 
   // Pre-fill phone number from URL query params if present
   useEffect(() => {
@@ -111,6 +125,10 @@ function LoginForm() {
 
         const redirect = searchParams.get("redirect");
         router.push(redirect || "/dashboard");
+      } else if (response.status === 403 && result.needs_email_verification) {
+        setVerification({ userId: result.userId, email: result.email });
+        setResendCooldown(60);
+        toast.info("Please verify your email to continue.");
       } else {
         toast.error(result.error || "Login failed");
         console.error("Login Error:", result.error);
@@ -122,6 +140,99 @@ function LoginForm() {
       setIsLoading(false);
     }
   };
+
+  const handleVerify = async () => {
+    if (!verification) return;
+    if (verifyCode.length !== 6) {
+      toast.error("Please enter the full 6-digit code.");
+      return;
+    }
+    setIsVerifying(true);
+    try {
+      const response = await fetch("/api/auth/verify-email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: verification.userId, code: verifyCode }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Verification failed");
+      toast.success("Email verified! Welcome to Lofy.");
+      const redirect = searchParams.get("redirect");
+      router.push(redirect || "/dashboard");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Verification failed");
+    } finally {
+      setIsVerifying(false);
+    }
+  };
+
+  const handleResend = async () => {
+    if (!verification || resendCooldown > 0) return;
+    setIsResending(true);
+    try {
+      const response = await fetch("/api/auth/resend-verification", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: verification.userId }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Failed to resend code");
+      setResendCooldown(60);
+      toast.success("A new verification code has been sent.");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Failed to resend code");
+    } finally {
+      setIsResending(false);
+    }
+  };
+
+  if (verification) {
+    return (
+      <div className="min-h-[calc(100vh-4.5rem)] flex items-center justify-center">
+        <Card className="min-w-sm mx-auto shadow-xl rounded-xl p-4">
+          <CardHeader className="space-y-1">
+            <CardTitle className="text-2xl font-bold text-center">Verify your email</CardTitle>
+            <CardDescription className="text-center">
+              We sent a 6-digit code to{" "}
+              <span className="font-medium text-foreground">{verification.email}</span>
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="flex flex-col items-center gap-4">
+              <InputOTP maxLength={6} value={verifyCode} onChange={setVerifyCode}>
+                <InputOTPGroup>
+                  <InputOTPSlot index={0} />
+                  <InputOTPSlot index={1} />
+                  <InputOTPSlot index={2} />
+                  <InputOTPSlot index={3} />
+                  <InputOTPSlot index={4} />
+                  <InputOTPSlot index={5} />
+                </InputOTPGroup>
+              </InputOTP>
+              <Button
+                className="w-full"
+                onClick={handleVerify}
+                disabled={isVerifying || verifyCode.length < 6}
+              >
+                {isVerifying ? "Verifying..." : "Verify Email"}
+              </Button>
+            </div>
+            <div className="text-center text-sm text-muted-foreground">
+              Didn&apos;t receive a code?{" "}
+              <button
+                type="button"
+                onClick={handleResend}
+                disabled={resendCooldown > 0 || isResending}
+                className="underline disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {resendCooldown > 0 ? `Resend in ${resendCooldown}s` : "Resend"}
+              </button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-[calc(100vh-4.5rem)] flex items-center justify-center">

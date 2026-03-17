@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from '@/lib/database';
-import { createSession } from "@/lib/session";
 import { randomUUID } from "crypto";
 import { parsePhoneNumber, isValidPhoneNumber } from "libphonenumber-js";
+import { sendVerificationEmail } from "@/lib/email";
 
 export const runtime = "nodejs";
 
@@ -56,6 +56,29 @@ async function encryptPhoneViaAPI(phone: string): Promise<string> {
     console.error("Error calling encryption API:", error);
     throw error;
   }
+}
+
+async function generateOtp(): Promise<string> {
+  // 6-digit numeric OTP using crypto randomness
+  const array = new Uint32Array(1);
+  crypto.getRandomValues(array);
+  return String(array[0] % 1_000_000).padStart(6, "0");
+}
+
+async function sendOtpForUser(userId: string, email: string, name: string): Promise<void> {
+  const otp = await generateOtp();
+  const hashedOtp = await hashData(otp);
+  const expires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+
+  await prisma.users.update({
+    where: { id: userId },
+    data: {
+      email_verification_token: hashedOtp,
+      email_verification_expires: expires,
+    },
+  });
+
+  await sendVerificationEmail(email, name, otp);
 }
 
 export async function POST(request: NextRequest) {
@@ -172,6 +195,7 @@ export async function POST(request: NextRequest) {
         pin: hashedPin,
         encrypted_phone: encryptedPhone,
         email: email || existingUser.email,
+        email_verified: false,
         ...(metadata && { metadata }),
       };
 
@@ -180,16 +204,15 @@ export async function POST(request: NextRequest) {
         data: updateData,
       });
 
-      const response = NextResponse.json({ success: true, message: "Profile completed successfully", userId: updatedUser.id, isNewUser: false }, { status: 200 });
-      const token = await createSession(updatedUser.id);
-      response.cookies.set("session", token, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
-        maxAge: 60 * 60 * 24,
-        path: "/",
-      });
-      return response;
+      const userEmail = email || existingUser.email;
+      if (userEmail) {
+        await sendOtpForUser(updatedUser.id, userEmail, name);
+      }
+
+      return NextResponse.json(
+        { success: true, requiresEmailVerification: true, userId: updatedUser.id, email: userEmail, isNewUser: false },
+        { status: 200 },
+      );
     } else {
       // Check if email already exists
       if (email) {
@@ -211,20 +234,19 @@ export async function POST(request: NextRequest) {
           pin: hashedPin,
           email: email || null,
           role: 1,
+          email_verified: false,
           ...(metadata && { metadata }),
         },
       });
 
-      const response = NextResponse.json({ success: true, message: "User registered successfully", userId: user.id, isNewUser: true }, { status: 201 });
-      const token = await createSession(user.id);
-      response.cookies.set("session", token, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
-        maxAge: 60 * 60 * 24,
-        path: "/",
-      });
-      return response;
+      if (email) {
+        await sendOtpForUser(user.id, email, name);
+      }
+
+      return NextResponse.json(
+        { success: true, requiresEmailVerification: true, userId: user.id, email: email || null, isNewUser: true },
+        { status: 201 },
+      );
     }
   } catch (error) {
     console.error("Registration error:", error);

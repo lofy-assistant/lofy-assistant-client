@@ -86,6 +86,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const month = searchParams.get("month");
     const year = searchParams.get("year");
+    const showRecurrence = searchParams.get("showRecurrence") === "true";
 
     if (!month || !year) {
       return NextResponse.json({ error: "month and year are required" }, { status: 400 });
@@ -120,29 +121,41 @@ export async function GET(request: NextRequest) {
     }
 
     const now = new Date();
-    
-    // Process recurring events: find the first future occurrence
+
+    // Process recurring events
     for (const event of recurringEvents) {
       if (!event.recurrence) continue;
 
       try {
-        const rule = rrulestr(event.recurrence, {
-          dtstart: event.start_time,
-          unfold: true,
-        });
-        
-        // Find the next occurrence strictly after NOW
-        const nextOccurrence = rule.after(now, true); // inc=true means if now matches exactly, include it? usually false for strict future. Let's start with true to include today if today is the day.
-        
-        if (nextOccurrence) {
-          // Check if this single occurrence falls within the requested month/year range
-          if (nextOccurrence >= startOfMonth && nextOccurrence <= endOfMonth) {
-              const durationMs = event.end_time.getTime() - event.start_time.getTime();
-              expanded.push({
-                ...event,
-                start_time: nextOccurrence,
-                end_time: new Date(nextOccurrence.getTime() + durationMs),
-              });
+        if (showRecurrence) {
+          // When showRecurrence is enabled, expand all occurrences in the selected month
+          const occurrences = expandRecurringEvent(event, startOfMonth, endOfMonth);
+          const durationMs = event.end_time.getTime() - event.start_time.getTime();
+
+          for (const occ of occurrences) {
+            expanded.push({
+              ...event,
+              start_time: occ.start_time,
+              end_time: new Date(occ.start_time.getTime() + durationMs),
+            });
+          }
+        } else {
+          // Default behavior: only include the next future occurrence
+          const rule = rrulestr(event.recurrence, {
+            dtstart: event.start_time,
+            unfold: true,
+          });
+
+          // Find the next occurrence relative to now
+          const nextOccurrence = rule.after(now, true);
+
+          if (nextOccurrence && nextOccurrence >= startOfMonth && nextOccurrence <= endOfMonth) {
+            const durationMs = event.end_time.getTime() - event.start_time.getTime();
+            expanded.push({
+              ...event,
+              start_time: nextOccurrence,
+              end_time: new Date(nextOccurrence.getTime() + durationMs),
+            });
           }
         }
       } catch (e) {
