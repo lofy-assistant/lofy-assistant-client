@@ -23,6 +23,8 @@ const PUBLIC_ROUTES = [
     '/api/auth/check-pin',
     '/api/auth/forgot-pin',
     '/api/auth/reset-pin',
+    '/api/auth/verify-email',
+    '/api/auth/resend-verification',
     '/api/stripe',   // checkout, webhooks – supports guest checkout
     '/api/geo',     // pricing geo detection
 ];
