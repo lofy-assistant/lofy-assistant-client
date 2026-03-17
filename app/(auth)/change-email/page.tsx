@@ -1,38 +1,32 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { parsePhoneNumber } from "libphonenumber-js";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { toast } from "sonner";
-import { Suspense } from "react";
-import { getCountriesWithMalaysiaFirst } from "@/lib/countries";
 import { PhoneNumberInput } from "@/components/phone-number-input";
 
 type VerificationState = { userId: string; email: string };
 
-const loginSchema = z.object({
+const schema = z.object({
   dialCode: z.string().min(1, "Dial code is required"),
   phoneNumber: z
     .string()
     .min(1, "Phone number is required")
-    .refine((value) => /^\d+$/.test(value), "Phone number must contain only digits"),
-  pin: z
-    .string()
-    .min(6, "PIN must be 6 digits")
-    .max(6, "PIN must be 6 digits")
-    .regex(/^\d{6}$/, "PIN must contain only digits"),
+    .refine((v) => /^\d+$/.test(v), "Phone number must contain only digits"),
+  email: z.string().min(1, "Email is required").email("Invalid email address"),
 });
 
-type LoginFormValues = z.infer<typeof loginSchema>;
+type FormValues = z.infer<typeof schema>;
 
-function LoginForm() {
+function ChangeEmailForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [verification, setVerification] = useState<VerificationState | null>(null);
   const [verifyCode, setVerifyCode] = useState("");
@@ -41,101 +35,34 @@ function LoginForm() {
   const [resendCooldown, setResendCooldown] = useState(0);
   const router = useRouter();
   const searchParams = useSearchParams();
-  const allCountries = getCountriesWithMalaysiaFirst();
 
-  const form = useForm<LoginFormValues>({
-    resolver: zodResolver(loginSchema),
-    defaultValues: {
-      dialCode: "60",
-      phoneNumber: "",
-      pin: "",
-    },
+  const form = useForm<FormValues>({
+    resolver: zodResolver(schema),
+    defaultValues: { dialCode: "60", phoneNumber: "", email: "" },
   });
 
-  // Resend cooldown countdown
   useEffect(() => {
     if (resendCooldown <= 0) return;
     const timer = setTimeout(() => setResendCooldown((c) => c - 1), 1000);
     return () => clearTimeout(timer);
   }, [resendCooldown]);
 
-  // Pre-fill phone number from URL query params if present
-  useEffect(() => {
-    let phone = searchParams.get("phone");
-
-    if (!phone) {
-      const redirect = searchParams.get("redirect");
-      if (redirect) {
-        try {
-          const redirectUrl = new URL(redirect, window.location.origin);
-          phone = redirectUrl.searchParams.get("phone");
-        } catch (error) {
-          console.error("Error parsing redirect URL:", error);
-        }
-      }
-    }
-
-    if (phone && phone.length >= 10) {
-      try {
-        // Phone parameter never has +, so add it for parsing
-        const parsedPhone = parsePhoneNumber(`+${phone}`);
-
-        if (parsedPhone && parsedPhone.country) {
-          // Find the country by its code to get the dial code
-          const country = allCountries.find((c) => c.code === parsedPhone.country);
-          if (country) {
-            form.setValue("dialCode", country.dialCode);
-            form.setValue("phoneNumber", parsedPhone.nationalNumber);
-          }
-        }
-      } catch (error) {
-        console.error("Error parsing phone number:", error);
-      }
-    }
-  }, [searchParams, form, allCountries]);
-
-  const onSubmit = async (data: LoginFormValues) => {
+  const onSubmit = async (data: FormValues) => {
     setIsLoading(true);
     try {
-      // Combine dial code + national number (e.g., "91" + "9789497050" = "919789497050")
-      const phoneNumber = `${data.dialCode}${data.phoneNumber}`;
-
-      const response = await fetch("/api/auth/login", {
+      const phone = `${data.dialCode}${data.phoneNumber}`;
+      const response = await fetch("/api/auth/change-email", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          phone: phoneNumber,
-          pin: data.pin,
-        }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone, email: data.email }),
       });
-
       const result = await response.json();
-
-      if (response.ok) {
-        const cookies = document.cookie.split(";");
-        const sessionCookie = cookies.find((cookie) => cookie.trim().startsWith("session="));
-        const token = sessionCookie ? sessionCookie.split("=")[1] : null;
-
-        toast.success("Login successful!");
-        console.log("🔐 Session Token:", token);
-        console.log("👤 User Data:", result.user);
-        console.log("✅ Login Successful");
-
-        const redirect = searchParams.get("redirect");
-        router.push(redirect || "/dashboard");
-      } else if (response.status === 403 && result.needs_email_verification) {
-        setVerification({ userId: result.userId, email: result.email });
-        setResendCooldown(60);
-        toast.info("Please verify your email to continue.");
-      } else {
-        toast.error(result.error || "Login failed");
-        console.error("Login Error:", result.error);
-      }
+      if (!response.ok) throw new Error(result.error || "Failed to update email.");
+      setVerification({ userId: result.userId, email: result.email });
+      setResendCooldown(60);
+      toast.success("Verification code sent to your new email.");
     } catch (error) {
-      toast.error("Login failed. Please try again.");
-      console.error("Network Error:", error);
+      toast.error(error instanceof Error ? error.message : "Failed to update email.");
     } finally {
       setIsLoading(false);
     }
@@ -155,12 +82,12 @@ function LoginForm() {
         body: JSON.stringify({ userId: verification.userId, code: verifyCode }),
       });
       const data = await response.json();
-      if (!response.ok) throw new Error(data.error || "Verification failed");
+      if (!response.ok) throw new Error(data.error || "Verification failed.");
       toast.success("Email verified! Welcome to Lofy.");
       const redirect = searchParams.get("redirect");
       router.push(redirect || "/dashboard");
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Verification failed");
+      toast.error(error instanceof Error ? error.message : "Verification failed.");
     } finally {
       setIsVerifying(false);
     }
@@ -176,11 +103,11 @@ function LoginForm() {
         body: JSON.stringify({ userId: verification.userId }),
       });
       const data = await response.json();
-      if (!response.ok) throw new Error(data.error || "Failed to resend code");
+      if (!response.ok) throw new Error(data.error || "Failed to resend code.");
       setResendCooldown(60);
       toast.success("A new verification code has been sent.");
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Failed to resend code");
+      toast.error(error instanceof Error ? error.message : "Failed to resend code.");
     } finally {
       setIsResending(false);
     }
@@ -191,7 +118,7 @@ function LoginForm() {
       <div className="min-h-[calc(100vh-4.5rem)] flex items-center justify-center">
         <Card className="min-w-sm mx-auto shadow-xl rounded-xl p-4">
           <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl font-bold text-center">Verify your email</CardTitle>
+            <CardTitle className="text-2xl font-bold text-center">Verify your new email</CardTitle>
             <CardDescription className="text-center">
               We sent a 6-digit code to{" "}
               <span className="font-medium text-foreground">{verification.email}</span>
@@ -229,12 +156,13 @@ function LoginForm() {
               </button>
             </div>
             <div className="text-center text-sm">
-              <a
-                href="/change-email"
+              <button
+                type="button"
+                onClick={() => { setVerification(null); setVerifyCode(""); }}
                 className="text-muted-foreground underline hover:text-foreground transition-colors"
               >
-                Change email instead? 😏
-              </a>
+                Use a different email instead?
+              </button>
             </div>
           </CardContent>
         </Card>
@@ -246,8 +174,10 @@ function LoginForm() {
     <div className="min-h-[calc(100vh-4.5rem)] flex items-center justify-center">
       <Card className="min-w-sm mx-auto shadow-xl rounded-xl p-4">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-bold">Welcome Back</CardTitle>
-          <CardDescription>Enter your phone number and PIN to sign in</CardDescription>
+          <CardTitle className="text-2xl font-bold">Change your email</CardTitle>
+          <CardDescription>
+            Enter your phone number and the new email address you want to use.
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <Form {...form}>
@@ -262,21 +192,12 @@ function LoginForm() {
 
               <FormField
                 control={form.control}
-                name="pin"
+                name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>6-Digit PIN</FormLabel>
+                    <FormLabel>New Email Address</FormLabel>
                     <FormControl>
-                      <InputOTP maxLength={6} value={field.value} onChange={field.onChange}>
-                        <InputOTPGroup className="gap-1">
-                          <InputOTPSlot index={0} />
-                          <InputOTPSlot index={1} />
-                          <InputOTPSlot index={2} />
-                          <InputOTPSlot index={3} />
-                          <InputOTPSlot index={4} />
-                          <InputOTPSlot index={5} />
-                        </InputOTPGroup>
-                      </InputOTP>
+                      <Input type="email" placeholder="you@example.com" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -284,16 +205,17 @@ function LoginForm() {
               />
 
               <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? "Signing in..." : "Sign In"}
+                {isLoading ? "Sending code..." : "Update Email"}
               </Button>
 
-              <div className="flex flex-col gap-2 mt-4">
-                <Button type="button" variant="outline" className="w-full" onClick={() => router.push("/register")}>
-                  Create Account
-                </Button>
-                <Button type="button" variant="ghost" className="w-full text-sm" onClick={() => router.push("/forgot-pin")}>
-                  Forgot PIN?
-                </Button>
+              <div className="text-center text-sm text-muted-foreground">
+                <button
+                  type="button"
+                  onClick={() => router.back()}
+                  className="underline hover:text-foreground transition-colors"
+                >
+                  Go back
+                </button>
               </div>
             </form>
           </Form>
@@ -303,21 +225,21 @@ function LoginForm() {
   );
 }
 
-export default function LoginPage() {
+export default function ChangeEmailPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen flex items-center justify-center">
+        <div className="min-h-[calc(100vh-4.5rem)] flex items-center justify-center">
           <Card className="min-w-sm mx-auto shadow-xl rounded-xl">
             <CardHeader className="text-center">
-              <CardTitle className="text-2xl font-bold">Welcome Back</CardTitle>
+              <CardTitle className="text-2xl font-bold">Change your email</CardTitle>
               <CardDescription>Loading...</CardDescription>
             </CardHeader>
           </Card>
         </div>
       }
     >
-      <LoginForm />
+      <ChangeEmailForm />
     </Suspense>
   );
 }

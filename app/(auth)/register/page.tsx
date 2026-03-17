@@ -351,6 +351,14 @@ function RegisterForm() {
                   {resendCooldown > 0 ? `Resend in ${resendCooldown}s` : isResending ? "Sending..." : "Resend code"}
                 </Button>
               </p>
+              <p className="text-sm mt-2">
+                <a
+                  href="/change-email"
+                  className="text-muted-foreground underline hover:text-foreground transition-colors"
+                >
+                  Change email instead? 😏
+                </a>
+              </p>
             </div>
           </CardContent>
         </Card>

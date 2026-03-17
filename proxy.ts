@@ -9,6 +9,7 @@ const PUBLIC_ROUTES = [
     '/',
     '/login',
     '/register',
+    '/change-email',
     '/forgot-pin',
     '/pricing',
     '/features',
@@ -25,6 +26,7 @@ const PUBLIC_ROUTES = [
     '/api/auth/reset-pin',
     '/api/auth/verify-email',
     '/api/auth/resend-verification',
+    '/api/auth/change-email',
     '/api/stripe',   // checkout, webhooks – supports guest checkout
     '/api/geo',     // pricing geo detection
 ];
