@@ -63,7 +63,7 @@ export async function GET() {
       subscription: {
         id: record.id,
         status: isCancelingAtPeriodEnd ? "active" : record.subscription_status,
-        priceId: record.stripe_price_id,
+        priceId: record.stripe_price_id ?? "",
         currentPeriodEnd: record.current_period_end.toISOString(),
         cancelAtPeriodEnd: isCancelingAtPeriodEnd,
         billingCycle: matchedPlan?.billingCycle ?? null,
