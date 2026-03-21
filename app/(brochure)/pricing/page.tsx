@@ -213,7 +213,7 @@ export default function PricingPage() {
 
         <div className="mt-6 text-center">
           <p className="text-sm text-gray-500">
-            No credit card required • Cancel anytime • Secure payments powered by Stripe
+            Secure payments powered by Stripe • Cancel anytime
           </p>
         </div>
       </div>
