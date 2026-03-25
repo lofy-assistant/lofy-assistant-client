@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from '@/lib/database';
 import { verifySession } from "@/lib/session";
+import { normalizePersonaFromRequest } from "@/lib/persona";
 
 async function invalidatePersonalityCache(userId: string) {
   const baseUrl = process.env.FASTAPI_URL;
@@ -101,13 +102,12 @@ export async function PATCH(request: NextRequest) {
     }
     
     if (type !== undefined) {
-      // Validate type is either "sassy" or "hope" or "chancellor" or "atlas" (accept "nice"/"lofy" as legacy → "hope")
-      const normalizedType = type === "nice" || type === "lofy" ? "hope" : type;
-      if (normalizedType === "sassy" || normalizedType === "hope" || normalizedType === "chancellor" || normalizedType === "atlas") {
-        updateData.ai_persona = normalizedType;
+      const persona = normalizePersonaFromRequest(type);
+      if (persona) {
+        updateData.ai_persona = persona;
       } else {
         return NextResponse.json(
-          { error: "Invalid type. Must be 'sassy' or 'hope' or 'chancellor' or 'atlas'" },
+          { error: "Invalid type. Must be 'atlas', 'brad', 'lexi', or 'rocco'" },
           { status: 400 }
         );
       }

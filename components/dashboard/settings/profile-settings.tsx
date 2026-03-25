@@ -21,6 +21,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  type Persona,
+  PERSONA_OPTIONS,
+  normalizePersonaFromDb,
+} from "@/lib/persona";
 
 interface UserProfile {
   id: string;
@@ -35,7 +40,7 @@ export function ProfileSettings() {
   const [isSaving, setIsSaving] = useState(false);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [name, setName] = useState("");
-  const [type, setType] = useState<"sassy" | "hope" | "chancellor" | "atlas">("sassy");
+  const [type, setType] = useState<Persona>("atlas");
 
   useEffect(() => {
     fetchProfile();
@@ -49,20 +54,7 @@ export function ProfileSettings() {
       const data = await response.json();
       setProfile(data.user);
       setName(data.user.name || "");
-      const raw = data.user.ai_persona;
-      const mapped =
-        raw === "nice" || raw === "lofy"
-          ? "hope"
-          : raw === "sarcastic"
-            ? "chancellor"
-            : raw === "mean"
-              ? "atlas"
-              : raw;
-      const personaType: "sassy" | "hope" | "chancellor" | "atlas" =
-        ["sassy", "hope", "chancellor", "atlas"].includes(mapped || "")
-          ? (mapped as "sassy" | "hope" | "chancellor" | "atlas")
-          : "sassy";
-      setType(personaType);
+      setType(normalizePersonaFromDb(data.user.ai_persona));
     } catch (error) {
       toast.error("Failed to load profile");
       console.error(error);
@@ -152,15 +144,19 @@ export function ProfileSettings() {
 
           <div className="space-y-2">
             <Label htmlFor="type">Lofy&apos;s Persona</Label>
-            <Select value={type} onValueChange={(value) => setType(value as "sassy" | "hope" | "chancellor" | "atlas")}>
+            <Select
+              value={type}
+              onValueChange={(value) => setType(value as Persona)}
+            >
               <SelectTrigger id="type">
-                <SelectValue placeholder="Select type" />
+                <SelectValue placeholder="Select persona" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="sassy">Sassy</SelectItem>
-                <SelectItem value="hope">Hope</SelectItem>
-                <SelectItem value="chancellor">Chancellor</SelectItem>
-                <SelectItem value="atlas">ATLAS</SelectItem>
+                {PERSONA_OPTIONS.map((opt) => (
+                  <SelectItem key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
