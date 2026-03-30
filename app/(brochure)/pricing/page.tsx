@@ -84,7 +84,7 @@ export default function PricingPage() {
     "Apps integration",
     "Limitless reminders",
     "RAG powered memories",
-    "Multi personality companion",
+    "Four personas: A.T.L.A.S, Brad, Lexi & Rocco",
     "Priority support",
     "Advanced analytics",
     "24/7 availability",

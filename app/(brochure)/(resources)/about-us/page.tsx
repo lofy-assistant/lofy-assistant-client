@@ -2,7 +2,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
-import { Sparkles, Brain, Calendar, MessageSquare, Zap, Heart, Cat, Shield, Users, Clock, Target, Lightbulb, ArrowRight, CheckCircle2 } from "lucide-react";
+import { Sparkles, Brain, Calendar, MessageSquare, Zap, Heart, Cat, Users, Clock, Target, Lightbulb, ArrowRight, CheckCircle2, Guitar, Mic, Shield } from "lucide-react";
 import CTA from "@/components/brochure/home/cta";
 
 const stats = [
@@ -170,28 +170,28 @@ export default function AboutUsPage() {
         <div className="mt-16 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 max-w-5xl mx-auto">
           {[
             {
-              name: "ATLAS",
-              tagline: "Momentum & structure",
-              desc: "Fast, clear, no friction.",
+              name: "A.T.L.A.S",
+              tagline: "The Intelligent",
+              desc: "Fast, structured, razor-sharp clarity.",
               icon: Zap,
             },
             {
-              name: "Chancellor",
-              tagline: "Judgment",
-              desc: "Quiet, careful, loyal.",
-              icon: Shield,
+              name: "Brad",
+              tagline: "The Bro",
+              desc: "Confident, playful, always in your corner.",
+              icon: Guitar,
             },
             {
-              name: "Hope",
-              tagline: "Uncertainty",
-              desc: "Calm, realistic, forward-moving.",
-              icon: Sparkles,
-            },
-            {
-              name: "Lofy",
-              tagline: "The default",
-              desc: "Playful, confident, human.",
+              name: "Lexi",
+              tagline: "The Bestie",
+              desc: "Warm, steady, real—your ride-or-die energy.",
               icon: Heart,
+            },
+            {
+              name: "Rocco",
+              tagline: "The Roaster",
+              desc: "Quick wit on the mic—fun, never cruel.",
+              icon: Mic,
             },
           ].map((persona) => (
             <Card key={persona.name} className="group border-2 border-primary/10 hover:border-primary/30 bg-card/80 backdrop-blur-sm transition-all duration-300 overflow-hidden">

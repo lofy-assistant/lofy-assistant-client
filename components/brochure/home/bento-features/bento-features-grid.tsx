@@ -51,7 +51,7 @@ const items = [
   },
   {
     title: "Personality Modes",
-    description: "Pick a personality and watch your AI instantly change how it talks and thinks.",
+    description: "Choose A.T.L.A.S, Brad, Lexi, or Rocco and watch Lofy shift how it talks and thinks.",
     header: <BentoPersona />,
     className: "lg:col-span-4 md:col-span-4",
     link: "/features/personality-modes",

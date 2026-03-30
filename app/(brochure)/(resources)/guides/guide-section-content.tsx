@@ -3,9 +3,10 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Brain, Bell, Calendar, MessageSquare, Lightbulb, HelpCircle, Rocket, Plug, User, Check, ChevronDown, ChevronUp, Type, Mic, ImageIcon, Cat, Zap, Shield, Sparkles, Heart } from "lucide-react";
+import { Brain, Bell, Calendar, MessageSquare, Lightbulb, HelpCircle, Rocket, Plug, User, Check, ChevronDown, ChevronUp, Type, Mic, ImageIcon, Cat, Zap, Heart, Guitar } from "lucide-react";
 import { CopyableExample, Callout } from "./guide-components";
 import { GUIDE_SECTIONS, GUIDE_BASE_PATH, type GuideSectionId } from "./guide-config";
+import { PERSONA_MARKETING_LIST } from "@/lib/persona";
 
 const STORAGE_KEY = "lofy-guide-checklist";
 
@@ -17,40 +18,13 @@ const GETTING_STARTED_ITEMS = [
   { id: "recall", label: "Recall memory", example: "What did I tell you about ice cream?" },
 ] as const;
 
-const PERSONAS = [
-  {
-    id: "hope",
-    name: "Hope",
-    emoji: "🌱",
-    description: "Optimistic, resilient, and steady. Guides you through uncertainty with clarity and hope—calm under pressure, encouraging but realistic.",
-    color: "border-green-500/20 bg-green-500/10",
-    examples: ["Reminder set. One less thing to carry.", "There are risks involved. But none of them are irreversible.", "Let's break this down and move one step forward."],
-  },
-  {
-    id: "sassy",
-    name: "Sassy",
-    emoji: "💅",
-    description: "Confident, playful, and slightly sassy. Your bestie with boundaries—light sass, friendly tone, and quick help.",
-    color: "border-pink-500/20 bg-pink-500/10",
-    examples: ["Wow. Bold of you to rely on me again. Done.", "Okay okay, reminder set — relax.", "I got you. As usual."],
-  },
-  {
-    id: "chancellor",
-    name: "Chancellor",
-    emoji: "👔",
-    description: "Discreet, loyal, and composed. A trusted advisor who speaks with quiet confidence—measured, thoughtful, and tactful.",
-    color: "border-purple-500/20 bg-purple-500/10",
-    examples: ["Reminder set. I'll hold you to it.", "Added to calendar. You have a tight window tomorrow — worth noting.", "Memory stored. I'll remember."],
-  },
-  {
-    id: "atlas",
-    name: "ATLAS",
-    emoji: "🧠",
-    description: "Composed, intelligent, and efficient. Cuts through the noise with clarity and precision—a calm partner who anticipates your needs.",
-    color: "border-slate-500/20 bg-slate-500/10",
-    examples: ["Reminder set for 3 PM. You're clear until then.", "Added to calendar. You've got three events back-to-back tomorrow — buffer time might help.", "Memory stored. I'll remember that."],
-  },
-];
+const GUIDE_PERSONAS = PERSONA_MARKETING_LIST.map((p) => ({
+  id: p.value,
+  displayName: `${p.heroEmoji} ${p.cardTitle}`,
+  description: p.description,
+  color: p.colorClass,
+  examples: p.examples,
+}));
 
 export function GuideSectionContent({ sectionId }: { sectionId: GuideSectionId }) {
   const [checkedItems, setCheckedItems] = useState<Set<string>>(new Set());
@@ -145,10 +119,10 @@ export function GuideSectionContent({ sectionId }: { sectionId: GuideSectionId }
           </div>
           <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
             {[
-              { name: "ATLAS", tagline: "Momentum & structure", desc: "Fast, clear, no friction.", icon: Zap },
-              { name: "Chancellor", tagline: "Judgment", desc: "Quiet, careful, loyal.", icon: Shield },
-              { name: "Hope", tagline: "Uncertainty", desc: "Calm, realistic, forward-moving.", icon: Sparkles },
-              { name: "Lofy", tagline: "The default", desc: "Playful, confident, human.", icon: Heart },
+              { name: "A.T.L.A.S", tagline: "The Intelligent", desc: "Fast, structured, razor-sharp clarity.", icon: Zap },
+              { name: "Brad", tagline: "The Bro", desc: "Confident, playful, always in your corner.", icon: Guitar },
+              { name: "Lexi", tagline: "The Bestie", desc: "Warm, steady, real—ride-or-die energy.", icon: Heart },
+              { name: "Rocco", tagline: "The Roaster", desc: "Quick wit on the mic—fun, never cruel.", icon: Mic },
             ].map((persona) => {
               const Icon = persona.icon;
               return (
@@ -375,17 +349,20 @@ export function GuideSectionContent({ sectionId }: { sectionId: GuideSectionId }
             <User className="h-6 w-6 text-primary" />
             Personas
           </h2>
-          <p className="text-muted-foreground mt-2">Change Lofy&apos;s persona to match your mood or workflow. Each persona has a distinct communication style—choose the one that fits, and switch anytime. Click a card to see example responses.</p>
+          <p className="text-muted-foreground mt-2">
+            Choose among <strong className="text-foreground font-medium">A.T.L.A.S</strong>, <strong className="text-foreground font-medium">Brad</strong>,{" "}
+            <strong className="text-foreground font-medium">Lexi</strong>, and <strong className="text-foreground font-medium">Rocco</strong>—each with its own voice. Switch anytime in settings or by asking Lofy. Click a card to see example responses.
+          </p>
           <h3 className="mt-8 text-lg font-semibold">Available Personas</h3>
           <div className="space-y-3 mt-4">
-            {PERSONAS.map((persona) => {
+            {GUIDE_PERSONAS.map((persona) => {
               const isExpanded = expandedPersona === persona.id;
               return (
                 <div key={persona.id} className={`rounded-lg border p-4 transition-colors cursor-pointer ${persona.color} ${isExpanded ? "ring-2 ring-primary/30" : ""}`}>
                   <button type="button" onClick={() => setExpandedPersona(isExpanded ? null : persona.id)} className="w-full text-left">
                     <div className="flex items-center justify-between gap-2">
                       <p className="font-semibold">
-                        {persona.emoji} {persona.name}
+                        {persona.displayName}
                       </p>
                       {isExpanded ? <ChevronUp className="h-4 w-4 shrink-0 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground" />}
                     </div>
@@ -407,13 +384,16 @@ export function GuideSectionContent({ sectionId }: { sectionId: GuideSectionId }
           <p className="text-muted-foreground mb-2">Pick a persona in your settings, or just tell Lofy (click to copy):</p>
           <ul className="space-y-1 text-muted-foreground">
             <li>
-              <CopyableExample text="Be sassy" />
+              <CopyableExample text="Switch to Lexi" />
             </li>
             <li>
-              <CopyableExample text="Switch to hope mode" />
+              <CopyableExample text="Be Brad" />
             </li>
             <li>
-              <CopyableExample text="Use ATLAS" />
+              <CopyableExample text="Use A.T.L.A.S" />
+            </li>
+            <li>
+              <CopyableExample text="Switch to Rocco" />
             </li>
           </ul>
           <p className="text-muted-foreground mt-4 text-sm">Lofy adapts instantly. Each persona keeps its unique voice across reminders, memories, and conversations.</p>
