@@ -200,3 +200,18 @@ body {
     @apply bg-background text-foreground;
   }
 }
+
+@keyframes page-slide-up {
+  from {
+    transform: translateY(48px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.animate-page-slide-up {
+  animation: page-slide-up 0.38s cubic-bezier(0.16, 1, 0.3, 1) both;
+}

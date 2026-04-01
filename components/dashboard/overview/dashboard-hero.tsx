@@ -4,12 +4,11 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
-  CalendarDays,
-  Bell,
   Brain,
   Plug,
-  Settings,
   MessageCircle,
+  History,
+  Users,
 } from "lucide-react";
 import { useWeather } from "@/hooks/use-weather";
 
@@ -43,13 +42,15 @@ function getInitials(name: string | null | undefined): string {
     .slice(0, 2);
 }
 
-const quickActions = [
-  { label: "Calendar", icon: CalendarDays, href: "/dashboard/calendar", color: "text-blue-500", bg: "bg-blue-50" },
-  { label: "Reminders", icon: Bell, href: "/dashboard/reminders", color: "text-orange-500", bg: "bg-orange-50" },
-  { label: "Memories", icon: Brain, href: "/dashboard/memories", color: "text-purple-500", bg: "bg-purple-50" },
-  { label: "Integrations", icon: Plug, href: "/dashboard/integrations", color: "text-green-500", bg: "bg-green-50" },
-  { label: "Chat", icon: MessageCircle, href: "https://wa.me/60105043846", color: "text-teal-500", bg: "bg-teal-50", external: true },
-  { label: "Settings", icon: Settings, href: "/dashboard/settings", color: "text-slate-500", bg: "bg-slate-50" },
+const topActions = [
+  { label: "History",  icon: History,       href: "/dashboard",            color: "text-blue-500",   bg: "bg-blue-50" },
+  { label: "Memories", icon: Brain,         href: "/dashboard/memories",   color: "text-purple-500", bg: "bg-purple-50" },
+];
+
+const bottomActions = [
+  { label: "Friends",      icon: Users,         href: "/dashboard/friends",    color: "text-pink-500",   bg: "bg-pink-50" },
+  { label: "Integrations", icon: Plug,          href: "/dashboard/integrations", color: "text-green-500", bg: "bg-green-50" },
+  { label: "Chat Lofy",    icon: MessageCircle, href: "https://wa.me/60105043846", color: "text-teal-500", bg: "bg-teal-50", external: true },
 ];
 
 export function DashboardHero() {
@@ -91,9 +92,12 @@ export function DashboardHero() {
           <span className="text-sm font-medium text-[#7a6a5a]">
             {getFormattedDate()}
           </span>
-          <div className="w-9 h-9 rounded-full bg-linear-to-br from-amber-400 to-orange-500 flex items-center justify-center text-white text-sm font-bold shadow-sm select-none">
+          <Link
+            href="/dashboard/settings"
+            className="w-9 h-9 rounded-full bg-linear-to-br from-amber-400 to-orange-500 flex items-center justify-center text-white text-sm font-bold shadow-sm select-none hover:opacity-80 active:scale-95 transition-all"
+          >
             {initials}
-          </div>
+          </Link>
         </div>
 
         {/* ── Hero image with vignette ── */}
@@ -129,24 +133,40 @@ export function DashboardHero() {
           </p>
         </div>
 
-        {/* ── Quick action grid ── */}
-        <div className="px-4 pb-6 pt-1 grid grid-cols-3 gap-2">
-          {quickActions.map(({ label, icon: Icon, href, color, bg, external }) => (
-            <Link
-              key={label}
-              href={href}
-              target={external ? "_blank" : undefined}
-              rel={external ? "noopener noreferrer" : undefined}
-              className="flex flex-col items-center gap-1.5 rounded-2xl bg-white/80 border border-[#ede5da] py-3.5 px-2 text-center hover:bg-white hover:shadow-md active:scale-95 transition-all"
-            >
-              <div className={`w-9 h-9 rounded-xl ${bg} flex items-center justify-center`}>
-                <Icon className={`w-4.5 h-4.5 ${color}`} />
-              </div>
-              <span className="text-[11px] font-medium text-[#7a6a5a] leading-tight">
-                {label}
-              </span>
-            </Link>
-          ))}
+        {/* ── Quick actions ── */}
+        <div className="px-4 pb-6 pt-1 flex flex-col gap-2">
+          {/* Row 1 — 2 buttons */}
+          <div className="grid grid-cols-2 gap-2">
+            {topActions.map(({ label, icon: Icon, href, color, bg }) => (
+              <Link
+                key={label}
+                href={href}
+                className="flex flex-col items-center gap-1.5 rounded-2xl bg-white/80 border border-[#ede5da] py-3.5 px-2 text-center hover:bg-white hover:shadow-md active:scale-95 transition-all"
+              >
+                <div className={`w-9 h-9 rounded-xl ${bg} flex items-center justify-center`}>
+                  <Icon className={`w-4.5 h-4.5 ${color}`} />
+                </div>
+                <span className="text-[11px] font-medium text-[#7a6a5a] leading-tight">{label}</span>
+              </Link>
+            ))}
+          </div>
+          {/* Row 2 — 3 buttons */}
+          <div className="grid grid-cols-3 gap-2">
+            {bottomActions.map(({ label, icon: Icon, href, color, bg, external }) => (
+              <Link
+                key={label}
+                href={href}
+                target={external ? "_blank" : undefined}
+                rel={external ? "noopener noreferrer" : undefined}
+                className="flex flex-col items-center gap-1.5 rounded-2xl bg-white/80 border border-[#ede5da] py-3.5 px-2 text-center hover:bg-white hover:shadow-md active:scale-95 transition-all"
+              >
+                <div className={`w-9 h-9 rounded-xl ${bg} flex items-center justify-center`}>
+                  <Icon className={`w-4.5 h-4.5 ${color}`} />
+                </div>
+                <span className="text-[11px] font-medium text-[#7a6a5a] leading-tight">{label}</span>
+              </Link>
+            ))}
+          </div>
         </div>
       </div>
     </div>
