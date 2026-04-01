@@ -1,10 +1,5 @@
-import { AppSidebar } from "@/components/app-sidebar";
-import { SiteHeader } from "@/components/site-header";
-import { Separator } from "@/components/ui/separator";
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
-import { AnalyticsOverview } from "@/components/dashboard/overview/analytics-overview";
-import { MongoAnalytics } from "@/components/dashboard/overview/mongo-analytics";
-import { SubscriptionBanner } from "@/components/dashboard/overview/subscription-banner";
+import { SidebarProvider } from "@/components/ui/sidebar";
+import { DashboardHero } from "@/components/dashboard/overview/dashboard-hero";
 
 export default function Page() {
   return (
@@ -14,27 +9,8 @@ export default function Page() {
           "--header-height": "calc(var(--spacing) * 12)",
         } as React.CSSProperties
       }>
-      <AppSidebar variant="inset" />
-      <SidebarInset>
-        <SiteHeader />
-        <div className="flex flex-col flex-1 pb-40">
-          <div className="@container/main flex flex-1 flex-col gap-2">
-            <div className="flex flex-col gap-4 py-4 overflow-hidden md:gap-6 md:py-6">
-              <div className="w-full max-w-5xl px-4 mx-auto lg:px-6">
-                <div className="flex items-center gap-3 mb-2">
-                  <h1 className="text-2xl font-bold">Welcome back!</h1>
-                </div>
-                <p className="mb-6 text-muted-foreground">Here&apos;s a quick overview of your activities.</p>
-                <Separator className="mb-6" />
-                <SubscriptionBanner />
-                <AnalyticsOverview />
-                <Separator className="my-6" />
-                <MongoAnalytics />
-              </div>
-            </div>
-          </div>
-        </div>
-      </SidebarInset>
+      {/* Hero section — full warm-gradient background with card */}
+      <DashboardHero />
     </SidebarProvider>
   );
 }
