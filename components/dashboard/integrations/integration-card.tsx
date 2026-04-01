@@ -323,25 +323,33 @@ export function IntegrationCard() {
   const comingSoon = integrations.filter((i) => i.comingSoon);
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
+      {/* ── Available ── */}
       {available.length > 0 && (
-        <div className="space-y-4">
-          <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Available</h2>
-          <div className="grid gap-4 sm:grid-cols-1 lg:grid-cols-2">
+        <div className="space-y-3">
+          <h2 className="text-xs font-semibold text-[#9a8070] uppercase tracking-widest">Available</h2>
+          <div className="flex flex-col gap-2">
             {available.map((integration) => (
-              <Card key={integration.id} className="overflow-hidden">
-                <CardHeader className="p-4 sm:p-6">
-                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
-                    <div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-1">
-                      <div className="flex size-10 sm:size-12 shrink-0 items-center justify-center rounded-lg border bg-muted/50">{integration.icon}</div>
-                      <div className="min-w-0 flex-1">
-                        <CardTitle className="text-base sm:text-lg truncate">{integration.name}</CardTitle>
-                        {integration.description && <p className="mt-0.5 text-xs sm:text-sm text-muted-foreground line-clamp-2">{integration.description}</p>}
-                      </div>
+              <Card key={integration.id} className="overflow-hidden bg-white/80 border-[#ede5da]">
+                <CardHeader className="p-3">
+                  <div className="flex items-center gap-3">
+                    <div className="flex size-10 shrink-0 items-center justify-center rounded-xl border bg-white">
+                      {integration.icon}
                     </div>
-                    <div className="flex shrink-0 items-center gap-2 sm:gap-3 justify-end sm:justify-start">
+                    <div className="min-w-0 flex-1">
+                      <CardTitle className="text-sm font-semibold truncate">{integration.name}</CardTitle>
+                      {integration.description && (
+                        <p className="text-xs text-muted-foreground line-clamp-1 mt-0.5">{integration.description}</p>
+                      )}
+                    </div>
+                    <div className="flex shrink-0 items-center gap-2">
                       {getStatusBadge(integration.status)}
-                      {integration.id !== "whatsapp" && <Switch checked={integration.enabled} onCheckedChange={(checked) => handleToggle(integration.id, integration.enabled, integration.comingSoon)} />}
+                      {integration.id !== "whatsapp" && (
+                        <Switch
+                          checked={integration.enabled}
+                          onCheckedChange={() => handleToggle(integration.id, integration.enabled, integration.comingSoon)}
+                        />
+                      )}
                     </div>
                   </div>
                 </CardHeader>
@@ -351,39 +359,40 @@ export function IntegrationCard() {
         </div>
       )}
 
+      {/* ── Coming soon ── */}
       {comingSoon.length > 0 && (
-        <div className="space-y-4">
+        <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Coming soon</h2>
+            <h2 className="text-xs font-semibold text-[#9a8070] uppercase tracking-widest">Coming soon</h2>
             <p className="text-xs text-muted-foreground">
               {remainingVotes} vote{remainingVotes !== 1 ? "s" : ""} remaining
             </p>
           </div>
-          <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
+          <div className="grid grid-cols-2 gap-2">
             {comingSoon
               .sort((a, b) => (b.votes || 0) - (a.votes || 0))
               .map((integration) => (
-                <Card key={integration.id} className="overflow-hidden opacity-90 py-4 flex flex-col">
-                  <CardHeader className="flex-1">
-                    <div className="flex items-start gap-4">
-                      <div className="flex size-12 shrink-0 items-center justify-center rounded-lg border bg-muted/50">{integration.icon}</div>
-                      <div className="min-w-0 flex-1 space-y-1">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <CardTitle className="text-lg truncate">{integration.name}</CardTitle>
-                          <Badge variant="default" className="shrink-0 font-normal bg-muted text-muted-foreground">
-                            Coming soon
-                          </Badge>
-                        </div>
-                        {integration.description && <p className="text-sm text-muted-foreground line-clamp-2">{integration.description}</p>}
+                <Card key={integration.id} className="overflow-hidden bg-white/80 border-[#ede5da] flex flex-col">
+                  <CardHeader className="p-3 flex-1">
+                    <div className="flex flex-col items-center gap-2 text-center">
+                      <div className="flex size-9 items-center justify-center rounded-xl border bg-white">
+                        {integration.icon}
                       </div>
+                      <CardTitle className="text-xs font-semibold leading-tight line-clamp-1 w-full">
+                        {integration.name}
+                      </CardTitle>
                     </div>
                   </CardHeader>
-                  <div className="px-6 pb-4 flex justify-end">
-                    <Button variant={integration.hasVoted ? "default" : "outline"} size="sm" onClick={() => handleVote(integration.id)} disabled={isVoting === integration.id} className="gap-2 h-9 min-w-[120px]">
-                      {integration.hasVoted ? <IconCheck className="size-4" /> : <IconArrowBigUp className="size-4" />}
-                      <span className="font-medium">
-                        {integration.votes || 0} vote{(integration.votes || 0) !== 1 ? "s" : ""}
-                      </span>
+                  <div className="px-3 pb-3">
+                    <Button
+                      variant={integration.hasVoted ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => handleVote(integration.id)}
+                      disabled={isVoting === integration.id}
+                      className="w-full h-7 text-xs gap-1"
+                    >
+                      {integration.hasVoted ? <IconCheck className="size-3" /> : <IconArrowBigUp className="size-3" />}
+                      {integration.votes || 0} vote{(integration.votes || 0) !== 1 ? "s" : ""}
                     </Button>
                   </div>
                 </Card>

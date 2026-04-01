@@ -121,23 +121,23 @@ export function MemoryGrid() {
 
       {/* Grid Layout */}
       {!loading && memories.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-2 gap-3">
           {memories.map((memory) => {
             const memoryDate = new Date(memory.created_at);
 
             return (
               <Card key={memory.id} className="group cursor-pointer hover:shadow-lg transition-all duration-200 border-l-4 border-l-transparent hover:border-l-primary" onClick={() => handleMemoryClick(memory)}>
-                <CardContent className="p-5 space-y-3">
+                <CardContent className="p-3 space-y-2">
                   {/* Title */}
-                  <h3 className="text-lg font-semibold line-clamp-2">{memory.title || "Untitled Memory"}</h3>
+                  <h3 className="text-sm font-semibold line-clamp-2">{memory.title || "Untitled Memory"}</h3>
 
                   <Separator />
 
                   {/* Content Preview */}
-                  <p className="text-sm text-muted-foreground line-clamp-4 leading-relaxed">{truncateContent(memory.content)}</p>
+                  <p className="text-xs text-muted-foreground line-clamp-3 leading-relaxed">{truncateContent(memory.content)}</p>
 
                   {/* Date */}
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground pt-2">
+                  <div className="flex items-center gap-1 text-[10px] text-muted-foreground pt-1">
                     <Calendar className="h-3.5 w-3.5" />
                     <span>{format(memoryDate, "MMM d, yyyy 'at' h:mm a")}</span>
                   </div>
