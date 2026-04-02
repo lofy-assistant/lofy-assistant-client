@@ -15,13 +15,12 @@ interface DashboardPageShellProps {
 export function DashboardPageShell({ title, description, icon, children, backHref = "/dashboard" }: DashboardPageShellProps) {
   return (
     /* ── Outer wrapper: always fills the viewport, gradient always visible ── */
-    <div className="flex items-center justify-center w-full h-dvh bg-[linear-gradient(160deg,#f5c49a_0%,#f2aa7e_30%,#e8957c_60%,#dba07e_100%)]">
-      {/*
-        ── Card ──
-        Fixed height so it never grows beyond the viewport.
-        my-6 = 1.5rem top + 1.5rem bottom = 3rem total, subtracted from 100dvh.
-      */}
-      <div className="animate-page-slide-up relative w-full max-w-sm mx-auto my-6 bg-[#faf6f2] rounded-4xl shadow-2xl flex flex-col h-[calc(100dvh-3rem)] overflow-hidden">
+    /* mobile : same card bg — no gradient gaps, no margins
+       desktop: gradient background with centred floating card        ── */
+    <div className="flex items-center justify-center w-full h-dvh bg-[#faf6f2] md:bg-[linear-gradient(160deg,#f5c49a_0%,#f2aa7e_30%,#e8957c_60%,#dba07e_100%)]">
+      {/* mobile : flush full-screen, no radius/shadow/margin
+          desktop: centred max-w-sm card, rounded, shadow, my-6          */}
+      <div className="animate-page-slide-up relative w-full md:max-w-sm md:mx-auto md:my-6 bg-[#faf6f2] md:rounded-4xl md:shadow-2xl flex flex-col h-dvh md:h-[calc(100dvh-3rem)] overflow-hidden">
         {/* ── Top bar — fixed, never scrolls ── */}
         <div className="flex items-center justify-between px-4 pt-5 pb-3 shrink-0">
           <Link href={backHref} className="flex items-center gap-1 text-[#7a6a5a] hover:text-[#3d2e22] transition-colors">
