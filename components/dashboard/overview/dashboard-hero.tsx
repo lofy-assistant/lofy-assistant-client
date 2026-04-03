@@ -48,7 +48,7 @@ const topActions = [
 ];
 
 const bottomActions = [
-  { label: "Friends",      icon: Users,         href: "/dashboard/friends",    color: "text-pink-500",   bg: "bg-pink-50" },
+  { label: "Friends",      icon: Users,         href: "/dashboard/friends",    color: "text-primary",    bg: "bg-primary/10" },
   { label: "Integrations", icon: Plug,          href: "/dashboard/integrations", color: "text-green-500", bg: "bg-green-50" },
   { label: "Chat Lofy",    icon: MessageCircle, href: "https://wa.me/60105043846", color: "text-teal-500", bg: "bg-teal-50", external: true },
 ];
