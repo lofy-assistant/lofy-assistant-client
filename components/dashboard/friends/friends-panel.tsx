@@ -3,10 +3,11 @@
 import { useEffect, useState } from "react";
 import { format } from "date-fns";
 import { Loader2, Send, UserPlus, Users } from "lucide-react";
+import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { PhoneNumberInput } from "@/components/phone-number-input";
+import { Form } from "@/components/ui/form";
 
 interface Friend {
   id: string;
@@ -27,6 +28,11 @@ interface FriendsResponse {
   pendingInvites: PendingInvite[];
 }
 
+interface FriendInviteFormValues {
+  dialCode: string;
+  phoneNumber: string;
+}
+
 function getInitials(name: string | null | undefined): string {
   if (!name?.trim()) return "?";
   return name
@@ -42,12 +48,18 @@ function digitsOnly(s: string): string {
 }
 
 export function FriendsPanel() {
-  const [phone, setPhone] = useState("");
   const [loading, setLoading] = useState(true);
   const [friends, setFriends] = useState<Friend[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const [pendingInvites, setPendingInvites] = useState<PendingInvite[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const form = useForm<FriendInviteFormValues>({
+    defaultValues: {
+      dialCode: "60",
+      phoneNumber: "",
+    },
+  });
+  const phoneNumber = form.watch("phoneNumber");
 
   const fetchFriends = async () => {
     try {
@@ -83,16 +95,15 @@ export function FriendsPanel() {
     void fetchFriends();
   }, []);
 
-  const handleInvite = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    const trimmed = phone.trim();
-    const digits = digitsOnly(trimmed);
+  const handleInvite = async (values: FriendInviteFormValues) => {
+    const digits = digitsOnly(values.phoneNumber);
 
     if (digits.length < 8) {
       toast.error("Enter a full phone number");
       return;
     }
+
+    const trimmed = `+${values.dialCode}${digits}`;
 
     setSubmitting(true);
 
@@ -107,7 +118,7 @@ export function FriendsPanel() {
       });
 
       const data = (await response.json().catch(() => null)) as
-        | { already_exists?: boolean; message_sent?: boolean }
+        | { already_exists?: boolean; message_sent?: boolean; warning?: string }
         | { error?: string }
         | null;
 
@@ -116,19 +127,25 @@ export function FriendsPanel() {
         throw new Error(message);
       }
 
-      setPhone("");
+      form.reset({
+        dialCode: values.dialCode,
+        phoneNumber: "",
+      });
 
       await fetchFriends();
 
       const alreadyExists = Boolean(data && "already_exists" in data && data.already_exists);
       const messageSent = Boolean(data && "message_sent" in data && data.message_sent);
+      const warning = data && "warning" in data ? data.warning : undefined;
 
       toast.success(alreadyExists ? "Invite already pending" : "Friend request sent", {
         description: alreadyExists
           ? "That phone number already has an active invite."
-          : messageSent
-            ? "The invite was sent on WhatsApp."
-            : `The invite was created for •••• ${digits.slice(-4)}.`,
+          : warning
+            ? `${warning} The pending invite is still saved.`
+            : messageSent
+              ? "The invite was sent on WhatsApp."
+              : `The invite was created for •••• ${digits.slice(-4)}.`,
       });
     } catch (submitError) {
       console.error("Error sending friend invite:", submitError);
@@ -150,37 +167,31 @@ export function FriendsPanel() {
             <p className="mt-1 text-xs leading-relaxed text-[#9a8070]">
               Add a mobile number and we’ll send them an invite to join you on Lofy.
             </p>
-            <form onSubmit={handleInvite} className="mt-4 space-y-3">
-              <div className="space-y-1.5">
-                <Label htmlFor="friend-phone" className="text-xs text-[#7a6a5a]">
-                  Phone number
-                </Label>
-                <Input
-                  id="friend-phone"
-                  type="tel"
-                  inputMode="tel"
-                  autoComplete="tel"
-                  placeholder="+60 12 345 6789"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(handleInvite)} className="mt-4 space-y-3">
+                <PhoneNumberInput
+                  control={form.control}
+                  dialCodeName="dialCode"
+                  phoneNumberName="phoneNumber"
+                  label="Phone number"
+                  phonePlaceholder="123456789"
                   disabled={submitting}
-                  className="rounded-xl border-[#ede5da] bg-white text-[#3d2e22] placeholder:text-[#b5a89a]"
                 />
-              </div>
-              <Button type="submit" disabled={submitting || phone.trim().length === 0} className="w-full rounded-xl">
-                {submitting ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Sending…
-                  </>
-                ) : (
-                  <>
-                    <Send className="mr-2 h-4 w-4" />
-                    Send invite
-                  </>
-                )}
-              </Button>
-            </form>
+                <Button type="submit" disabled={submitting || !phoneNumber?.trim()} className="w-full rounded-xl">
+                  {submitting ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Sending…
+                    </>
+                  ) : (
+                    <>
+                      <Send className="mr-2 h-4 w-4" />
+                      Send invite
+                    </>
+                  )}
+                </Button>
+              </form>
+            </Form>
           </div>
         </div>
       </section>

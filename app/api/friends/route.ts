@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { prisma } from "@/lib/database";
-import { decryptContent } from "@/lib/encryption";
+import { decryptContent, hash } from "@/lib/encryption";
 import { verifySession } from "@/lib/session";
 
 type CoreCreateFriendResponse = {
@@ -9,7 +9,41 @@ type CoreCreateFriendResponse = {
   status: string;
   already_exists: boolean;
   message_sent: boolean;
+  warning?: string;
 };
+
+function normalizePhoneNumber(phoneNumber: string): string {
+  const digits = phoneNumber.replace(/\D/g, "");
+
+  if (!digits) {
+    throw new Error("Phone number is invalid");
+  }
+
+  return digits;
+}
+
+function getErrorMessage(data: unknown, status: number): string {
+  return typeof data === "object" && data !== null && "detail" in data
+    ? String((data as { detail: unknown }).detail)
+    : typeof data === "object" && data !== null && "error" in data
+      ? String((data as { error: unknown }).error)
+      : `Failed to create friend request (${status})`;
+}
+
+async function findPendingInvitation(userId: string, phoneNumber: string) {
+  const hashedPhone = hash(normalizePhoneNumber(phoneNumber));
+
+  return prisma.friend_invitations.findFirst({
+    where: {
+      inviter_user_id: userId,
+      invitee_hashed_phone: hashedPhone,
+      status: "pending",
+    },
+    orderBy: {
+      created_at: "desc",
+    },
+  });
+}
 
 function getMaskedLast4(encryptedPhone: string): string {
   const decryptedPhone = decryptContent(encryptedPhone);
@@ -43,20 +77,6 @@ export async function GET(request: NextRequest) {
         where: {
           OR: [{ user_low_id: userId }, { user_high_id: userId }],
         },
-        include: {
-          user_low: {
-            select: {
-              id: true,
-              name: true,
-            },
-          },
-          user_high: {
-            select: {
-              id: true,
-              name: true,
-            },
-          },
-        },
         orderBy: {
           created_at: "desc",
         },
@@ -75,12 +95,35 @@ export async function GET(request: NextRequest) {
       }),
     ]);
 
+    const otherUserIds = Array.from(
+      new Set(
+        friendships.map((friendship) => (friendship.user_low_id === userId ? friendship.user_high_id : friendship.user_low_id)),
+      ),
+    );
+
+    const otherUsers = otherUserIds.length
+      ? await prisma.users.findMany({
+          where: {
+            id: {
+              in: otherUserIds,
+            },
+          },
+          select: {
+            id: true,
+            name: true,
+          },
+        })
+      : [];
+
+    const usersById = new Map(otherUsers.map((user) => [user.id, user]));
+
     const friends = friendships.map((friendship) => {
-      const otherUser = friendship.user_low_id === userId ? friendship.user_high : friendship.user_low;
+      const otherUserId = friendship.user_low_id === userId ? friendship.user_high_id : friendship.user_low_id;
+      const otherUser = usersById.get(otherUserId);
 
       return {
-        id: otherUser.id,
-        name: otherUser.name,
+        id: otherUserId,
+        name: otherUser?.name ?? null,
         friendsSince: (friendship.created_at ?? now).toISOString(),
       };
     });
@@ -153,12 +196,24 @@ export async function POST(request: NextRequest) {
     }
 
     if (!response.ok) {
-      const errorMessage =
-        typeof data === "object" && data !== null && "detail" in data
-          ? String((data as { detail: unknown }).detail)
-          : typeof data === "object" && data !== null && "error" in data
-            ? String((data as { error: unknown }).error)
-            : `Failed to create friend request (${response.status})`;
+      const errorMessage = getErrorMessage(data, response.status);
+
+      if (response.status === 502) {
+        const invitation = await findPendingInvitation(userId, phoneNumber);
+
+        if (invitation) {
+          return NextResponse.json(
+            {
+              invitation_id: invitation.id,
+              status: invitation.status,
+              already_exists: false,
+              message_sent: false,
+              warning: errorMessage,
+            } satisfies CoreCreateFriendResponse,
+            { status: 200 },
+          );
+        }
+      }
 
       return NextResponse.json({ error: errorMessage }, { status: response.status });
     }
