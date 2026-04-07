@@ -25,12 +25,57 @@ model users {
   memories                memories[]
   reminders               reminders[]
   subscriptions           subscriptions[]
+  sent_friend_invitations friend_invitations[]      @relation("friend_invitations_inviter")
+  received_friend_invitations friend_invitations[]  @relation("friend_invitations_invitee")
+  friendships_low         friendships[]             @relation("friendships_low_user")
+  friendships_high        friendships[]             @relation("friendships_high_user")
   email_verified              Boolean   @default(false)
   email_verification_token    String?
   email_verification_expires  DateTime? @db.Timestamptz(6)
 
   @@index([email])
   @@map("users")
+}
+
+model friend_invitations {
+  id                         String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  inviter_user_id            String       @db.Uuid
+  invitee_user_id            String?      @db.Uuid
+  invitee_hashed_phone       String
+  invitee_encrypted_phone    String
+  inviter_display_name       String
+  status                     String       @default("pending")
+  invite_message_platform_id String?
+  expires_at                 DateTime     @default(dbgenerated("(now() + '7 days'::interval)")) @db.Timestamptz(6)
+  responded_at               DateTime?    @db.Timestamptz(6)
+  accepted_at                DateTime?    @db.Timestamptz(6)
+  created_at                 DateTime?    @default(now()) @db.Timestamptz(6)
+  updated_at                 DateTime?    @default(now()) @db.Timestamptz(6)
+  inviter                    users        @relation("friend_invitations_inviter", fields: [inviter_user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  invitee                    users?       @relation("friend_invitations_invitee", fields: [invitee_user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  friendships                friendships[]
+
+  @@index([invite_message_platform_id], map: "idx_invite_platform_id")
+  @@index([invitee_hashed_phone, status], map: "idx_invitee_hash_status")
+  @@index([inviter_user_id, status], map: "idx_friend_invitations_inviter_status")
+  @@index([invitee_user_id, status], map: "idx_friend_invitations_invitee_status")
+  @@map("friend_invitations")
+}
+
+model friendships {
+  id            BigInt              @id @default(autoincrement()) @db.BigInt
+  user_low_id   String              @db.Uuid
+  user_high_id  String              @db.Uuid
+  invitation_id String?             @db.Uuid
+  created_at    DateTime?           @default(now()) @db.Timestamptz(6)
+  user_low      users               @relation("friendships_low_user", fields: [user_low_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  user_high     users               @relation("friendships_high_user", fields: [user_high_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  invitation    friend_invitations? @relation(fields: [invitation_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@unique([user_low_id, user_high_id], map: "uq_friendship")
+  @@index([user_low_id], map: "idx_friendship_low")
+  @@index([user_high_id], map: "idx_friendship_high")
+  @@map("friendships")
 }
 
 model feedbacks {

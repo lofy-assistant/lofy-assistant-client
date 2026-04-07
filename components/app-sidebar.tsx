@@ -36,11 +36,11 @@ const data = {
       url: "/dashboard/memories",
       icon: IconBrain,
     },
-    // {
-    //   title: "Friends",
-    //   url: "/dashboard/friends",
-    //   icon: IconUsers,
-    // },
+    {
+      title: "Friends",
+      url: "/dashboard/friends",
+      icon: IconUsers,
+    },
   ],
   navSecondary: [
     {

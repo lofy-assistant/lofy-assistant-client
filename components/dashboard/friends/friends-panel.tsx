@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { format } from "date-fns";
 import { Loader2, Send, UserPlus, Users } from "lucide-react";
 import { toast } from "sonner";
@@ -8,18 +8,23 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
-/** Sample rows so the screen reads as a finished layout; swap for real data later. */
-const DEMO_FRIENDS = [
-  { id: "demo-1", name: "Aisha Rahman", friendsSince: "2025-11-18T10:00:00.000Z" },
-  { id: "demo-2", name: "Marcus Lee", friendsSince: "2026-01-04T14:30:00.000Z" },
-  { id: "demo-3", name: "Priya N.", friendsSince: "2026-03-22T09:15:00.000Z" },
-] as const;
+interface Friend {
+  id: string;
+  name: string | null;
+  friendsSince: string;
+}
 
 interface PendingInvite {
   id: string;
-  digitsKey: string;
   last4: string;
   createdAt: string;
+  expiresAt: string;
+  inviteeUserId: string | null;
+}
+
+interface FriendsResponse {
+  friends: Friend[];
+  pendingInvites: PendingInvite[];
 }
 
 function getInitials(name: string | null | undefined): string {
@@ -38,43 +43,99 @@ function digitsOnly(s: string): string {
 
 export function FriendsPanel() {
   const [phone, setPhone] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [friends, setFriends] = useState<Friend[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const [pendingInvites, setPendingInvites] = useState<PendingInvite[]>([]);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleInvite = (e: React.FormEvent) => {
+  const fetchFriends = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const response = await fetch("/api/friends", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+      });
+
+      const data = (await response.json().catch(() => null)) as FriendsResponse | { error?: string } | null;
+
+      if (!response.ok || !data || !("friends" in data) || !("pendingInvites" in data)) {
+        const message = data && "error" in data && data.error ? data.error : `Failed to load friends (${response.status})`;
+        throw new Error(message);
+      }
+
+      setFriends(data.friends);
+      setPendingInvites(data.pendingInvites);
+    } catch (fetchError) {
+      console.error("Error fetching friends:", fetchError);
+      setError(fetchError instanceof Error ? fetchError.message : "Failed to load friends");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    void fetchFriends();
+  }, []);
+
+  const handleInvite = async (e: React.FormEvent) => {
     e.preventDefault();
+
     const trimmed = phone.trim();
     const digits = digitsOnly(trimmed);
+
     if (digits.length < 8) {
       toast.error("Enter a full phone number");
       return;
     }
 
-    const dup = pendingInvites.some((p) => p.digitsKey === digits);
-    if (dup) {
-      toast.message("Already invited", { description: "That number is already on your pending list." });
-      return;
-    }
-
     setSubmitting(true);
-    window.setTimeout(() => {
-      const last4 = digits.slice(-4);
-      const createdAt = new Date().toISOString();
-      setPendingInvites((prev) => [
-        {
-          id: `inv-${createdAt}`,
-          digitsKey: digits,
-          last4,
-          createdAt,
+
+    try {
+      const response = await fetch("/api/friends", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
         },
-        ...prev,
-      ]);
-      setPhone("");
-      setSubmitting(false);
-      toast.success("Invite queued", {
-        description: `We’ll text •••• ${last4} when SMS is connected.`,
+        credentials: "include",
+        body: JSON.stringify({ phone_number: trimmed }),
       });
-    }, 550);
+
+      const data = (await response.json().catch(() => null)) as
+        | { already_exists?: boolean; message_sent?: boolean }
+        | { error?: string }
+        | null;
+
+      if (!response.ok) {
+        const message = data && "error" in data && data.error ? data.error : "Failed to send invite";
+        throw new Error(message);
+      }
+
+      setPhone("");
+
+      await fetchFriends();
+
+      const alreadyExists = Boolean(data && "already_exists" in data && data.already_exists);
+      const messageSent = Boolean(data && "message_sent" in data && data.message_sent);
+
+      toast.success(alreadyExists ? "Invite already pending" : "Friend request sent", {
+        description: alreadyExists
+          ? "That phone number already has an active invite."
+          : messageSent
+            ? "The invite was sent on WhatsApp."
+            : `The invite was created for •••• ${digits.slice(-4)}.`,
+      });
+    } catch (submitError) {
+      console.error("Error sending friend invite:", submitError);
+      toast.error(submitError instanceof Error ? submitError.message : "Failed to send invite");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -87,8 +148,7 @@ export function FriendsPanel() {
           <div className="min-w-0 flex-1">
             <h2 className="text-sm font-semibold text-[#3d2e22]">Invite someone</h2>
             <p className="mt-1 text-xs leading-relaxed text-[#9a8070]">
-              Add a mobile number and we’ll send them an invite to join you on Lofy. (UI preview — no
-              messages are sent yet.)
+              Add a mobile number and we’ll send them an invite to join you on Lofy.
             </p>
             <form onSubmit={handleInvite} className="mt-4 space-y-3">
               <div className="space-y-1.5">
@@ -103,10 +163,11 @@ export function FriendsPanel() {
                   placeholder="+60 12 345 6789"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
+                  disabled={submitting}
                   className="rounded-xl border-[#ede5da] bg-white text-[#3d2e22] placeholder:text-[#b5a89a]"
                 />
               </div>
-              <Button type="submit" disabled={submitting} className="w-full rounded-xl">
+              <Button type="submit" disabled={submitting || phone.trim().length === 0} className="w-full rounded-xl">
                 {submitting ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -124,31 +185,41 @@ export function FriendsPanel() {
         </div>
       </section>
 
+      {error && (
+        <section className="rounded-2xl border border-red-200 bg-red-50/80 px-4 py-3 text-sm text-red-700">
+          {error}
+        </section>
+      )}
+
       <section>
         <div className="mb-3 flex items-center gap-2 px-0.5">
           <Users className="h-4 w-4 text-[#7a6a5a]" />
           <h2 className="text-sm font-semibold text-[#3d2e22]">Your friends</h2>
         </div>
 
-        {DEMO_FRIENDS.length === 0 ? (
+        {loading ? (
+          <div className="flex items-center justify-center rounded-2xl border border-[#ede5da] bg-white/60 px-4 py-10">
+            <Loader2 className="h-5 w-5 animate-spin text-[#9a8070]" />
+          </div>
+        ) : friends.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-[#ede5da] bg-white/50 px-4 py-10 text-center">
             <p className="text-sm text-[#7a6a5a]">No friends yet</p>
             <p className="mt-1 text-xs text-[#9a8070]">Invite someone above to grow your circle.</p>
           </div>
         ) : (
           <ul className="flex flex-col gap-2">
-            {DEMO_FRIENDS.map((f) => (
+            {friends.map((friend) => (
               <li
-                key={f.id}
+                key={friend.id}
                 className="flex items-center gap-3 rounded-2xl border border-[#ede5da] bg-white/80 px-3 py-3 shadow-sm"
               >
                 <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-linear-to-br from-emerald-50 to-emerald-200/90 text-sm font-semibold text-emerald-950">
-                  {getInitials(f.name)}
+                  {getInitials(friend.name)}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="truncate font-medium text-[#3d2e22]">{f.name?.trim() || "Lofy user"}</p>
+                  <p className="truncate font-medium text-[#3d2e22]">{friend.name?.trim() || "Lofy user"}</p>
                   <p className="text-xs text-[#9a8070]">
-                    Friends since {format(new Date(f.friendsSince), "MMM d, yyyy")}
+                    Friends since {format(new Date(friend.friendsSince), "MMM d, yyyy")}
                   </p>
                 </div>
               </li>
@@ -161,7 +232,7 @@ export function FriendsPanel() {
         <section>
           <h2 className="mb-3 px-0.5 text-sm font-semibold text-[#3d2e22]">Pending invites</h2>
           <p className="mb-2 text-xs text-[#9a8070]">
-            Numbers you added from this device. They’ll move to friends when the person joins.
+            Active invites you have already sent. They move to friends after the person accepts.
           </p>
           <ul className="flex flex-col gap-2">
             {pendingInvites.map((inv) => (
@@ -169,8 +240,13 @@ export function FriendsPanel() {
                 key={inv.id}
                 className="flex items-center justify-between rounded-2xl border border-[#ede5da] bg-white/60 px-3 py-2.5 text-sm"
               >
-                <span className="text-[#5c4a42]">•••• {inv.last4}</span>
-                <span className="text-xs text-[#9a8070]">{format(new Date(inv.createdAt), "MMM d")}</span>
+                <div className="flex flex-col gap-0.5">
+                  <span className="text-[#5c4a42]">•••• {inv.last4 || "----"}</span>
+                  <span className="text-[11px] text-[#9a8070]">
+                    Sent {format(new Date(inv.createdAt), "MMM d")} • Expires {format(new Date(inv.expiresAt), "MMM d")}
+                  </span>
+                </div>
+                <span className="text-xs text-[#9a8070]">Pending</span>
               </li>
             ))}
           </ul>

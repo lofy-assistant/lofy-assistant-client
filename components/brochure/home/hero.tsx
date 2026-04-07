@@ -2,7 +2,6 @@
 
 import Image from "next/image";
 import { GrainyGradientBlob } from "@/components/ui/grainy-gradient-blob";
-import { Badge } from "@/components/ui/badge";
 import { ArrowUpRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
