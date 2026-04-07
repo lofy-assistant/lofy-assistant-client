@@ -74,13 +74,10 @@ export function DashboardHero() {
          mobile : plain #faf6f2 (same as card) — no visible background
          desktop: warm peach gradient behind the centred card            ── */
     <div className="relative flex items-start md:items-stretch justify-center w-full min-h-[calc(100dvh-var(--header-height))] bg-[#faf6f2] md:bg-[linear-gradient(160deg,#f5c49a_0%,#f2aa7e_30%,#e8957c_60%,#dba07e_100%)]">
-      {/* Full-viewport grain (same canvas technique as grainy-gradient-blob); sits behind the card */}
-      <GrainOverlay className="z-0" />
-
       {/* ── Card
            mobile : full-width, no radius, no shadow, no margin (seamless)
            desktop: max-w-sm, large radius, shadow, vertical margin      ── */}
-      <div className="relative isolate z-10 w-full md:max-w-sm mx-auto md:my-10 bg-[#faf6f2] md:rounded-4xl md:shadow-2xl overflow-hidden flex flex-col min-h-[calc(100dvh-var(--header-height))] md:min-h-[calc(100dvh-var(--header-height)-5rem)]">
+      <div className="relative isolate w-full md:max-w-sm mx-auto md:my-10 bg-[#faf6f2] md:rounded-4xl md:shadow-2xl overflow-hidden flex flex-col min-h-[calc(100dvh-var(--header-height))] md:min-h-[calc(100dvh-var(--header-height)-5rem)]">
 
         {/* ── Top bar (above grain) ── */}
         <div className="relative z-20 flex items-center justify-between px-5 pt-5 pb-2">
