@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo, useRef, useEffect } from "react";
+import type { Control, FieldPath, FieldValues } from "react-hook-form";
 import { Input } from "@/components/ui/input";
 import {
   FormControl,
@@ -12,23 +13,23 @@ import {
 import { getCountriesWithMalaysiaFirst } from "@/lib/countries";
 import { cn } from "@/lib/utils";
 
-interface PhoneNumberInputProps {
-  control: any;
-  dialCodeName?: string;
-  phoneNumberName?: string;
+interface PhoneNumberInputProps<TFieldValues extends FieldValues> {
+  control: Control<TFieldValues>;
+  dialCodeName?: FieldPath<TFieldValues>;
+  phoneNumberName?: FieldPath<TFieldValues>;
   label?: string;
   phonePlaceholder?: string;
   disabled?: boolean;
 }
 
-export function PhoneNumberInput({
+export function PhoneNumberInput<TFieldValues extends FieldValues>({
   control,
-  dialCodeName = "dialCode",
-  phoneNumberName = "phoneNumber",
+  dialCodeName = "dialCode" as FieldPath<TFieldValues>,
+  phoneNumberName = "phoneNumber" as FieldPath<TFieldValues>,
   label = "Phone Number",
   phonePlaceholder = "123456789",
   disabled = false,
-}: PhoneNumberInputProps) {
+}: PhoneNumberInputProps<TFieldValues>) {
   const [searchValue, setSearchValue] = useState("");
   const [isOpen, setIsOpen] = useState(false);
   const [highlightedIndex, setHighlightedIndex] = useState(0);
@@ -65,11 +66,6 @@ export function PhoneNumberInput({
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
-
-  // Reset highlighted index when filtered countries change
-  useEffect(() => {
-    setHighlightedIndex(0);
-  }, [filteredCountries]);
 
   return (
     <FormItem>
@@ -134,12 +130,13 @@ export function PhoneNumberInput({
                       value={searchValue}
                       onChange={(e) => {
                         setSearchValue(e.target.value);
+                        setHighlightedIndex(0);
                         setIsOpen(true);
                       }}
                       onFocus={() => setIsOpen(true)}
                       onKeyDown={handleKeyDown}
                       disabled={disabled}
-                      className="w-[7rem]"
+                      className="w-[5.25rem]"
                     />
                     {selectedCountry && !searchValue && (
                       <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none text-sm">
@@ -149,7 +146,7 @@ export function PhoneNumberInput({
                     {isOpen && (
                       <div
                         ref={dropdownRef}
-                        className="absolute z-50 w-full min-w-[20rem] mt-1 bg-popover border rounded-md shadow-md"
+                        className="absolute z-50 mt-1 w-full min-w-[15rem] rounded-md border bg-popover shadow-md"
                         style={{ maxHeight: '300px', overflowY: 'auto' }}
                       >
                         {filteredCountries.length > 0 ? (
@@ -157,7 +154,7 @@ export function PhoneNumberInput({
                             <div
                               key={`${country.code}-${country.dialCode}`}
                               className={cn(
-                                "px-3 py-2 cursor-pointer text-sm hover:bg-accent",
+                                "cursor-pointer px-2.5 py-1.5 text-xs hover:bg-accent",
                                 highlightedIndex === index && "bg-accent"
                               )}
                               onClick={() => handleSelect(String(country.dialCode))}
@@ -167,7 +164,7 @@ export function PhoneNumberInput({
                             </div>
                           ))
                         ) : (
-                          <div className="px-3 py-6 text-center text-sm text-muted-foreground">
+                          <div className="px-2.5 py-5 text-center text-xs text-muted-foreground">
                             No countries found
                           </div>
                         )}

@@ -215,3 +215,14 @@ body {
 .animate-page-slide-up {
   animation: page-slide-up 0.38s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
+
+.scrollbar-hidden {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hidden::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
