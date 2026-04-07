@@ -43,7 +43,7 @@ function getInitials(name: string | null | undefined): string {
 }
 
 const topActions = [
-  { label: "History",  icon: History,       href: "/dashboard",            color: "text-blue-500",   bg: "bg-blue-50" },
+  { label: "History",  icon: History,       href: "/dashboard/history",    color: "text-blue-500",   bg: "bg-blue-50" },
   { label: "Memories", icon: Brain,         href: "/dashboard/memories",   color: "text-purple-500", bg: "bg-purple-50" },
 ];
 
