@@ -45,14 +45,19 @@ function getInitials(name: string | null | undefined): string {
 }
 
 const topActions = [
-  { label: "History",  icon: History,       href: "/dashboard/history",    color: "text-blue-500",   bg: "bg-blue-50" },
-  { label: "Memories", icon: Brain,         href: "/dashboard/memories",   color: "text-purple-500", bg: "bg-purple-50" },
+  { label: "History", icon: History, href: "/dashboard/history" },
+  { label: "Memories", icon: Brain, href: "/dashboard/memories" },
 ];
 
 const bottomActions = [
-  { label: "Friends",      icon: Users,         href: "/dashboard/friends",    color: "text-primary",    bg: "bg-primary/10" },
-  { label: "Integrations", icon: Plug,          href: "/dashboard/integrations", color: "text-green-500", bg: "bg-green-50" },
-  { label: "Chat Lofy",    icon: MessageCircle, href: "https://wa.me/60105043846", color: "text-teal-500", bg: "bg-teal-50", external: true },
+  { label: "Friends", icon: Users, href: "/dashboard/friends" },
+  { label: "Integrations", icon: Plug, href: "/dashboard/integrations" },
+  {
+    label: "Chat Lofy",
+    icon: MessageCircle,
+    href: "https://wa.me/60105043846",
+    external: true,
+  },
 ];
 
 export function DashboardHero() {
@@ -135,22 +140,24 @@ export function DashboardHero() {
         <div className="relative z-20 px-4 pb-6 pt-1 flex flex-col gap-2">
           {/* Row 1 — 2 buttons */}
           <div className="grid grid-cols-2 gap-2">
-            {topActions.map(({ label, icon: Icon, href, color, bg }) => (
+            {topActions.map(({ label, icon: Icon, href }) => (
               <Link
                 key={label}
                 href={href}
                 className="flex flex-col items-center gap-1.5 rounded-2xl border border-[#ede5da] bg-white/80 py-3.5 px-2 text-center shadow-[0_6px_20px_-4px_rgba(61,46,34,0.16),0_2px_8px_-2px_rgba(61,46,34,0.1)] transition-all hover:bg-white hover:shadow-[0_10px_28px_-4px_rgba(61,46,34,0.24),0_4px_14px_-2px_rgba(61,46,34,0.14)] active:scale-95"
               >
-                <div className={`w-9 h-9 rounded-xl ${bg} flex items-center justify-center`}>
-                  <Icon className={`w-4.5 h-4.5 ${color}`} />
-                </div>
+                <Icon
+                  className="h-8 w-8 shrink-0 text-[#3d2e22]"
+                  strokeWidth={2}
+                  aria-hidden
+                />
                 <span className="text-[11px] font-medium text-[#7a6a5a] leading-tight">{label}</span>
               </Link>
             ))}
           </div>
           {/* Row 2 — 3 buttons */}
           <div className="grid grid-cols-3 gap-2">
-            {bottomActions.map(({ label, icon: Icon, href, color, bg, external }) => (
+            {bottomActions.map(({ label, icon: Icon, href, external }) => (
               <Link
                 key={label}
                 href={href}
@@ -158,9 +165,11 @@ export function DashboardHero() {
                 rel={external ? "noopener noreferrer" : undefined}
                 className="flex flex-col items-center gap-1.5 rounded-2xl border border-[#ede5da] bg-white/80 py-3.5 px-2 text-center shadow-[0_6px_20px_-4px_rgba(61,46,34,0.16),0_2px_8px_-2px_rgba(61,46,34,0.1)] transition-all hover:bg-white hover:shadow-[0_10px_28px_-4px_rgba(61,46,34,0.24),0_4px_14px_-2px_rgba(61,46,34,0.14)] active:scale-95"
               >
-                <div className={`w-9 h-9 rounded-xl ${bg} flex items-center justify-center`}>
-                  <Icon className={`w-4.5 h-4.5 ${color}`} />
-                </div>
+                <Icon
+                  className="h-8 w-8 shrink-0 text-[#3d2e22]"
+                  strokeWidth={2}
+                  aria-hidden
+                />
                 <span className="text-[11px] font-medium text-[#7a6a5a] leading-tight">{label}</span>
               </Link>
             ))}
