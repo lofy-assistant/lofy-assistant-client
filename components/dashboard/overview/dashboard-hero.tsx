@@ -12,6 +12,7 @@ import {
   Users,
 } from "lucide-react";
 import { useWeather } from "@/hooks/use-weather";
+import { GrainOverlay } from "@/components/ui/grain-overlay";
 
 interface UserProfile {
   name: string | null;
@@ -27,8 +28,8 @@ function getGreeting(): string {
 
 function getFormattedDate(): string {
   return new Date().toLocaleDateString("en-US", {
-    weekday: "short",
-    month: "short",
+    weekday: "long",
+    month: "long",
     day: "numeric",
   });
 }
@@ -72,15 +73,17 @@ export function DashboardHero() {
     /* ── Outer wrapper
          mobile : plain #faf6f2 (same as card) — no visible background
          desktop: warm peach gradient behind the centred card            ── */
-    <div className="flex items-start md:items-stretch justify-center w-full min-h-[calc(100dvh-var(--header-height))] bg-[#faf6f2] md:bg-[linear-gradient(160deg,#f5c49a_0%,#f2aa7e_30%,#e8957c_60%,#dba07e_100%)]">
+    <div className="relative flex items-start md:items-stretch justify-center w-full min-h-[calc(100dvh-var(--header-height))] bg-[#faf6f2] md:bg-[linear-gradient(160deg,#f5c49a_0%,#f2aa7e_30%,#e8957c_60%,#dba07e_100%)]">
+      {/* Full-viewport grain (same canvas technique as grainy-gradient-blob); sits behind the card */}
+      <GrainOverlay className="z-0" />
 
       {/* ── Card
            mobile : full-width, no radius, no shadow, no margin (seamless)
            desktop: max-w-sm, large radius, shadow, vertical margin      ── */}
-      <div className="relative w-full md:max-w-sm mx-auto md:my-10 bg-[#faf6f2] md:rounded-4xl md:shadow-2xl overflow-hidden flex flex-col min-h-[calc(100dvh-var(--header-height))] md:min-h-[calc(100dvh-var(--header-height)-5rem)]">
+      <div className="relative isolate z-10 w-full md:max-w-sm mx-auto md:my-10 bg-[#faf6f2] md:rounded-4xl md:shadow-2xl overflow-hidden flex flex-col min-h-[calc(100dvh-var(--header-height))] md:min-h-[calc(100dvh-var(--header-height)-5rem)]">
 
-        {/* ── Top bar ── */}
-        <div className="flex items-center justify-between px-5 pt-5 pb-2">
+        {/* ── Top bar (above grain) ── */}
+        <div className="relative z-20 flex items-center justify-between px-5 pt-5 pb-2">
           <Link
             href="/dashboard/about"
             className="w-9 h-9 rounded-xl overflow-hidden flex items-center justify-center bg-white shadow-sm hover:opacity-90 active:scale-95 transition-all"
@@ -105,8 +108,8 @@ export function DashboardHero() {
           </Link>
         </div>
 
-        {/* ── Hero art: mobile = contain + 15% toward bottom; md+ = cover, 10% smaller ── */}
-        <div className="relative mt-12 md:mt-4 w-full flex-1 min-h-[min(52vh,26rem)] md:min-h-88 overflow-hidden rounded-2xl bg-[#faf6f2]">
+        {/* ── Hero art (below grain) ── */}
+        <div className="relative z-0 mt-12 md:mt-4 w-full flex-1 min-h-[min(52vh,26rem)] md:min-h-88 overflow-hidden rounded-2xl bg-[#faf6f2]">
           <Image
             src={heroMorningArt}
             alt=""
@@ -117,8 +120,8 @@ export function DashboardHero() {
           />
         </div>
 
-        {/* ── Greeting & weather ── */}
-        <div className="mt-auto px-6 pt-4 pb-3 text-center">
+        {/* ── Greeting & weather (above grain) ── */}
+        <div className="relative z-20 mt-auto px-6 pt-4 pb-3 text-center">
           <h1 className="text-xl font-semibold text-[#3d2e22]">
             {getGreeting()}{firstName ? `, ${firstName}` : ""}
           </h1>
@@ -131,15 +134,15 @@ export function DashboardHero() {
           </p>
         </div>
 
-        {/* ── Quick actions ── */}
-        <div className="px-4 pb-6 pt-1 flex flex-col gap-2">
+        {/* ── Quick actions (above grain) ── */}
+        <div className="relative z-20 px-4 pb-6 pt-1 flex flex-col gap-2">
           {/* Row 1 — 2 buttons */}
           <div className="grid grid-cols-2 gap-2">
             {topActions.map(({ label, icon: Icon, href, color, bg }) => (
               <Link
                 key={label}
                 href={href}
-                className="flex flex-col items-center gap-1.5 rounded-2xl bg-white/80 border border-[#ede5da] py-3.5 px-2 text-center hover:bg-white hover:shadow-md active:scale-95 transition-all"
+                className="flex flex-col items-center gap-1.5 rounded-2xl border border-[#ede5da] bg-white/80 py-3.5 px-2 text-center shadow-[0_6px_20px_-4px_rgba(61,46,34,0.16),0_2px_8px_-2px_rgba(61,46,34,0.1)] transition-all hover:bg-white hover:shadow-[0_10px_28px_-4px_rgba(61,46,34,0.24),0_4px_14px_-2px_rgba(61,46,34,0.14)] active:scale-95"
               >
                 <div className={`w-9 h-9 rounded-xl ${bg} flex items-center justify-center`}>
                   <Icon className={`w-4.5 h-4.5 ${color}`} />
@@ -156,7 +159,7 @@ export function DashboardHero() {
                 href={href}
                 target={external ? "_blank" : undefined}
                 rel={external ? "noopener noreferrer" : undefined}
-                className="flex flex-col items-center gap-1.5 rounded-2xl bg-white/80 border border-[#ede5da] py-3.5 px-2 text-center hover:bg-white hover:shadow-md active:scale-95 transition-all"
+                className="flex flex-col items-center gap-1.5 rounded-2xl border border-[#ede5da] bg-white/80 py-3.5 px-2 text-center shadow-[0_6px_20px_-4px_rgba(61,46,34,0.16),0_2px_8px_-2px_rgba(61,46,34,0.1)] transition-all hover:bg-white hover:shadow-[0_10px_28px_-4px_rgba(61,46,34,0.24),0_4px_14px_-2px_rgba(61,46,34,0.14)] active:scale-95"
               >
                 <div className={`w-9 h-9 rounded-xl ${bg} flex items-center justify-center`}>
                   <Icon className={`w-4.5 h-4.5 ${color}`} />
@@ -166,6 +169,9 @@ export function DashboardHero() {
             ))}
           </div>
         </div>
+
+        {/* Canvas grain (same technique as grainy-gradient-blob); full card, under UI */}
+        <GrainOverlay className="z-10" />
       </div>
     </div>
   );
