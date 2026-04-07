@@ -80,7 +80,11 @@ export function DashboardHero() {
 
         {/* ── Top bar ── */}
         <div className="flex items-center justify-between px-5 pt-5 pb-2">
-          <div className="w-9 h-9 rounded-xl overflow-hidden flex items-center justify-center bg-white shadow-sm">
+          <Link
+            href="/dashboard/about"
+            className="w-9 h-9 rounded-xl overflow-hidden flex items-center justify-center bg-white shadow-sm hover:opacity-90 active:scale-95 transition-all"
+            aria-label="About Lofy"
+          >
             <Image
               src="/assets/icons/lofy-logo-1.png"
               alt="Lofy"
@@ -88,7 +92,7 @@ export function DashboardHero() {
               height={28}
               className="object-contain"
             />
-          </div>
+          </Link>
           <span className="text-sm font-medium text-[#7a6a5a]">
             {getFormattedDate()}
           </span>
