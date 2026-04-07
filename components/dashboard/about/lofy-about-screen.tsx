@@ -41,7 +41,7 @@ type AboutRow = {
 
 const PRIMARY_LINKS: AboutRow[] = [
   { href: "/guides", label: "Guide", icon: HelpCircle },
-  { href: "/features", label: "Report a Bug", icon: Bug },
+  { href: "/dashboard/feedback", label: "Report a Bug", icon: Bug },
   { href: "/privacy-policy", label: "Privacy Policy", icon: Lock },
   { href: "/terms", label: "Terms of Service", icon: Scale },
 ];

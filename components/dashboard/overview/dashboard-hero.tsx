@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import heroMorningArt from "../../../public/assets/images/cropped-art-morning.webp";
 import {
   Brain,
   Plug,
@@ -104,27 +105,20 @@ export function DashboardHero() {
           </Link>
         </div>
 
-        {/* ── Hero image with vignette ── */}
-        <div className="relative mx-4 mt-1 flex-1 md:flex-none md:h-52 rounded-2xl overflow-hidden">
-          {/* Beach background image */}
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=700&q=80"
-            alt="Beach"
-            className="w-full h-full object-cover"
-          />
-          {/* Radial vignette — fades edges into card background color */}
-          <div
-            className="absolute inset-0"
-            style={{
-              background:
-                "radial-gradient(ellipse 70% 60% at 50% 50%, transparent 30%, #faf6f2 90%)",
-            }}
+        {/* ── Hero art: mobile = contain + 15% toward bottom; md+ = cover, 10% smaller ── */}
+        <div className="relative mt-12 md:mt-4 w-full flex-1 min-h-[min(52vh,26rem)] md:min-h-88 overflow-hidden rounded-2xl bg-[#faf6f2]">
+          <Image
+            src={heroMorningArt}
+            alt=""
+            fill
+            className="object-contain object-[center_65%] md:object-cover md:object-top scale-110 md:scale-80 md:origin-center"
+            sizes="(max-width: 768px) 100vw, 28rem"
+            priority
           />
         </div>
 
         {/* ── Greeting & weather ── */}
-        <div className="mt-auto px-6 pt-5 pb-3 text-center">
+        <div className="mt-auto px-6 pt-4 pb-3 text-center">
           <h1 className="text-xl font-semibold text-[#3d2e22]">
             {getGreeting()}{firstName ? `, ${firstName}` : ""}
           </h1>

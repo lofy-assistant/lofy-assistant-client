@@ -62,7 +62,7 @@ export function FeedbackForm() {
   };
 
   return (
-    <Card className="py-6">
+    <Card className="rounded-2xl border border-[#ede5da] bg-white/80 py-6 shadow-sm">
       <CardHeader>
         <CardTitle>Submit Feedback</CardTitle>
       </CardHeader>
@@ -117,7 +117,7 @@ export function FeedbackForm() {
             />
           </div>
 
-          <Button type="submit" disabled={isSubmitting} className="max-w-96">
+          <Button type="submit" disabled={isSubmitting} className="w-full">
             {isSubmitting && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
             Submit Feedback
           </Button>
