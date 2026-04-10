@@ -121,7 +121,7 @@ export function MemoryGrid() {
 
       {/* Grid Layout */}
       {!loading && memories.length > 0 && (
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 gap-3">
           {memories.map((memory) => {
             const memoryDate = new Date(memory.created_at);
 

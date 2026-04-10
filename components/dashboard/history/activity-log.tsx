@@ -1,8 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { formatDistanceToNow } from "date-fns";
-import { Bell, Brain, Calendar, ChevronDown, Sparkles } from "lucide-react";
+import { AlertCircle, Bell, Brain, Calendar, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export type ActivityEntity = "event" | "reminder" | "memory";
@@ -12,12 +12,14 @@ export interface ActivityItem {
   id: string;
   entity: ActivityEntity;
   action: ActivityAction;
-  /** Primary line (bold), like the card title in the reference UI */
   label: string;
-  /** Supporting paragraph under the title */
   detail: string;
   at: Date;
 }
+
+type ActivityApiItem = Omit<ActivityItem, "at"> & {
+  at: string;
+};
 
 type FilterId = "all" | ActivityEntity;
 
@@ -36,91 +38,182 @@ const ENTITY_LABEL: Record<ActivityEntity, string> = {
 const FILTERS: {
   id: FilterId;
   label: string;
-  icon?: React.ComponentType<{ className?: string }>;
 }[] = [
   { id: "all", label: "All" },
-  { id: "event", label: "Events", icon: Calendar },
-  { id: "reminder", label: "Reminders", icon: Bell },
-  { id: "memory", label: "Memories", icon: Brain },
+  { id: "event", label: "Events" },
+  { id: "reminder", label: "Reminders" },
+  { id: "memory", label: "Memories" },
 ];
 
-function buildMockActivities(): ActivityItem[] {
-  const now = Date.now();
-  const m = (mins: number) => new Date(now - mins * 60 * 1000);
-  const h = (hours: number) => new Date(now - hours * 60 * 60 * 1000);
-  const d = (days: number) => new Date(now - days * 24 * 60 * 60 * 1000);
+const ENTITY_ICON: Record<ActivityEntity, React.ComponentType<{ className?: string; strokeWidth?: number }>> = {
+  event: Calendar,
+  reminder: Bell,
+  memory: Brain,
+};
 
-  return [
-    {
-      id: "1",
-      entity: "reminder",
-      action: "created",
-      label: "Take vitamins",
-      detail:
-        "Lofy added a daily reminder based on your message. You will get a nudge around the time you usually prefer.",
-      at: m(38),
-    },
-    {
-      id: "2",
-      entity: "event",
-      action: "updated",
-      label: "Team standup",
-      detail:
-        "The event time was adjusted after you asked to move it. Invites stay in sync with your calendar.",
-      at: h(2),
-    },
-    {
-      id: "3",
-      entity: "memory",
-      action: "created",
-      label: "Mom's birthday is in April",
-      detail:
-        "Saved as a personal memory so Lofy can bring it up when you are planning family time or gifts.",
-      at: h(5),
-    },
-    {
-      id: "4",
-      entity: "reminder",
-      action: "deleted",
-      label: "Old grocery list",
-      detail:
-        "You asked to clear this reminder. It will no longer appear in your list or notifications.",
-      at: d(1),
-    },
-    {
-      id: "5",
-      entity: "event",
-      action: "created",
-      label: "Dentist - next Friday",
-      detail:
-        "Created from chat with date and location you mentioned. You can edit it anytime from the calendar.",
-      at: d(2),
-    },
-    {
-      id: "6",
-      entity: "memory",
-      action: "updated",
-      label: "WiFi password for the cafe",
-      detail:
-        "Lofy replaced the previous note with the new password you sent, so answers stay accurate.",
-      at: d(3),
-    },
-  ];
+const ENTITY_ICON_STYLES: Record<ActivityEntity, { wrapper: string; icon: string }> = {
+  event: {
+    wrapper: "bg-neutral-100",
+    icon: "text-neutral-500",
+  },
+  reminder: {
+    wrapper: "bg-zinc-100",
+    icon: "text-zinc-500",
+  },
+  memory: {
+    wrapper: "bg-stone-100",
+    icon: "text-stone-500",
+  },
+};
+
+const ACTION_BADGE_STYLES: Record<ActivityAction, string> = {
+  created: "border-primary/15 bg-primary/8 text-primary",
+  updated: "border-sky-200/60 bg-sky-50/75 text-sky-700",
+  deleted: "border-destructive/15 bg-destructive/8 text-destructive",
+};
+
+const ISO_WITHOUT_TIMEZONE = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(?::\d{2}(?:\.\d+)?)?$/;
+const ISO_TIMESTAMP_IN_TEXT = /\b\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(?::\d{2}(?:\.\d+)?)?(?:Z|[+-]\d{2}:?\d{2})?\b/g;
+
+function normalizeActivityTimestamp(value: string): Date | null {
+  const normalizedValue = ISO_WITHOUT_TIMEZONE.test(value) ? `${value}Z` : value;
+  const parsed = new Date(normalizedValue);
+
+  if (Number.isNaN(parsed.getTime())) {
+    return null;
+  }
+
+  return parsed;
+}
+
+function normalizeActivity(item: ActivityApiItem): ActivityItem | null {
+  const at = normalizeActivityTimestamp(item.at);
+
+  if (!at) {
+    return null;
+  }
+
+  return {
+    ...item,
+    at,
+  };
+}
+
+function normalizeActivityDetail(detail: string, formatter: Intl.DateTimeFormat): string {
+  return detail.replace(ISO_TIMESTAMP_IN_TEXT, (match) => {
+    const parsed = normalizeActivityTimestamp(match);
+    return parsed ? formatter.format(parsed) : match;
+  });
+}
+
+function formatActivityDetail(detail: string, entity: ActivityEntity): string {
+  if (entity === "event") {
+    return detail.replace(/\.\s+End:/g, ".\nEnd:").replace(/\.\s+Notes:/g, ".\nNotes:");
+  }
+
+  return detail;
 }
 
 export function ActivityLog() {
-  const allItems = useMemo(() => buildMockActivities(), []);
+  const [allItems, setAllItems] = useState<ActivityItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState<FilterId>("all");
-  const [expanded, setExpanded] = useState<Record<string, boolean>>({});
+  const [userTimeZone, setUserTimeZone] = useState("UTC");
+
+  useEffect(() => {
+    const detectedTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    if (detectedTimeZone) {
+      setUserTimeZone(detectedTimeZone);
+    }
+  }, []);
+
+  const absoluteDateFormatter = useMemo(
+    () =>
+      new Intl.DateTimeFormat(undefined, {
+        dateStyle: "medium",
+        timeStyle: "short",
+        timeZone: userTimeZone,
+      }),
+    [userTimeZone]
+  );
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const fetchHistory = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        const response = await fetch("/api/history/me?limit=50", {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+          cache: "no-store",
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.error || `Failed to fetch history (${response.status})`);
+        }
+
+        const data = await response.json();
+
+        if (!Array.isArray(data.items)) {
+          throw new Error("Invalid history response");
+        }
+
+        if (!cancelled) {
+          const normalizedItems: ActivityItem[] = (data.items as ActivityApiItem[])
+            .map(normalizeActivity)
+            .filter((item: ActivityItem | null): item is ActivityItem => item !== null)
+            .sort((left: ActivityItem, right: ActivityItem) => right.at.getTime() - left.at.getTime());
+
+          setAllItems(normalizedItems);
+        }
+      } catch (fetchError) {
+        if (!cancelled) {
+          setError(fetchError instanceof Error ? fetchError.message : "Failed to load history");
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
+    };
+
+    void fetchHistory();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const items = useMemo(() => {
     if (filter === "all") return allItems;
     return allItems.filter((i) => i.entity === filter);
   }, [allItems, filter]);
 
-  const toggle = (id: string) => {
-    setExpanded((prev) => ({ ...prev, [id]: !prev[id] }));
-  };
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center gap-3 py-10 text-[#7a6a5a]">
+        <Loader2 className="h-5 w-5 animate-spin" />
+        <p className="text-sm">Loading activity from your domain events...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center gap-3 rounded-xl border border-[#ead8cb] bg-[#fff9f5] px-4 py-10 text-center">
+        <AlertCircle className="h-5 w-5 text-[#b45309]" />
+        <p className="text-sm text-[#7a6a5a]">{error}</p>
+      </div>
+    );
+  }
 
   if (allItems.length === 0) {
     return (
@@ -131,14 +224,14 @@ export function ActivityLog() {
   }
 
   return (
-    <div className="flex flex-col gap-3">
-      {/* Filter tabs — inspired by segmented filters + icons */}
-      <div
-        role="tablist"
-        aria-label="Filter activity"
-        className="sticky top-0 z-10 -mx-1 px-1 py-1 flex flex-wrap items-center gap-1.5 bg-[#faf6f2]"
-      >
-        {FILTERS.map(({ id, label, icon: Icon }) => {
+    <div className="flex flex-col gap-3 overflow-x-clip">
+      <div className="-mx-1 px-1 pt-1">
+        <div
+          role="tablist"
+          aria-label="Filter activity"
+          className="flex flex-wrap items-center justify-between gap-1 rounded-2xl border border-[#f0e7df] bg-[#fcf8f4] px-1.5 py-1.5"
+        >
+        {FILTERS.map(({ id, label }) => {
           const selected = filter === id;
           return (
             <button
@@ -148,17 +241,17 @@ export function ActivityLog() {
               aria-selected={selected}
               onClick={() => setFilter(id)}
               className={cn(
-                "inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-colors",
+                "inline-flex min-w-[calc(50%-0.125rem)] flex-1 items-center justify-center gap-1 rounded-full border px-2.5 py-1.5 text-[11px] font-medium transition-colors sm:min-w-0",
                 selected
-                  ? "bg-[#e8e0d6] text-[#3d2e22] shadow-sm"
-                  : "text-[#7a6a5a] hover:bg-white/60"
+                  ? "border-[#e7d9cb] bg-white text-[#4a392c] shadow-[0_6px_18px_rgba(84,58,33,0.05)]"
+                  : "border-transparent text-[#8a7769] hover:border-[#efe4db] hover:bg-white/70"
               )}
             >
-              {Icon && <Icon className="w-3.5 h-3.5 opacity-80" strokeWidth={2} />}
               {label}
             </button>
           );
         })}
+        </div>
       </div>
 
       <ul className="flex flex-col gap-2.5 pb-2">
@@ -168,45 +261,53 @@ export function ActivityLog() {
           </li>
         ) : (
           items.map((item) => {
-            const isOpen = expanded[item.id] ?? false;
             const when = formatDistanceToNow(item.at, { addSuffix: true });
+            const absoluteWhen = absoluteDateFormatter.format(item.at);
+            const detail = formatActivityDetail(
+              normalizeActivityDetail(item.detail, absoluteDateFormatter),
+              item.entity
+            );
+            const ItemIcon = ENTITY_ICON[item.entity];
+            const iconStyle = ENTITY_ICON_STYLES[item.entity];
 
             return (
-              <li key={item.id}>
-                <div className="rounded-xl border border-[#e5ddd4] bg-white px-3.5 py-3 shadow-sm">
-                  <div className="flex gap-3">
-                    <div className="shrink-0 w-9 h-9 rounded-lg bg-violet-50 flex items-center justify-center">
-                      <Sparkles className="w-4 h-4 text-violet-600" strokeWidth={2} />
+              <li key={item.id} className="group">
+                <div className="rounded-[1.35rem] border border-[#eee3da] bg-[linear-gradient(180deg,#fffefd_0%,#fdf8f4_100%)] px-4 py-4 shadow-[0_8px_24px_rgba(84,58,33,0.045)] transition-all duration-200 group-hover:-translate-y-0.5 group-hover:shadow-[0_12px_28px_rgba(84,58,33,0.06)]">
+                  <div className="flex gap-3.5">
+                    <div
+                      className={cn(
+                        "shrink-0 flex h-10 w-10 items-center justify-center rounded-2xl ring-1 ring-black/4",
+                        iconStyle.wrapper
+                      )}
+                    >
+                      <ItemIcon className={cn("h-4 w-4", iconStyle.icon)} strokeWidth={2} />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <div className="flex items-start justify-between gap-2">
-                        <h3 className="text-sm font-semibold text-[#3d2e22] leading-snug pr-1">
+                      <div className="min-w-0">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span
+                            className={cn(
+                              "inline-flex items-center rounded-full border px-2.5 py-1 text-[11px] font-medium capitalize",
+                              ACTION_BADGE_STYLES[item.action]
+                            )}
+                          >
+                            {ACTION_VERB[item.action]} {ENTITY_LABEL[item.entity]}
+                          </span>
+                        </div>
+                        <h3 className="mt-2 text-sm font-semibold leading-snug text-[#3d2e22] sm:text-[15px]">
                           {item.label}
                         </h3>
-                        <button
-                          type="button"
-                          onClick={() => toggle(item.id)}
-                          className="shrink-0 p-0.5 rounded-md text-[#9a8070] hover:bg-black/4 hover:text-[#3d2e22] transition-colors"
-                          aria-expanded={isOpen}
-                          aria-label={isOpen ? "Hide action type" : "Show action type"}
-                        >
-                          <ChevronDown
-                            className={cn(
-                              "w-4 h-4 transition-transform duration-200",
-                              isOpen && "rotate-180"
-                            )}
-                          />
-                        </button>
                       </div>
-                      <p className="mt-1.5 text-[13px] leading-relaxed text-[#6b5d52]">
-                        {item.detail}
+
+                      <p className="mt-2.5 whitespace-pre-line text-[13px] leading-relaxed text-[#76695f] sm:text-[13.5px]">
+                        {detail}
                       </p>
-                      <p className="mt-2 text-xs text-[#9a8070]">{when}</p>
-                      {isOpen && (
-                        <p className="mt-1.5 text-xs font-medium text-[#7a6a5a]">
-                          {ACTION_VERB[item.action]} {ENTITY_LABEL[item.entity]}
-                        </p>
-                      )}
+
+                      <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2 border-t border-[#f2e9e1] pt-3 text-xs text-[#938174]">
+                        <span className="font-medium text-[#776659]">{when}</span>
+                        <span className="h-1 w-1 rounded-full bg-[#dcc8b8]" aria-hidden="true" />
+                        <span>{absoluteWhen}</span>
+                      </div>
                     </div>
                   </div>
                 </div>
