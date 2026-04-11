@@ -34,9 +34,7 @@ export function AnalyticsOverview() {
     return (
       <Card>
         <CardContent className="pt-6">
-          <p className="text-sm text-muted-foreground">
-            Failed to load analytics data
-          </p>
+          <p className="text-sm text-muted-foreground">Failed to load analytics data</p>
         </CardContent>
       </Card>
     );
@@ -78,18 +76,12 @@ export function AnalyticsOverview() {
       {/* Stats Grid */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {stats.map((stat) => (
-          <Card 
-            className="pt-2 transition-all cursor-pointer hover:shadow-md active:scale-[0.98]"
-            key={stat.title}
-            onClick={() => router.push(stat.href)}
-          >
+          <Card className="pt-2 transition-all cursor-pointer hover:shadow-md active:scale-[0.98]" key={stat.title} onClick={() => router.push(stat.href)}>
             <CardHeader className="flex flex-row items-center space-y-0">
               <div className={`p-2 rounded-full ${stat.bgColor}`}>
                 <stat.icon className={`w-4 h-4 ${stat.color}`} />
               </div>
-              <CardTitle className="text-sm font-medium">
-                {stat.title}
-              </CardTitle>
+              <CardTitle className="text-sm font-medium">{stat.title}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{stat.value}</div>
