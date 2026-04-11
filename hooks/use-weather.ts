@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import useSWR from "swr";
 
 export interface WeatherData {
   temperature: number;
@@ -9,50 +9,22 @@ export interface WeatherData {
   error: string | null;
 }
 
-export function useWeather(): WeatherData {
-  const [weather, setWeather] = useState<WeatherData>({
-    temperature: 0,
-    description: "",
-    isLoading: true,
-    error: null,
+const fetcher = (url: string) =>
+  fetch(url).then((r) => {
+    if (!r.ok) throw new Error("Weather request failed");
+    return r.json() as Promise<{ temperature: number; description: string }>;
   });
 
-  useEffect(() => {
-    let cancelled = false;
+export function useWeather(): WeatherData {
+  const { data, error, isLoading } = useSWR("/api/weather", fetcher, {
+    revalidateOnFocus: false,
+    dedupingInterval: 60_000,
+  });
 
-    (async () => {
-      try {
-        const res = await fetch("/api/weather");
-        if (!res.ok) {
-          throw new Error("Weather request failed");
-        }
-        const data = (await res.json()) as {
-          temperature: number;
-          description: string;
-        };
-        if (cancelled) return;
-        setWeather({
-          temperature: data.temperature,
-          description: data.description,
-          isLoading: false,
-          error: null,
-        });
-      } catch {
-        if (!cancelled) {
-          setWeather({
-            temperature: 0,
-            description: "",
-            isLoading: false,
-            error: "Failed to fetch weather",
-          });
-        }
-      }
-    })();
-
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  return weather;
+  return {
+    temperature: data?.temperature ?? 0,
+    description: data?.description ?? "",
+    isLoading,
+    error: error ? "Failed to fetch weather" : null,
+  };
 }

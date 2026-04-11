@@ -6,7 +6,8 @@ import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { IconClockHour4, IconArrowBigUp, IconCheck } from "@tabler/icons-react";
+import { IconArrowBigUp, IconCheck } from "@tabler/icons-react";
+import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 export interface Integration {
@@ -131,8 +132,8 @@ export function IntegrationCard() {
   ]);
   const [remainingVotes, setRemainingVotes] = useState(3);
   const [isVoting, setIsVoting] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  // Fetch integration status and vote data on mount
   useEffect(() => {
     const fetchIntegrationStatus = async () => {
       try {
@@ -191,8 +192,9 @@ export function IntegrationCard() {
       }
     };
 
-    fetchIntegrationStatus();
-    fetchVoteData();
+    Promise.all([fetchIntegrationStatus(), fetchVoteData()]).finally(() => {
+      setLoading(false);
+    });
   }, []);
 
   const handleToggle = async (id: string, currentEnabled: boolean, comingSoon?: boolean) => {
@@ -322,6 +324,15 @@ export function IntegrationCard() {
   const available = integrations.filter((i) => !i.comingSoon);
   const comingSoon = integrations.filter((i) => i.comingSoon);
 
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center gap-3 py-10 text-[#7a6a5a]">
+        <Loader2 className="h-5 w-5 animate-spin" />
+        <p className="text-sm">Loading integrations...</p>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       {/* ── Available ── */}
@@ -333,23 +344,14 @@ export function IntegrationCard() {
               <Card key={integration.id} className="overflow-hidden bg-white/80 border-[#ede5da]">
                 <CardHeader className="p-3">
                   <div className="flex items-center gap-3">
-                    <div className="flex size-10 shrink-0 items-center justify-center rounded-xl border bg-white">
-                      {integration.icon}
-                    </div>
+                    <div className="flex size-10 shrink-0 items-center justify-center rounded-xl border bg-white">{integration.icon}</div>
                     <div className="min-w-0 flex-1">
                       <CardTitle className="text-sm font-semibold truncate">{integration.name}</CardTitle>
-                      {integration.description && (
-                        <p className="text-xs text-muted-foreground line-clamp-1 mt-0.5">{integration.description}</p>
-                      )}
+                      {integration.description && <p className="text-xs text-muted-foreground line-clamp-1 mt-0.5">{integration.description}</p>}
                     </div>
                     <div className="flex shrink-0 items-center gap-2">
                       {getStatusBadge(integration.status)}
-                      {integration.id !== "whatsapp" && (
-                        <Switch
-                          checked={integration.enabled}
-                          onCheckedChange={() => handleToggle(integration.id, integration.enabled, integration.comingSoon)}
-                        />
-                      )}
+                      {integration.id !== "whatsapp" && <Switch checked={integration.enabled} onCheckedChange={() => handleToggle(integration.id, integration.enabled, integration.comingSoon)} />}
                     </div>
                   </div>
                 </CardHeader>
@@ -372,25 +374,13 @@ export function IntegrationCard() {
             {comingSoon
               .sort((a, b) => (b.votes || 0) - (a.votes || 0))
               .map((integration) => (
-                <Card key={integration.id} className="overflow-hidden bg-white/80 border-[#ede5da] flex flex-col">
-                  <CardHeader className="p-3 flex-1">
-                    <div className="flex flex-col items-center gap-2 text-center">
-                      <div className="flex size-9 items-center justify-center rounded-xl border bg-white">
-                        {integration.icon}
-                      </div>
-                      <CardTitle className="text-xs font-semibold leading-tight line-clamp-1 w-full">
-                        {integration.name}
-                      </CardTitle>
-                    </div>
-                  </CardHeader>
-                  <div className="px-3 pb-3">
-                    <Button
-                      variant={integration.hasVoted ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => handleVote(integration.id)}
-                      disabled={isVoting === integration.id}
-                      className="w-full h-7 text-xs gap-1"
-                    >
+                <Card key={integration.id} className="overflow-hidden bg-white/80 border-[#ede5da] flex flex-col gap-0">
+                  <div className="flex flex-1 flex-col items-center justify-center gap-2 px-3 pt-6 pb-2">
+                    <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-white">{integration.icon}</div>
+                    <p className="text-xs font-semibold leading-tight line-clamp-1 w-full text-center">{integration.name}</p>
+                  </div>
+                  <div className="px-3 pb-3 mt-auto">
+                    <Button variant={integration.hasVoted ? "default" : "outline"} size="sm" onClick={() => handleVote(integration.id)} disabled={isVoting === integration.id} className="w-full h-7 text-xs gap-1">
                       {integration.hasVoted ? <IconCheck className="size-3" /> : <IconArrowBigUp className="size-3" />}
                       {integration.votes || 0} vote{(integration.votes || 0) !== 1 ? "s" : ""}
                     </Button>

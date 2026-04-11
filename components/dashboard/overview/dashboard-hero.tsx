@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import useSWR from "swr";
 import heroMorningArt from "../../../public/assets/images/cropped-art-morning.webp";
 import {
   Brain,
@@ -18,6 +18,11 @@ interface UserProfile {
   name: string | null;
   email: string | null;
 }
+
+const profileFetcher = (url: string) =>
+  fetch(url)
+    .then((r) => r.json())
+    .then((d) => d.user as UserProfile);
 
 function getGreeting(): string {
   const hour = new Date().getHours();
@@ -62,14 +67,9 @@ const bottomActions = [
 
 export function DashboardHero() {
   const weather = useWeather();
-  const [profile, setProfile] = useState<UserProfile | null>(null);
-
-  useEffect(() => {
-    fetch("/api/user/profile")
-      .then((r) => r.json())
-      .then((d) => setProfile(d.user))
-      .catch(() => null);
-  }, []);
+  const { data: profile } = useSWR("/api/user/profile", profileFetcher, {
+    revalidateOnFocus: false,
+  });
 
   const firstName = profile?.name?.split(" ")[0] ?? null;
   const initials = getInitials(profile?.name);
