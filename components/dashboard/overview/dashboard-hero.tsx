@@ -82,7 +82,7 @@ export function DashboardHero() {
       {/* ── Card
            mobile : full-width, no radius, no shadow, no margin (seamless)
            desktop: max-w-sm, large radius, shadow, vertical margin      ── */}
-      <div className="relative isolate w-full md:max-w-sm mx-auto md:my-10 bg-[#faf6f2] md:rounded-4xl md:shadow-2xl overflow-hidden flex flex-col min-h-[calc(100dvh-var(--header-height))] md:min-h-[calc(100dvh-var(--header-height)-5rem)]">
+      <div className="relative isolate w-full md:max-w-sm mx-auto md:my-10 bg-[#faf6f2] md:rounded-4xl md:shadow-2xl overflow-hidden flex flex-col min-h-[calc(100dvh-var(--header-height))] md:min-h-[calc(100dvh-var(--header-height)-5rem)] text-sm">
 
         {/* ── Top bar (above grain) ── */}
         <div className="relative z-20 flex items-center justify-between px-5 pt-5 pb-2">
@@ -99,12 +99,12 @@ export function DashboardHero() {
               className="object-contain"
             />
           </Link>
-          <span className="text-sm font-medium text-[#7a6a5a]">
+          <span className="text-xs font-medium text-[#7a6a5a]">
             {getFormattedDate()}
           </span>
           <Link
             href="/dashboard/settings"
-            className="w-9 h-9 rounded-full bg-linear-to-br from-amber-400 to-orange-500 flex items-center justify-center text-white text-sm font-bold shadow-sm select-none hover:opacity-80 active:scale-95 transition-all"
+            className="w-9 h-9 rounded-full bg-linear-to-br from-amber-400 to-orange-500 flex items-center justify-center text-xs font-bold text-white shadow-sm select-none hover:opacity-80 active:scale-95 transition-all"
           >
             {initials}
           </Link>
@@ -124,10 +124,10 @@ export function DashboardHero() {
 
         {/* ── Greeting & weather (above grain) ── */}
         <div className="relative z-20 mt-auto px-6 pt-4 pb-3 text-center">
-          <h1 className="text-xl font-semibold text-[#3d2e22]">
+          <h1 className="text-sm font-semibold text-[#3d2e22]">
             {getGreeting()}{firstName ? `, ${firstName}` : ""}
           </h1>
-          <p className="mt-1 text-sm text-[#9a8070]">
+          <p className="mt-1 text-xs text-[#9a8070]">
             {weather.isLoading
               ? "Fetching weather…"
               : weather.error

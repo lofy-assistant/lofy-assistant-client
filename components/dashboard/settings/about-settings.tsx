@@ -1,20 +1,18 @@
-"use client";
-
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Info } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 
 export function AboutSettings() {
   return (
-    <Card className="py-4">
+    <Card className="py-4 text-sm">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
+        <CardTitle className="flex items-center gap-2 text-sm">
           <Info className="w-5 h-5" />
           About
         </CardTitle>
-        <CardDescription>Application information and resources</CardDescription>
+        <CardDescription className="text-xs">Application information and resources</CardDescription>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-4 text-sm">
         <div>
           <h3 className="text-sm font-medium mb-1">Version</h3>
           <p className="text-sm text-muted-foreground">1.0.0</p>

@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Card,
   CardContent,
@@ -27,12 +28,15 @@ import {
   normalizePersonaFromDb,
 } from "@/lib/persona";
 
+const CUSTOM_INSTRUCTION_MAX_LENGTH = 1000;
+
 interface UserProfile {
   id: string;
   name: string | null;
   email: string | null;
   created_at: string;
   ai_persona: string | null;
+  custom_instruction: string | null;
 }
 
 export function ProfileSettings() {
@@ -41,6 +45,7 @@ export function ProfileSettings() {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [name, setName] = useState("");
   const [type, setType] = useState<Persona>("atlas");
+  const [customInstruction, setCustomInstruction] = useState("");
 
   useEffect(() => {
     fetchProfile();
@@ -55,6 +60,7 @@ export function ProfileSettings() {
       setProfile(data.user);
       setName(data.user.name || "");
       setType(normalizePersonaFromDb(data.user.ai_persona));
+      setCustomInstruction(data.user.custom_instruction || "");
     } catch (error) {
       toast.error("Failed to load profile");
       console.error(error);
@@ -65,6 +71,15 @@ export function ProfileSettings() {
 
   const handleUpdateProfile = async (e: React.FormEvent) => {
     e.preventDefault();
+    const trimmedInstruction = customInstruction.trim();
+
+    if (trimmedInstruction.length > CUSTOM_INSTRUCTION_MAX_LENGTH) {
+      toast.error(
+        `Custom instruction must be ${CUSTOM_INSTRUCTION_MAX_LENGTH} characters or fewer`
+      );
+      return;
+    }
+
     setIsSaving(true);
 
     try {
@@ -73,15 +88,29 @@ export function ProfileSettings() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ name, type }),
+        body: JSON.stringify({
+          name,
+          type,
+          customInstruction: trimmedInstruction || null,
+        }),
       });
 
-      if (!response.ok) throw new Error("Failed to update profile");
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to update profile");
+      }
 
       toast.success("Profile updated successfully!");
-      fetchProfile();
+      if (data.user) {
+        setProfile(data.user);
+        setName(data.user.name || "");
+        setType(normalizePersonaFromDb(data.user.ai_persona));
+        setCustomInstruction(data.user.custom_instruction || "");
+      }
     } catch (error) {
-      toast.error("Failed to update profile");
+      toast.error(
+        error instanceof Error ? error.message : "Failed to update profile"
+      );
       console.error(error);
     } finally {
       setIsSaving(false);
@@ -90,13 +119,13 @@ export function ProfileSettings() {
 
   if (isLoading) {
     return (
-       <Card className="py-4">
+       <Card className="py-4 text-sm">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2 text-sm">
             <User className="w-5 h-5" />
             Profile Information
           </CardTitle>
-          <CardDescription>Manage your personal information</CardDescription>
+          <CardDescription className="text-xs">Manage your personal information</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex items-center justify-center py-8">
@@ -108,15 +137,15 @@ export function ProfileSettings() {
   }
 
   return (
-    <Card className="py-4">
+    <Card className="py-4 text-sm">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
+        <CardTitle className="flex items-center gap-2 text-sm">
           <User className="w-5 h-5" />
           Profile Information
         </CardTitle>
-        <CardDescription>Manage your personal information</CardDescription>
+        <CardDescription className="text-xs">Manage your personal information</CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="text-sm">
         <form onSubmit={handleUpdateProfile} className="space-y-6">
           <div className="space-y-2">
             <Label htmlFor="name">Name</Label>
@@ -159,6 +188,25 @@ export function ProfileSettings() {
                 ))}
               </SelectContent>
             </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="custom-instruction">Custom Instruction</Label>
+            <Textarea
+              id="custom-instruction"
+              value={customInstruction}
+              onChange={(e) => setCustomInstruction(e.target.value)}
+              placeholder="Example: Keep replies brief, use bullet points for plans, and ask before making assumptions."
+              maxLength={CUSTOM_INSTRUCTION_MAX_LENGTH}
+              className="min-h-32"
+              disabled={isSaving}
+            />
+            <p className="text-xs text-muted-foreground">
+              This preference is injected with your conversation context to guide how Lofy responds. It helps steer style and behavior, but it won&apos;t override safety rules or your current request.
+            </p>
+            <p className="text-xs text-muted-foreground text-right">
+              {customInstruction.length}/{CUSTOM_INSTRUCTION_MAX_LENGTH}
+            </p>
           </div>
 
           <div className="space-y-2">

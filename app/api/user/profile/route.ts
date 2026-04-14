@@ -3,6 +3,8 @@ import { prisma } from '@/lib/database';
 import { verifySession } from "@/lib/session";
 import { normalizePersonaFromRequest } from "@/lib/persona";
 
+const CUSTOM_INSTRUCTION_MAX_LENGTH = 1000;
+
 async function invalidatePersonalityCache(userId: string) {
   const baseUrl = process.env.FASTAPI_URL;
   if (!baseUrl) {
@@ -55,6 +57,7 @@ export async function GET(request: NextRequest) {
         email: true,
         created_at: true,
         ai_persona: true,
+        custom_instruction: true,
       },
     });
 
@@ -93,9 +96,13 @@ export async function PATCH(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { name, type } = body;
+    const { name, type, customInstruction } = body;
 
-    const updateData: { name?: string | null; ai_persona?: string | null } = {};
+    const updateData: {
+      name?: string | null;
+      ai_persona?: string | null;
+      custom_instruction?: string | null;
+    } = {};
     
     if (name !== undefined) {
       updateData.name = name || null;
@@ -113,6 +120,27 @@ export async function PATCH(request: NextRequest) {
       }
     }
 
+    if (customInstruction !== undefined) {
+      if (customInstruction !== null && typeof customInstruction !== "string") {
+        return NextResponse.json(
+          { error: "customInstruction must be a string or null" },
+          { status: 400 }
+        );
+      }
+
+      const trimmedInstruction = customInstruction?.trim() ?? "";
+      if (trimmedInstruction.length > CUSTOM_INSTRUCTION_MAX_LENGTH) {
+        return NextResponse.json(
+          {
+            error: `Custom instruction must be ${CUSTOM_INSTRUCTION_MAX_LENGTH} characters or fewer`,
+          },
+          { status: 400 }
+        );
+      }
+
+      updateData.custom_instruction = trimmedInstruction || null;
+    }
+
     const updatedUser = await prisma.users.update({
       where: { id: session.userId },
       data: updateData,
@@ -122,6 +150,7 @@ export async function PATCH(request: NextRequest) {
         email: true,
         created_at: true,
         ai_persona: true,
+        custom_instruction: true,
       },
     });
 

@@ -72,15 +72,15 @@ export function SecuritySettings() {
   };
 
   return (
-    <Card className="py-4">
+    <Card className="py-4 text-sm">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
+        <CardTitle className="flex items-center gap-2 text-sm">
           <Lock className="w-5 h-5" />
           Security
         </CardTitle>
-        <CardDescription>Manage your account security settings</CardDescription>
+        <CardDescription className="text-xs">Manage your account security settings</CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="text-sm">
         <form onSubmit={handleChangePIN} className="space-y-6">
           <div>
             <h3 className="text-sm font-medium mb-4">Change PIN</h3>

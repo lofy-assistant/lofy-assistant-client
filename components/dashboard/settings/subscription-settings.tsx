@@ -135,13 +135,13 @@ export function SubscriptionSettings() {
   // ── Loading skeleton ────────────────────────────────────────────────────────
   if (isLoading) {
     return (
-      <Card className="py-4">
+      <Card className="py-4 text-sm">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2 text-sm">
             <CreditCard className="w-5 h-5" />
             Subscription
           </CardTitle>
-          <CardDescription>Manage your billing and subscription plan</CardDescription>
+          <CardDescription className="text-xs">Manage your billing and subscription plan</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex items-center justify-center py-8">
@@ -155,15 +155,15 @@ export function SubscriptionSettings() {
   // ── No subscription ─────────────────────────────────────────────────────────
   if (!subscription) {
     return (
-      <Card className="py-4">
+      <Card className="py-4 text-sm">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2 text-sm">
             <CreditCard className="w-5 h-5" />
             Subscription
           </CardTitle>
-          <CardDescription>Manage your billing and subscription plan</CardDescription>
+          <CardDescription className="text-xs">Manage your billing and subscription plan</CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="text-sm">
           <div className="flex flex-col items-center gap-4 py-8 text-center">
             <CreditCard className="w-10 h-10 text-muted-foreground" />
             <div>
@@ -193,14 +193,14 @@ export function SubscriptionSettings() {
 
   // ── Active subscription ─────────────────────────────────────────────────────
   return (
-    <div className="space-y-4">
-      <Card className="py-4">
+    <div className="space-y-4 text-sm">
+      <Card className="py-4 text-sm">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2 text-sm">
             <CreditCard className="w-5 h-5" />
             Subscription
           </CardTitle>
-          <CardDescription>Manage your billing and subscription plan</CardDescription>
+          <CardDescription className="text-xs">Manage your billing and subscription plan</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           {/* Plan summary */}

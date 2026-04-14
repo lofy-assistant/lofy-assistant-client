@@ -72,10 +72,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton asChild className="data-[slot=sidebar-menu-button]:p-1.5!">
+            <SidebarMenuButton asChild className="data-[slot=sidebar-menu-button]:p-1.5!" size="sm">
               <Link href="/dashboard">
                 <Image src="/assets/icons/lofy-logo-1.png" alt="Lofy AI Logo" width={20} height={20} className="size-8" />
-                <span className="text-base font-semibold">Lofy AI</span>
+                <span className="text-sm font-semibold">Lofy AI</span>
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
