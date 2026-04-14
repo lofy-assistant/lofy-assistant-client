@@ -29,6 +29,33 @@ async function invalidatePersonalityCache(userId: string) {
   }
 }
 
+async function syncCustomInstructionCache(userId: string, customInstruction: string | null | undefined) {
+  const baseUrl = process.env.FASTAPI_URL;
+  if (!baseUrl) {
+    console.warn("[syncCustomInstructionCache] Skipped: FASTAPI_URL not configured");
+    return;
+  }
+
+  try {
+    const response = await fetch(`${baseUrl}/web/cache/sync-custom-instruction`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        user_id: userId,
+        custom_instruction: customInstruction,
+      }),
+    });
+
+    if (response.ok) {
+      console.log("[syncCustomInstructionCache] Success: custom instruction synced for user", userId);
+    } else {
+      console.error("[syncCustomInstructionCache] Failed:", response.status, response.statusText, "for user", userId);
+    }
+  } catch (err) {
+    console.error("[syncCustomInstructionCache] Error:", err);
+  }
+}
+
 export async function GET(request: NextRequest) {
   try {
     const token = request.cookies.get("session")?.value;
@@ -157,6 +184,10 @@ export async function PATCH(request: NextRequest) {
     // Invalidate personality cache when ai_persona was updated
     if (updateData.ai_persona !== undefined) {
       await invalidatePersonalityCache(session.userId);
+    }
+
+    if (updateData.custom_instruction !== undefined) {
+      await syncCustomInstructionCache(session.userId, updatedUser.custom_instruction);
     }
 
     return NextResponse.json({
