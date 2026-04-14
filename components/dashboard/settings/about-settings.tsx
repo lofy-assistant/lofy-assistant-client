@@ -15,7 +15,7 @@ export function AboutSettings() {
       <CardContent className="space-y-4 text-sm">
         <div>
           <h3 className="text-sm font-medium mb-1">Version</h3>
-          <p className="text-sm text-muted-foreground">1.0.0</p>
+          <p className="text-sm text-muted-foreground">2.0.2</p>
         </div>
 
         <Separator />
@@ -50,13 +50,13 @@ export function AboutSettings() {
           <h3 className="text-sm font-medium mb-2">Legal</h3>
           <div className="space-y-2">
             <a
-              href="#"
+              href="/terms"
               className="text-sm text-muted-foreground hover:text-foreground block"
             >
               Terms of Service
             </a>
             <a
-              href="#"
+              href="/privacy-policy"
               className="text-sm text-muted-foreground hover:text-foreground block"
             >
               Privacy Policy

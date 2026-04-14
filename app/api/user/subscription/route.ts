@@ -13,6 +13,7 @@ interface SubscriptionResponse {
     cancelAtPeriodEnd: boolean;
     billingCycle: "monthly" | "yearly" | null;
     planLabel: string;
+    totalTokensUsed: number;
   } | null;
 }
 
@@ -33,15 +34,24 @@ export async function GET() {
       return NextResponse.json<ErrorResponse>({ error: "Invalid session" }, { status: 401 });
     }
 
-    const record = await prisma.subscriptions.findFirst({
-      where: { user_id: session.userId },
-      select: {
-        id: true,
-        stripe_price_id: true,
-        subscription_status: true,
-        current_period_end: true,
-      },
-    });
+    const [record, tokenUsageRows] = await Promise.all([
+      prisma.subscriptions.findFirst({
+        where: { user_id: session.userId },
+        select: {
+          id: true,
+          stripe_price_id: true,
+          subscription_status: true,
+          current_period_end: true,
+        },
+      }),
+      prisma.$queryRaw<Array<{ total_tokens: bigint | number | null }>>`
+        SELECT COALESCE(SUM(COALESCE(tokens_total_input, 0) + COALESCE(tokens_total_output, 0)), 0) AS total_tokens
+        FROM public.llm_token_usage
+        WHERE user_id = CAST(${session.userId} AS uuid)
+      `,
+    ]);
+
+    const totalTokensUsed = Number(tokenUsageRows[0]?.total_tokens ?? 0);
 
     if (!record) {
       return NextResponse.json<SubscriptionResponse>({ subscription: null });
@@ -70,6 +80,7 @@ export async function GET() {
         planLabel: matchedPlan
           ? `Pro (${matchedPlan.billingCycle === "monthly" ? "Monthly" : "Annual"})`
           : "Pro",
+        totalTokensUsed,
       },
     });
   } catch (error) {

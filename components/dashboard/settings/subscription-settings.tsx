@@ -33,6 +33,7 @@ interface Subscription {
   cancelAtPeriodEnd: boolean;
   billingCycle: "monthly" | "yearly" | null;
   planLabel: string;
+  totalTokensUsed: number;
 }
 
 function statusConfig(status: string, cancelAtPeriodEnd: boolean) {
@@ -83,6 +84,10 @@ function formatDate(iso: string) {
     month: "long",
     day: "numeric",
   });
+}
+
+function formatTokenCount(value: number) {
+  return new Intl.NumberFormat("en-US").format(value);
 }
 
 export function SubscriptionSettings() {
@@ -256,7 +261,7 @@ export function SubscriptionSettings() {
           <Separator />
 
           {/* Actions */}
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-col gap-4">
             <div>
               <p className="text-sm font-medium">Cancel subscription</p>
               <p className="text-xs text-muted-foreground mt-0.5">
@@ -304,6 +309,18 @@ export function SubscriptionSettings() {
             ) : (
               <Badge variant="default">No action available</Badge>
             )}
+          </div>
+
+          <Separator />
+
+          <div className="space-y-1">
+            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              Total tokens used
+            </p>
+            <p className="font-semibold">{formatTokenCount(subscription.totalTokensUsed)}</p>
+            <p className="text-xs text-muted-foreground">
+              Combined input and output tokens recorded in Lofy&apos;s usage logs.
+            </p>
           </div>
         </CardContent>
       </Card>

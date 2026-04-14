@@ -216,6 +216,10 @@ body {
   animation: page-slide-up 0.38s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
+@utility form-ui-text {
+  @apply text-xs md:text-sm;
+}
+
 .scrollbar-hidden {
   -ms-overflow-style: none;
   scrollbar-width: none;
