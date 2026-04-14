@@ -3,9 +3,22 @@
 import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Brain, Flame, History, MessageCircle, TrendingUp } from "lucide-react";
+import { Brain, Flame, History, MessageCircle, TrendingUp, type LucideIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useAnalytics } from "@/hooks/use-analytics";
+
+type AnalyticsStat = {
+  title: string;
+  value: number;
+  icon: LucideIcon;
+  color: string;
+  bgColor: string;
+  href: string;
+  change?: number;
+  upcoming?: number;
+  active?: number;
+  external?: boolean;
+};
 
 export function AnalyticsOverview() {
   const { overview, activity, messages, isLoading: loading, error } = useAnalytics();
@@ -40,7 +53,7 @@ export function AnalyticsOverview() {
     );
   }
 
-  const stats = [
+  const stats: AnalyticsStat[] = [
     {
       title: "Total Memories",
       value: overview.totalMemories,
