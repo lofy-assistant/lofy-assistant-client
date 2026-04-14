@@ -3,7 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { IconBellRinging, IconDashboard, IconHelp, IconCalendarWeek, IconLogout, IconSettings, IconBrain, IconPlug, IconUsers } from "@tabler/icons-react";
+import { IconDashboard, IconHelp, IconLogout, IconSettings, IconBrain, IconPlug, IconUsers } from "@tabler/icons-react";
 
 import { NavMain } from "@/components/nav-main";
 import { NavSecondary } from "@/components/nav-secondary";
@@ -20,16 +20,6 @@ const data = {
       title: "Dashboard",
       url: "/dashboard",
       icon: IconDashboard,
-    },
-    {
-      title: "Calendar",
-      url: "/dashboard/calendar",
-      icon: IconCalendarWeek,
-    },
-    {
-      title: "Reminders",
-      url: "/dashboard/reminders",
-      icon: IconBellRinging,
     },
     {
       title: "Memories",

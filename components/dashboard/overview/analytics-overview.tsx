@@ -3,12 +3,12 @@
 import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Brain, Calendar, Bell, TrendingUp } from "lucide-react";
+import { Brain, Flame, History, MessageCircle, TrendingUp } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useAnalytics } from "@/hooks/use-analytics";
 
 export function AnalyticsOverview() {
-  const { overview, activity, isLoading: loading, error } = useAnalytics();
+  const { overview, activity, messages, isLoading: loading, error } = useAnalytics();
   const router = useRouter();
 
   if (loading) {
@@ -30,7 +30,7 @@ export function AnalyticsOverview() {
     );
   }
 
-  if (error || !overview || !activity) {
+  if (error || !overview || !activity || !messages) {
     return (
       <Card>
         <CardContent className="pt-6">
@@ -51,32 +51,52 @@ export function AnalyticsOverview() {
       href: "/dashboard/memories",
     },
     {
-      title: "Calendar Events",
-      value: overview.totalEvents,
-      change: activity.thisWeek.events,
-      upcoming: overview.upcomingEvents,
-      icon: Calendar,
+      title: "Message History",
+      value: messages.total,
+      change: messages.messagesThisWeek,
+      icon: History,
       color: "text-blue-500",
       bgColor: "bg-blue-500/10",
-      href: "/dashboard/calendar",
+      href: "/dashboard/history",
     },
     {
-      title: "Reminders",
-      value: overview.totalReminders,
-      active: overview.activeReminders,
-      icon: Bell,
+      title: "Active Days",
+      value: messages.daysActive,
+      active: messages.currentStreak,
+      icon: Flame,
       color: "text-orange-500",
       bgColor: "bg-orange-500/10",
-      href: "/dashboard/reminders",
+      href: "/dashboard/history",
+    },
+    {
+      title: "Chat With Lofy",
+      value: messages.byAssistant,
+      active: messages.byUser,
+      icon: MessageCircle,
+      color: "text-emerald-500",
+      bgColor: "bg-emerald-500/10",
+      href: "https://wa.me/60105043846",
+      external: true,
     },
   ];
 
   return (
     <div className="space-y-6">
       {/* Stats Grid */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {stats.map((stat) => (
-          <Card className="pt-2 transition-all cursor-pointer hover:shadow-md active:scale-[0.98]" key={stat.title} onClick={() => router.push(stat.href)}>
+          <Card
+            className="pt-2 transition-all cursor-pointer hover:shadow-md active:scale-[0.98]"
+            key={stat.title}
+            onClick={() => {
+              if (stat.external) {
+                window.open(stat.href, "_blank", "noopener,noreferrer");
+                return;
+              }
+
+              router.push(stat.href);
+            }}
+          >
             <CardHeader className="flex flex-row items-center space-y-0">
               <div className={`p-2 rounded-full ${stat.bgColor}`}>
                 <stat.icon className={`w-4 h-4 ${stat.color}`} />
@@ -98,7 +118,7 @@ export function AnalyticsOverview() {
                 )}
                 {stat.active !== undefined && (
                   <Badge variant="indigo" className="text-xs">
-                    {stat.active} active
+                    {stat.title === "Active Days" ? `${stat.active} day streak` : `${stat.active} active`}
                   </Badge>
                 )}
               </div>

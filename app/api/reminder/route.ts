@@ -29,6 +29,7 @@ function getMonthRange(month: string, year: string) {
 type ReminderRow = {
   id: number;
   user_id: string;
+  target_user_id: string | null;
   message: string;
   reminder_time: Date;
   status: string;
@@ -36,6 +37,7 @@ type ReminderRow = {
   updated_at: Date;
   recurrence: string | null;
   next_recurrence: Date | null;
+  target_name?: string | null;
 };
 
 function expandRecurringReminder(reminder: ReminderRow, startOfMonth: Date, endOfMonth: Date): Date[] {
@@ -59,9 +61,11 @@ function reminderToJson(r: ExpandedReminder) {
   return {
     id: r.id,
     user_id: r.user_id,
+    target_user_id: r.target_user_id,
     message: r.message,
     reminder_time: r.reminder_time.toISOString(),
     status,
+    target_name: r.target_name ?? null,
     created_at: r.created_at.toISOString(),
     updated_at: r.updated_at.toISOString(),
     recurrence: r.recurrence,
@@ -124,11 +128,30 @@ export async function GET(request: NextRequest) {
       orderBy: { reminder_time: "asc" },
     });
 
+    const targetUserIds = Array.from(
+      new Set(
+        [...remindersInRange, ...recurringReminders]
+          .map((reminder) => reminder.target_user_id)
+          .filter((userId): userId is string => Boolean(userId)),
+      ),
+    );
+
+    const targetUsers = targetUserIds.length
+      ? await prisma.users.findMany({
+          where: { id: { in: targetUserIds } },
+          select: { id: true, name: true },
+        })
+      : [];
+    const targetUsersById = new Map(targetUsers.map((user) => [user.id, user.name]));
+
     const expanded: ExpandedReminder[] = [];
 
     // Add non-recurring reminders that are in the requested range
     for (const reminder of remindersInRange) {
-      expanded.push(reminder);
+      expanded.push({
+        ...reminder,
+        target_name: reminder.target_user_id ? targetUsersById.get(reminder.target_user_id) ?? null : null,
+      });
     }
 
     // Process recurring reminders: find the first future occurrence
@@ -156,6 +179,7 @@ export async function GET(request: NextRequest) {
              const effectiveStatus = isFuture ? "pending" : reminder.status;
              expanded.push({
                ...reminder,
+               target_name: reminder.target_user_id ? targetUsersById.get(reminder.target_user_id) ?? null : null,
                reminder_time: nextOccurrence,
                effectiveStatus,
              });
@@ -174,103 +198,6 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ reminders }, { status: 200 });
   } catch (error) {
     console.error("Reminder API Error:", error);
-
-    return NextResponse.json(
-      {
-        error: "Internal server error",
-        details: error instanceof Error ? error.message : "Unknown error",
-      },
-      { status: 500 },
-    );
-  }
-}
-
-export async function POST(request: NextRequest) {
-  try {
-    const token = request.cookies.get("session")?.value;
-
-    if (!token) {
-      return NextResponse.json({ error: "Unauthorized - missing session token" }, { status: 401 });
-    }
-
-    const session = await verifySession(token);
-
-    if (!session?.userId) {
-      return NextResponse.json({ error: "Unauthorized - invalid session" }, { status: 401 });
-    }
-
-    type CreateReminderBody = {
-      message?: string;
-      reminder_time?: string;
-      recurrence?: string | null;
-    };
-
-    const body = (await request.json()) as CreateReminderBody;
-    const { message, reminder_time, recurrence } = body;
-
-    if (!message || !reminder_time) {
-      return NextResponse.json({ error: "Message and reminder_time are required" }, { status: 400 });
-    }
-
-    const remindersUrl = `${process.env.FASTAPI_URL}/web/reminders?user_id=${encodeURIComponent(session.userId)}`;
-    
-    type ReminderPayload = {
-      message: string;
-      reminder_time: string;
-      recurrence?: string;
-    };
-
-    // Construct payload for external API
-    const payload: ReminderPayload = {
-      message,
-      reminder_time,
-    };
-
-    if (recurrence) {
-      payload.recurrence = recurrence;
-    }
-
-    let apiRes;
-    try {
-      apiRes = await fetch(remindersUrl, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-    } catch (err) {
-      console.error("Network error calling reminders API:", err);
-      return NextResponse.json({ error: "Failed to reach reminders API" }, { status: 502 });
-    }
-
-    const text = await apiRes.text();
-    let data;
-    try {
-      data = text ? JSON.parse(text) : null;
-    } catch {
-      data = text;
-    }
-
-    if (apiRes.ok) {
-       // Expecting { success: true, message, data }
-      return NextResponse.json(
-        { success: true, message: data?.message || "Reminder created", data: data?.data || null },
-        { status: 200 },
-      );
-    }
-
-    if (apiRes.status === 409) {
-      return NextResponse.json({ error: data?.detail || "Conflict - duplicate reminder" }, { status: 409 });
-    }
-
-    if (apiRes.status === 400) {
-      return NextResponse.json({ error: data?.detail || "Bad request" }, { status: 400 });
-    }
-    
-    console.error("Upstream reminders API error:", apiRes.status, data);
-    return NextResponse.json({ error: data?.detail || "Upstream API error" }, { status: 500 });
-
-  } catch (error) {
-    console.error("Reminder Creation Error:", error);
 
     return NextResponse.json(
       {
