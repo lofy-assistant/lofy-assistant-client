@@ -40,20 +40,6 @@ type ReminderRow = {
   target_name?: string | null;
 };
 
-function expandRecurringReminder(reminder: ReminderRow, startOfMonth: Date, endOfMonth: Date): Date[] {
-  if (!reminder.recurrence) return [];
-
-  try {
-    const rule = rrulestr(reminder.recurrence, {
-      dtstart: reminder.reminder_time,
-      unfold: true,
-    });
-    return rule.between(startOfMonth, endOfMonth, true);
-  } catch {
-    return [];
-  }
-}
-
 type ExpandedReminder = ReminderRow & { reminder_time: Date; effectiveStatus?: string };
 
 function reminderToJson(r: ExpandedReminder) {
@@ -103,6 +89,7 @@ export async function GET(request: NextRequest) {
     const remindersInRange = await prisma.reminders.findMany({
       where: {
         user_id: session.userId,
+        deleted_at: null,
         status,
         ...dateFilter,
         recurrence: null, // Only fetch non-recurring reminders for this specific month range
@@ -115,10 +102,12 @@ export async function GET(request: NextRequest) {
       status === "pending"
         ? {
             user_id: session.userId,
+            deleted_at: null,
             recurrence: { not: null },
           }
         : {
             user_id: session.userId,
+            deleted_at: null,
             status,
             recurrence: { not: null },
           };
@@ -138,7 +127,7 @@ export async function GET(request: NextRequest) {
 
     const targetUsers = targetUserIds.length
       ? await prisma.users.findMany({
-          where: { id: { in: targetUserIds } },
+          where: { id: { in: targetUserIds }, deleted_at: null },
           select: { id: true, name: true },
         })
       : [];

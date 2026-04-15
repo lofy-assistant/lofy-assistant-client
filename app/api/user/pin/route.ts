@@ -48,8 +48,11 @@ export async function PATCH(request: NextRequest) {
     }
 
     // Get user's current PIN
-    const user = await prisma.users.findUnique({
-      where: { id: session.userId },
+    const user = await prisma.users.findFirst({
+      where: {
+        id: session.userId,
+        deleted_at: null,
+      },
       select: { pin: true },
     });
 

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 import { prisma } from "@/lib/database";
 import { decryptContent, hash } from "@/lib/encryption";
-import { verifySession } from "@/lib/session";
+import { getRequestUserId } from "@/lib/session";
 
 type CoreCreateFriendResponse = {
   invitation_id: string;
@@ -51,20 +51,9 @@ function getMaskedLast4(encryptedPhone: string): string {
   return digits.slice(-4);
 }
 
-async function getSessionUserId(request: NextRequest) {
-  const token = request.cookies.get("session")?.value;
-
-  if (!token) {
-    return null;
-  }
-
-  const session = await verifySession(token);
-  return session?.userId ?? null;
-}
-
 export async function GET(request: NextRequest) {
   try {
-    const userId = await getSessionUserId(request);
+    const userId = await getRequestUserId(request);
 
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized - invalid session" }, { status: 401 });
@@ -107,6 +96,7 @@ export async function GET(request: NextRequest) {
             id: {
               in: otherUserIds,
             },
+            deleted_at: null,
           },
           select: {
             id: true,
@@ -157,7 +147,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const userId = await getSessionUserId(request);
+    const userId = await getRequestUserId(request);
 
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized - invalid session" }, { status: 401 });

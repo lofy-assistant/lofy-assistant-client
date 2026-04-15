@@ -97,6 +97,7 @@ export async function GET(request: NextRequest) {
     const eventsInRange = await prisma.calendar_events.findMany({
       where: {
         user_id: session.userId,
+        deleted_at: null,
         ...dateFilter,
         recurrence: null, // Only fetch non-recurring events for this specific month range
       },
@@ -107,6 +108,7 @@ export async function GET(request: NextRequest) {
     const recurringEvents = await prisma.calendar_events.findMany({
       where: {
         user_id: session.userId,
+        deleted_at: null,
         recurrence: { not: null },
       },
       orderBy: { start_time: "asc" },

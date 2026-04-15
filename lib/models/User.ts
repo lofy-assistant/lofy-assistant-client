@@ -9,6 +9,7 @@ export interface IUser extends Document {
   encrypted_phone?: string;
   hashed_phone?: string;
   timezone?: string;
+  deleted_at?: Date | null;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -39,6 +40,11 @@ const UserSchema = new Schema<IUser>(
     encrypted_phone: String,
     hashed_phone: String,
     timezone: String,
+    deleted_at: {
+      type: Date,
+      default: null,
+      index: true,
+    },
   },
   {
     timestamps: true, // Automatically adds createdAt and updatedAt

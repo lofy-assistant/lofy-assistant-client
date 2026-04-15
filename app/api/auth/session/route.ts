@@ -1,21 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
-import { verifySession } from "@/lib/session";
+import { getRequestSession, getRequestSessionToken } from "@/lib/session";
 import { prisma } from '@/lib/database';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
     try {
-        const token = request.cookies.get("session")?.value;
-
-        if (!token) {
+        if (!getRequestSessionToken(request)) {
             return NextResponse.json(
                 { error: "Not authenticated" },
                 { status: 401 }
             );
         }
 
-        const session = await verifySession(token);
+        const session = await getRequestSession(request);
 
         if (!session) {
             return NextResponse.json(
@@ -25,8 +23,11 @@ export async function GET(request: NextRequest) {
         }
 
         // Fetch user details from database
-        const user = await prisma.users.findUnique({
-            where: { id: session.userId },
+        const user = await prisma.users.findFirst({
+            where: {
+                id: session.userId,
+                deleted_at: null,
+            },
             select: { id: true, name: true }
         });
 

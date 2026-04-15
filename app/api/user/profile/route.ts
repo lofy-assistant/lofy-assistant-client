@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from '@/lib/database';
-import { verifySession } from "@/lib/session";
+import { getRequestSession, getRequestSessionToken } from "@/lib/session";
 import { normalizePersonaFromRequest } from "@/lib/persona";
 
 const CUSTOM_INSTRUCTION_MAX_LENGTH = 1000;
@@ -58,16 +58,14 @@ async function syncCustomInstructionCache(userId: string, customInstruction: str
 
 export async function GET(request: NextRequest) {
   try {
-    const token = request.cookies.get("session")?.value;
-
-    if (!token) {
+    if (!getRequestSessionToken(request)) {
       return NextResponse.json(
         { error: "Unauthorized - missing session token" },
         { status: 401 }
       );
     }
 
-    const session = await verifySession(token);
+    const session = await getRequestSession(request);
 
     if (!session?.userId) {
       return NextResponse.json(
@@ -76,8 +74,11 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const user = await prisma.users.findUnique({
-      where: { id: session.userId },
+    const user = await prisma.users.findFirst({
+      where: {
+        id: session.userId,
+        deleted_at: null,
+      },
       select: {
         id: true,
         name: true,
@@ -104,16 +105,14 @@ export async function GET(request: NextRequest) {
 
 export async function PATCH(request: NextRequest) {
   try {
-    const token = request.cookies.get("session")?.value;
-
-    if (!token) {
+    if (!getRequestSessionToken(request)) {
       return NextResponse.json(
         { error: "Unauthorized - missing session token" },
         { status: 401 }
       );
     }
 
-    const session = await verifySession(token);
+    const session = await getRequestSession(request);
 
     if (!session?.userId) {
       return NextResponse.json(
@@ -130,11 +129,11 @@ export async function PATCH(request: NextRequest) {
       ai_persona?: string | null;
       custom_instruction?: string | null;
     } = {};
-    
+
     if (name !== undefined) {
       updateData.name = name || null;
     }
-    
+
     if (type !== undefined) {
       const persona = normalizePersonaFromRequest(type);
       if (persona) {
@@ -168,9 +167,28 @@ export async function PATCH(request: NextRequest) {
       updateData.custom_instruction = trimmedInstruction || null;
     }
 
-    const updatedUser = await prisma.users.update({
+    const existingUser = await prisma.users.findFirst({
+      where: {
+        id: session.userId,
+        deleted_at: null,
+      },
+      select: { id: true },
+    });
+
+    if (!existingUser) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
+
+    await prisma.users.update({
       where: { id: session.userId },
       data: updateData,
+    });
+
+    const updatedUser = await prisma.users.findFirst({
+      where: {
+        id: session.userId,
+        deleted_at: null,
+      },
       select: {
         id: true,
         name: true,
@@ -180,6 +198,10 @@ export async function PATCH(request: NextRequest) {
         custom_instruction: true,
       },
     });
+
+    if (!updatedUser) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
 
     // Invalidate personality cache when ai_persona was updated
     if (updateData.ai_persona !== undefined) {

@@ -30,6 +30,7 @@ export async function GET(request: NextRequest) {
     const memories = await prisma.memories.findMany({
       where: {
         user_id: session.userId,
+        deleted_at: null,
         ...searchFilter,
       },
       orderBy: {

@@ -1,19 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from '@/lib/database';
-import { verifySession } from "@/lib/session";
+import { getRequestSession, getRequestSessionToken } from "@/lib/session";
 
 export async function POST(request: NextRequest) {
   try {
-    const token = request.cookies.get("session")?.value;
-
-    if (!token) {
+    if (!getRequestSessionToken(request)) {
       return NextResponse.json(
         { error: "Unauthorized - missing session token" },
         { status: 401 }
       );
     }
 
-    const session = await verifySession(token);
+    const session = await getRequestSession(request);
 
     if (!session?.userId) {
       return NextResponse.json(

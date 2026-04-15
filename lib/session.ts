@@ -1,4 +1,5 @@
 import { SignJWT, jwtVerify } from 'jose';
+import type { NextRequest } from 'next/server';
 
 const EXPIRES_IN = '24h';
 
@@ -43,4 +44,23 @@ export async function verifySession(token: string): Promise<SessionPayload | nul
         console.error('Session verification failed:', error);
         return null;
     }
+}
+
+export function getRequestSessionToken(request: NextRequest): string | null {
+    return request.cookies.get('session')?.value ?? null;
+}
+
+export async function getRequestSession(request: NextRequest): Promise<SessionPayload | null> {
+    const token = getRequestSessionToken(request);
+
+    if (!token) {
+        return null;
+    }
+
+    return verifySession(token);
+}
+
+export async function getRequestUserId(request: NextRequest): Promise<string | null> {
+    const session = await getRequestSession(request);
+    return session?.userId ?? null;
 }

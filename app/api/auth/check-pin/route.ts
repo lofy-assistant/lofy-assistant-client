@@ -17,7 +17,10 @@ export async function POST(request: NextRequest) {
 
     // Check if user exists and has PIN set
     const user = await prisma.users.findFirst({
-      where: { hashed_phone: hashedPhone },
+      where: {
+        hashed_phone: hashedPhone,
+        deleted_at: null,
+      },
       select: { pin: true },
     });
 

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { verifySession } from "@/lib/session";
+import { getRequestSession, getRequestSessionToken } from "@/lib/session";
 import { connectMongo, prisma } from "@/lib/database";
 import User from "@/lib/models/User";
 import mongoose from "mongoose";
@@ -33,16 +33,14 @@ export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
   try {
-    const token = request.cookies.get("session")?.value;
-
-    if (!token) {
+    if (!getRequestSessionToken(request)) {
       return NextResponse.json(
         { error: "Unauthorized - missing session token" },
         { status: 401 }
       );
     }
 
-    const session = await verifySession(token);
+    const session = await getRequestSession(request);
 
     if (!session?.userId) {
       return NextResponse.json(
@@ -58,7 +56,7 @@ export async function GET(request: NextRequest) {
     await connectMongo();
 
     // Fetch user timezone
-    const mongoUser = await User.findOne({ user_id: userId }, { timezone: 1 }).lean();
+    const mongoUser = await User.findOne({ user_id: userId, deleted_at: null }, { timezone: 1 }).lean();
     const userTimezone = (mongoUser?.timezone as string) || "UTC";
 
     // Cache key includes user + timezone
@@ -199,15 +197,15 @@ export async function GET(request: NextRequest) {
       memoriesThisWeek,
       eventsThisWeek,
     ] = await Promise.all([
-      prisma.memories.count({ where: { user_id: userId } }),
-      prisma.reminders.count({ where: { user_id: userId } }),
-      prisma.calendar_events.count({ where: { user_id: userId } }),
+      prisma.memories.count({ where: { user_id: userId, deleted_at: null } }),
+      prisma.reminders.count({ where: { user_id: userId, deleted_at: null } }),
+      prisma.calendar_events.count({ where: { user_id: userId, deleted_at: null } }),
       prisma.reminders.count({
-        where: { user_id: userId, status: "pending", reminder_time: { gte: new Date() } },
+        where: { user_id: userId, deleted_at: null, status: "pending", reminder_time: { gte: new Date() } },
       }),
-      prisma.calendar_events.count({ where: { user_id: userId, start_time: { gte: new Date() } } }),
-      prisma.memories.count({ where: { user_id: userId, created_at: { gte: sevenDaysAgoPrisma } } }),
-      prisma.calendar_events.count({ where: { user_id: userId, created_at: { gte: sevenDaysAgoPrisma } } }),
+      prisma.calendar_events.count({ where: { user_id: userId, deleted_at: null, start_time: { gte: new Date() } } }),
+      prisma.memories.count({ where: { user_id: userId, deleted_at: null, created_at: { gte: sevenDaysAgoPrisma } } }),
+      prisma.calendar_events.count({ where: { user_id: userId, deleted_at: null, created_at: { gte: sevenDaysAgoPrisma } } }),
     ]);
 
     const payload = {

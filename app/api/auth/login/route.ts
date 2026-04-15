@@ -55,7 +55,10 @@ export async function POST(request: NextRequest) {
     console.log("🔐 Hashed phone:", hashedPhone);
 
     const user = await prisma.users.findFirst({
-      where: { hashed_phone: hashedPhone },
+      where: {
+        hashed_phone: hashedPhone,
+        deleted_at: null,
+      },
     });
 
     console.log("👤 User found:", !!user, user ? { id: user.id, hasPin: !!user.pin } : null);

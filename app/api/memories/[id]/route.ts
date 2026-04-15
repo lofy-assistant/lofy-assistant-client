@@ -28,6 +28,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       where: {
         id: memoryId,
         user_id: session.userId,
+        deleted_at: null,
       },
       select: {
         id: true,
@@ -101,6 +102,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       where: {
         id: memoryId,
         user_id: session.userId,
+        deleted_at: null,
       },
     });
 
@@ -108,13 +110,33 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       return NextResponse.json({ error: "Memory not found" }, { status: 404 });
     }
 
-    const updatedMemory = await prisma.memories.update({
-      where: { id: memoryId },
+    const updateResult = await prisma.memories.updateMany({
+      where: {
+        id: memoryId,
+        user_id: session.userId,
+        deleted_at: null,
+      },
       data: {
         title: title || null,
         content,
       },
     });
+
+    if (updateResult.count === 0) {
+      return NextResponse.json({ error: "Memory not found" }, { status: 404 });
+    }
+
+    const updatedMemory = await prisma.memories.findFirst({
+      where: {
+        id: memoryId,
+        user_id: session.userId,
+        deleted_at: null,
+      },
+    });
+
+    if (!updatedMemory) {
+      return NextResponse.json({ error: "Memory not found" }, { status: 404 });
+    }
 
     return NextResponse.json({
       memory: updatedMemory,
@@ -152,6 +174,7 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
       where: {
         id: memoryId,
         user_id: session.userId,
+        deleted_at: null,
       },
     });
 
@@ -159,9 +182,20 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
       return NextResponse.json({ error: "Memory not found" }, { status: 404 });
     }
 
-    await prisma.memories.delete({
-      where: { id: memoryId },
+    const deleteResult = await prisma.memories.updateMany({
+      where: {
+        id: memoryId,
+        user_id: session.userId,
+        deleted_at: null,
+      },
+      data: {
+        deleted_at: new Date(),
+      },
     });
+
+    if (deleteResult.count === 0) {
+      return NextResponse.json({ error: "Memory not found" }, { status: 404 });
+    }
 
     return NextResponse.json({
       message: "Memory deleted successfully",
