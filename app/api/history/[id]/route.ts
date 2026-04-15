@@ -260,8 +260,10 @@ function buildDetail(
 			return parts.join("\n") || "Lofy updated this calendar event.";
 		}
 
+		const eventLines = buildEventDetailLines(data);
 		const identifier = toCleanText(data.event_id);
-		return identifier ? `Removed event #${identifier}.` : "Lofy deleted this calendar event.";
+		const summary = identifier ? `Removed event #${identifier}.` : "Lofy deleted this calendar event.";
+		return [summary, ...eventLines].join("\n");
 	}
 
 	if (entity === "reminder") {
@@ -284,8 +286,10 @@ function buildDetail(
 			return parts.join("\n") || "Lofy updated this reminder.";
 		}
 
+		const reminderLines = buildReminderDetailLines(data);
 		const identifier = toCleanText(data.reminder_id);
-		return identifier ? `Removed reminder #${identifier}.` : "Lofy deleted this reminder.";
+		const summary = identifier ? `Removed reminder #${identifier}.` : "Lofy deleted this reminder.";
+		return [summary, ...reminderLines].join("\n");
 	}
 
 	if (action === "created") {
@@ -297,7 +301,9 @@ function buildDetail(
 	}
 
 	const identifier = toCleanText(data.memory_id);
-	return `${identifier ? `Removed memory #${identifier}.` : "Lofy deleted this memory."}${sourceText}`.trim();
+	const title = toCleanText(data.title);
+	const summary = `${identifier ? `Removed memory #${identifier}.` : "Lofy deleted this memory."}${sourceText}`.trim();
+	return title ? `${summary}\nTitle: ${excerpt(title, "")}.` : summary;
 }
 
 function normalizeHistoryItem(event: EventDocument): HistoryItem | null {

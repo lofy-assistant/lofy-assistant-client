@@ -96,7 +96,6 @@ export async function GET(request: NextRequest) {
             id: {
               in: otherUserIds,
             },
-            deleted_at: null,
           },
           select: {
             id: true,

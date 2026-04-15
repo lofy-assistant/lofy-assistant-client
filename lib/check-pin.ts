@@ -14,7 +14,6 @@ export async function checkUserHasPin(phone: string): Promise<boolean> {
         const user = await prisma.users.findFirst({
             where: {
                 hashed_phone: hashedPhone,
-                deleted_at: null,
             },
             select: { pin: true },
         });

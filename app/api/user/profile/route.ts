@@ -77,7 +77,6 @@ export async function GET(request: NextRequest) {
     const user = await prisma.users.findFirst({
       where: {
         id: session.userId,
-        deleted_at: null,
       },
       select: {
         id: true,
@@ -170,7 +169,6 @@ export async function PATCH(request: NextRequest) {
     const existingUser = await prisma.users.findFirst({
       where: {
         id: session.userId,
-        deleted_at: null,
       },
       select: { id: true },
     });
@@ -187,7 +185,6 @@ export async function PATCH(request: NextRequest) {
     const updatedUser = await prisma.users.findFirst({
       where: {
         id: session.userId,
-        deleted_at: null,
       },
       select: {
         id: true,

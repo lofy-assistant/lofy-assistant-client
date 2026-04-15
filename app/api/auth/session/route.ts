@@ -26,7 +26,6 @@ export async function GET(request: NextRequest) {
         const user = await prisma.users.findFirst({
             where: {
                 id: session.userId,
-                deleted_at: null,
             },
             select: { id: true, name: true }
         });

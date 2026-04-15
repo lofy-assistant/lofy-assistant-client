@@ -19,7 +19,6 @@ export async function POST(request: NextRequest) {
     const user = await prisma.users.findFirst({
       where: {
         hashed_phone: hashedPhone,
-        deleted_at: null,
       },
       select: { pin: true },
     });

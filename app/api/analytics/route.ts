@@ -56,7 +56,7 @@ export async function GET(request: NextRequest) {
     await connectMongo();
 
     // Fetch user timezone
-    const mongoUser = await User.findOne({ user_id: userId, deleted_at: null }, { timezone: 1 }).lean();
+    const mongoUser = await User.findOne({ user_id: userId }, { timezone: 1 }).lean();
     const userTimezone = (mongoUser?.timezone as string) || "UTC";
 
     // Cache key includes user + timezone
