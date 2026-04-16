@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { connectMongo } from "@/lib/database";
+import { connectMongo, prisma } from "@/lib/database";
 import { DomainEvent } from "@/lib/models";
 import { verifySession } from "@/lib/session";
 
@@ -8,6 +8,7 @@ export const dynamic = "force-dynamic";
 
 type ActivityEntity = "event" | "reminder" | "memory";
 type ActivityAction = "created" | "updated" | "deleted";
+type ActivityPartyKind = "from" | "for";
 
 type HistoryItem = {
 	id: string;
@@ -16,6 +17,10 @@ type HistoryItem = {
 	label: string;
 	detail: string;
 	at: string;
+	party: {
+		kind: ActivityPartyKind;
+		label: string;
+	} | null;
 };
 
 type EventDocument = {
@@ -38,6 +43,18 @@ const SUPPORTED_EVENT_TYPES = [
 	"memory.updated",
 	"memory.deleted",
 ] as const;
+
+const REMINDER_EVENT_TYPES = [
+	"reminder.created",
+	"reminder.updated",
+	"reminder.deleted",
+] as const;
+
+type ReminderAccessRow = {
+	id: number;
+	user_id: string;
+	target_user_id: string | null;
+};
 
 function isRecord(value: unknown): value is Record<string, unknown> {
 	return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -83,6 +100,19 @@ function toBoolean(value: unknown): boolean | null {
 		const normalized = value.trim().toLowerCase();
 		if (normalized === "true") return true;
 		if (normalized === "false") return false;
+	}
+
+	return null;
+}
+
+function toInteger(value: unknown): number | null {
+	if (typeof value === "number" && Number.isInteger(value)) {
+		return value;
+	}
+
+	if (typeof value === "string") {
+		const parsed = Number.parseInt(value, 10);
+		return Number.isNaN(parsed) ? null : parsed;
 	}
 
 	return null;
@@ -138,6 +168,18 @@ function normalizeRecurrence(value: unknown): string | null {
 	};
 
 	return labels[frequency] ?? sentenceCase(frequency.toLowerCase());
+}
+
+function getReminderId(data: Record<string, unknown>): number | null {
+	const changes = isRecord(data.changes) ? data.changes : null;
+
+	return toInteger(data.reminder_id) ?? toInteger(changes?.reminder_id);
+}
+
+function getReminderTargetUserId(data: Record<string, unknown>): string | null {
+	const changes = isRecord(data.changes) ? data.changes : null;
+
+	return toCleanText(data.target_user_id) ?? toCleanText(changes?.target_user_id);
 }
 
 function buildFieldSummary(fields: Record<string, unknown>): string {
@@ -306,7 +348,49 @@ function buildDetail(
 	return title ? `${summary}\nTitle: ${excerpt(title, "")}.` : summary;
 }
 
-function normalizeHistoryItem(event: EventDocument): HistoryItem | null {
+function resolveUserDisplayName(userId: string | null | undefined, userNamesById: Map<string, string>): string | null {
+	if (!userId) {
+		return null;
+	}
+
+	const name = userNamesById.get(userId)?.trim();
+	return name && name.length > 0 ? name : "Someone";
+}
+
+function buildReminderParty(
+	event: EventDocument,
+	viewerUserId: string,
+	data: Record<string, unknown>,
+	remindersById: Map<number, ReminderAccessRow>,
+	userNamesById: Map<string, string>
+): HistoryItem["party"] {
+	const reminderId = getReminderId(data);
+	const reminderRecord = reminderId !== null ? remindersById.get(reminderId) : undefined;
+	const targetUserId = getReminderTargetUserId(data) ?? reminderRecord?.target_user_id ?? null;
+
+	if (!targetUserId) {
+		return null;
+	}
+
+	if (event.user_id === viewerUserId && targetUserId !== viewerUserId) {
+		const targetName = resolveUserDisplayName(targetUserId, userNamesById);
+		return targetName ? { kind: "for", label: `For ${targetName}` } : null;
+	}
+
+	if (targetUserId === viewerUserId && event.user_id !== viewerUserId) {
+		const ownerName = resolveUserDisplayName(event.user_id, userNamesById);
+		return ownerName ? { kind: "from", label: `From ${ownerName}` } : null;
+	}
+
+	return null;
+}
+
+function normalizeHistoryItem(
+	event: EventDocument,
+	viewerUserId: string,
+	remindersById: Map<number, ReminderAccessRow>,
+	userNamesById: Map<string, string>
+): HistoryItem | null {
 	const normalizedType = normalizeEventType(event.event_type);
 	if (!normalizedType) {
 		return null;
@@ -322,6 +406,10 @@ function normalizeHistoryItem(event: EventDocument): HistoryItem | null {
 		label: buildLabel(normalizedType.entity, normalizedType.action, data),
 		detail: buildDetail(normalizedType.entity, normalizedType.action, data, metadata),
 		at: event.created_at.toISOString(),
+		party:
+			normalizedType.entity === "reminder"
+				? buildReminderParty(event, viewerUserId, data, remindersById, userNamesById)
+				: null,
 	};
 }
 
@@ -350,11 +438,32 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 			? Math.min(Math.max(limitParam, 1), 100)
 			: 50;
 
+		const targetedReminderRows = await prisma.reminders.findMany({
+			where: { target_user_id: session.userId },
+			select: { id: true },
+		});
+		const targetedReminderIds = targetedReminderRows.map((reminder) => reminder.id);
+
 		await connectMongo();
 
+		const eventFilters: Record<string, unknown>[] = [
+			{ user_id: session.userId },
+			{
+				event_type: { $in: REMINDER_EVENT_TYPES },
+				"data.target_user_id": session.userId,
+			},
+		];
+
+		if (targetedReminderIds.length > 0) {
+			eventFilters.push({
+				event_type: { $in: REMINDER_EVENT_TYPES },
+				"data.reminder_id": { $in: targetedReminderIds },
+			});
+		}
+
 		const events = await DomainEvent.find({
-			user_id: session.userId,
 			event_type: { $in: SUPPORTED_EVENT_TYPES },
+			$or: eventFilters,
 		})
 			.sort({ created_at: -1 })
 			.limit(limit)
@@ -369,8 +478,53 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 			.lean<EventDocument[]>()
 			.exec();
 
+		const reminderIds = Array.from(
+			new Set(
+				events
+					.map((event) => {
+						const data = isRecord(event.data) ? event.data : {};
+						return getReminderId(data);
+					})
+					.filter((reminderId): reminderId is number => reminderId !== null)
+			),
+		);
+
+		const reminderRows = reminderIds.length
+			? await prisma.reminders.findMany({
+					where: { id: { in: reminderIds } },
+					select: { id: true, user_id: true, target_user_id: true },
+				})
+			: [];
+		const remindersById = new Map(reminderRows.map((reminder) => [reminder.id, reminder]));
+
+		const relatedUserIds = Array.from(
+			new Set(
+				events.flatMap((event) => {
+					const data = isRecord(event.data) ? event.data : {};
+					const reminderId = getReminderId(data);
+					const reminderRecord = reminderId !== null ? remindersById.get(reminderId) : undefined;
+					const targetUserId = getReminderTargetUserId(data) ?? reminderRecord?.target_user_id ?? null;
+					const ids = [event.user_id, targetUserId];
+
+					return ids.filter(
+						(userId): userId is string => Boolean(userId) && userId !== session.userId,
+					);
+				})
+			),
+		);
+
+		const relatedUsers = relatedUserIds.length
+			? await prisma.users.findMany({
+					where: { id: { in: relatedUserIds } },
+					select: { id: true, name: true },
+				})
+			: [];
+		const userNamesById = new Map(
+			relatedUsers.map((user) => [user.id, toCleanText(user.name) ?? "Someone"]),
+		);
+
 		const items = events
-			.map(normalizeHistoryItem)
+			.map((event) => normalizeHistoryItem(event, session.userId, remindersById, userNamesById))
 			.filter((item: HistoryItem | null): item is HistoryItem => item !== null);
 
 		return NextResponse.json({ items, count: items.length }, { status: 200 });

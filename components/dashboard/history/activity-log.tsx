@@ -7,6 +7,12 @@ import { cn } from "@/lib/utils";
 
 export type ActivityEntity = "event" | "reminder" | "memory";
 export type ActivityAction = "created" | "updated" | "deleted";
+export type ActivityPartyKind = "from" | "for";
+
+export interface ActivityParty {
+  kind: ActivityPartyKind;
+  label: string;
+}
 
 export interface ActivityItem {
   id: string;
@@ -15,6 +21,7 @@ export interface ActivityItem {
   label: string;
   detail: string;
   at: Date;
+  party: ActivityParty | null;
 }
 
 type ActivityApiItem = Omit<ActivityItem, "at"> & {
@@ -70,6 +77,11 @@ const ACTION_BADGE_STYLES: Record<ActivityAction, string> = {
   created: "border-primary/15 bg-primary/8 text-primary",
   updated: "border-sky-200/60 bg-sky-50/75 text-sky-700",
   deleted: "border-destructive/15 bg-destructive/8 text-destructive",
+};
+
+const PARTY_BADGE_STYLES: Record<ActivityPartyKind, string> = {
+  for: "border-primary/15 bg-primary/8 text-primary",
+  from: "border-fuchsia-200/80 bg-fuchsia-50/80 text-fuchsia-400",
 };
 
 const ISO_WITHOUT_TIMEZONE = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(?::\d{2}(?:\.\d+)?)?$/;
@@ -293,6 +305,16 @@ export function ActivityLog() {
                           >
                             {ACTION_VERB[item.action]} {ENTITY_LABEL[item.entity]}
                           </span>
+                          {item.party ? (
+                            <span
+                              className={cn(
+                                "inline-flex items-center rounded-full border px-2.5 py-1 text-[11px] font-medium",
+                                PARTY_BADGE_STYLES[item.party.kind]
+                              )}
+                            >
+                              {item.party.label}
+                            </span>
+                          ) : null}
                         </div>
                         <h3 className="mt-2 text-sm font-semibold leading-snug text-[#3d2e22] sm:text-[15px]">
                           {item.label}
