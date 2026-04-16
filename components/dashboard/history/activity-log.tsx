@@ -79,10 +79,23 @@ const ACTION_BADGE_STYLES: Record<ActivityAction, string> = {
   deleted: "border-destructive/15 bg-destructive/8 text-destructive",
 };
 
-const PARTY_BADGE_STYLES: Record<ActivityPartyKind, string> = {
-  for: "border-primary/15 bg-primary/8 text-primary",
-  from: "border-fuchsia-200/80 bg-fuchsia-50/80 text-fuchsia-400",
+const CREATED_ENTITY_BADGE_STYLES: Partial<Record<ActivityEntity, string>> = {
+  reminder: "border-sky-200/80 bg-sky-50/80 text-sky-400",
+  memory: "border-indigo-200/80 bg-indigo-50/80 text-indigo-400",
 };
+
+const PARTY_BADGE_STYLES: Record<ActivityPartyKind, string> = {
+  for: "border-violet-200/80 bg-violet-50/80 text-violet-400",
+  from: "border-violet-200/80 bg-violet-50/80 text-violet-400",
+};
+
+function getActionBadgeStyle(action: ActivityAction, entity: ActivityEntity): string {
+  if (action === "created") {
+    return CREATED_ENTITY_BADGE_STYLES[entity] ?? ACTION_BADGE_STYLES.created;
+  }
+
+  return ACTION_BADGE_STYLES[action];
+}
 
 const ISO_WITHOUT_TIMEZONE = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(?::\d{2}(?:\.\d+)?)?$/;
 const ISO_TIMESTAMP_IN_TEXT = /\b\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(?::\d{2}(?:\.\d+)?)?(?:Z|[+-]\d{2}:?\d{2})?\b/g;
@@ -300,7 +313,7 @@ export function ActivityLog() {
                           <span
                             className={cn(
                               "inline-flex items-center rounded-full border px-2.5 py-1 text-[11px] font-medium capitalize",
-                              ACTION_BADGE_STYLES[item.action]
+                              getActionBadgeStyle(item.action, item.entity)
                             )}
                           >
                             {ACTION_VERB[item.action]} {ENTITY_LABEL[item.entity]}
