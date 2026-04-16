@@ -85,7 +85,7 @@ const CREATED_ENTITY_BADGE_STYLES: Partial<Record<ActivityEntity, string>> = {
 };
 
 const PARTY_BADGE_STYLES: Record<ActivityPartyKind, string> = {
-  for: "border-violet-200/80 bg-violet-50/80 text-violet-400",
+  for: "border-teal-200/80 bg-teal-50/80 text-teal-400",
   from: "border-violet-200/80 bg-violet-50/80 text-violet-400",
 };
 
@@ -266,7 +266,7 @@ export function ActivityLog() {
               aria-selected={selected}
               onClick={() => setFilter(id)}
               className={cn(
-                "inline-flex min-w-[calc(50%-0.125rem)] flex-1 items-center justify-center gap-1 rounded-full border px-2.5 py-1.5 text-[11px] font-medium transition-colors sm:min-w-0",
+                "inline-flex min-w-[calc(50%-0.125rem)] flex-1 items-center justify-center gap-1 rounded-full border px-2.5 py-1.5 text-[10px] font-medium transition-colors sm:min-w-0",
                 selected
                   ? "border-[#e7d9cb] bg-white text-[#4a392c] shadow-[0_6px_18px_rgba(84,58,33,0.05)]"
                   : "border-transparent text-[#8a7769] hover:border-[#efe4db] hover:bg-white/70"
@@ -312,7 +312,7 @@ export function ActivityLog() {
                         <div className="flex flex-wrap items-center gap-2">
                           <span
                             className={cn(
-                              "inline-flex items-center rounded-full border px-2.5 py-1 text-[11px] font-medium capitalize",
+                              "inline-flex items-center rounded-full border px-2.5 py-1 text-[10px] font-medium capitalize",
                               getActionBadgeStyle(item.action, item.entity)
                             )}
                           >
@@ -321,7 +321,7 @@ export function ActivityLog() {
                           {item.party ? (
                             <span
                               className={cn(
-                                "inline-flex items-center rounded-full border px-2.5 py-1 text-[11px] font-medium",
+                                "inline-flex items-center rounded-full border px-2.5 py-1 text-[10px] font-medium",
                                 PARTY_BADGE_STYLES[item.party.kind]
                               )}
                             >

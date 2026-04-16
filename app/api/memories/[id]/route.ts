@@ -24,7 +24,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       return NextResponse.json({ error: "Invalid memory ID" }, { status: 400 });
     }
 
-    const memory = await prisma.memories.findFirst({
+    const ownedMemory = await prisma.memories.findFirst({
       where: {
         id: memoryId,
         user_id: session.userId,
@@ -38,6 +38,41 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
         updated_at: true,
       },
     });
+
+    const sharedMemory = ownedMemory
+      ? null
+      : await prisma.memories_share.findFirst({
+          where: {
+            memory_id: memoryId,
+            user_id: session.userId,
+            memory: {
+              deleted_at: null,
+            },
+          },
+          select: {
+            id: true,
+            comment: true,
+            created_at: true,
+            user: { select: { id: true, name: true } },
+            memory: {
+              select: {
+                id: true,
+                title: true,
+                content: true,
+                created_at: true,
+                updated_at: true,
+                user: {
+                  select: {
+                    id: true,
+                    name: true,
+                  },
+                },
+              },
+            },
+          },
+        });
+
+    const memory = ownedMemory ?? sharedMemory?.memory;
 
     if (!memory) {
       return NextResponse.json({ error: "Memory not found" }, { status: 404 });
@@ -62,7 +97,23 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       };
     }
 
-    return NextResponse.json({ memory: decryptedMemory });
+    return NextResponse.json({
+      memory: decryptedMemory,
+      access: ownedMemory
+        ? {
+            isOwner: true,
+            accessLevel: "owner",
+          }
+        : {
+            isOwner: false,
+            accessLevel: "shared",
+            shareId: sharedMemory?.id,
+            sharedAt: sharedMemory?.created_at,
+            owner: sharedMemory?.memory.user,
+            comment: sharedMemory?.comment,
+            sharedUser: sharedMemory?.user,
+          },
+    });
   } catch (error) {
     console.error("Error fetching memory:", error);
     return NextResponse.json({ error: "Failed to fetch memory" }, { status: 500 });
@@ -91,13 +142,8 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     }
 
     const body = await request.json();
-    const { title, content } = body;
+    const { title, content, comment } = body;
 
-    if (!content) {
-      return NextResponse.json({ error: "Content is required" }, { status: 400 });
-    }
-
-    // Verify memory belongs to user
     const existingMemory = await prisma.memories.findFirst({
       where: {
         id: memoryId,
@@ -106,41 +152,80 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       },
     });
 
-    if (!existingMemory) {
+    if (existingMemory) {
+      if (!content) {
+        return NextResponse.json({ error: "Content is required" }, { status: 400 });
+      }
+
+      const updateResult = await prisma.memories.updateMany({
+        where: {
+          id: memoryId,
+          user_id: session.userId,
+          deleted_at: null,
+        },
+        data: {
+          title: title || null,
+          content,
+        },
+      });
+
+      if (updateResult.count === 0) {
+        return NextResponse.json({ error: "Memory not found" }, { status: 404 });
+      }
+
+      const updatedMemory = await prisma.memories.findFirst({
+        where: {
+          id: memoryId,
+          user_id: session.userId,
+          deleted_at: null,
+        },
+      });
+
+      if (!updatedMemory) {
+        return NextResponse.json({ error: "Memory not found" }, { status: 404 });
+      }
+
+      return NextResponse.json({
+        memory: updatedMemory,
+        message: "Memory updated successfully",
+      });
+    }
+
+    const existingShare = await prisma.memories_share.findFirst({
+      where: {
+        memory_id: memoryId,
+        user_id: session.userId,
+        memory: {
+          deleted_at: null,
+        },
+      },
+    });
+
+    if (!existingShare) {
       return NextResponse.json({ error: "Memory not found" }, { status: 404 });
     }
 
-    const updateResult = await prisma.memories.updateMany({
+    if (typeof comment !== "string") {
+      return NextResponse.json({ error: "Comment is required" }, { status: 400 });
+    }
+
+    const updatedShare = await prisma.memories_share.update({
       where: {
-        id: memoryId,
-        user_id: session.userId,
-        deleted_at: null,
+        id: existingShare.id,
       },
       data: {
-        title: title || null,
-        content,
+        comment,
+      },
+      select: {
+        id: true,
+        comment: true,
+        updated_at: true,
       },
     });
-
-    if (updateResult.count === 0) {
-      return NextResponse.json({ error: "Memory not found" }, { status: 404 });
-    }
-
-    const updatedMemory = await prisma.memories.findFirst({
-      where: {
-        id: memoryId,
-        user_id: session.userId,
-        deleted_at: null,
-      },
-    });
-
-    if (!updatedMemory) {
-      return NextResponse.json({ error: "Memory not found" }, { status: 404 });
-    }
 
     return NextResponse.json({
-      memory: updatedMemory,
-      message: "Memory updated successfully",
+      share: updatedShare,
+      message: "Memory comment updated successfully",
     });
   } catch (error) {
     console.error("Error updating memory:", error);

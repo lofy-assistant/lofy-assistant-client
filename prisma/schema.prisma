@@ -30,6 +30,7 @@ model users {
   received_friend_invitations friend_invitations[]  @relation("friend_invitations_invitee")
   friendships_low         friendships[]             @relation("friendships_low_user")
   friendships_high        friendships[]             @relation("friendships_high_user")
+  memories_share          memories_share[]
   email_verified              Boolean   @default(false)
   email_verification_token    String?
   email_verification_expires  DateTime? @db.Timestamptz(6)
@@ -104,9 +105,26 @@ model memories {
   deleted_at DateTime?              @db.Timestamptz(6)
   embedding  Unsupported("vector")?
   user       users                  @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  memories_share memories_share[]
 
   @@index([user_id])
   @@map("memories")
+}
+
+model memories_share {
+  id         BigInt   @id @default(autoincrement()) @db.BigInt
+  memory_id  Int
+  user_id    String   @db.Uuid
+  comment    String?
+  created_at DateTime @default(now()) @db.Timestamptz(6)
+  updated_at DateTime @updatedAt @db.Timestamptz(6)
+  memory     memories @relation(fields: [memory_id], references: [id], onDelete: Cascade)
+  user       users    @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@unique([memory_id, user_id], map: "uq_memories_share_memory_user")
+  @@index([user_id], map: "idx_memories_share_user_id")
+  @@index([memory_id], map: "idx_memories_share_memory_id")
+  @@map("memories_share")
 }
 
 model calendar_events {

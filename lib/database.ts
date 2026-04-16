@@ -31,12 +31,26 @@ if (!MONGODB_URI) {
 const pool = global.pool ?? new Pool({ connectionString: DATABASE_URL })
 const adapter = new PrismaPg(pool)
 
-export const prisma =
-  global.prisma ??
-  new PrismaClient({
+function createPrismaClient() {
+  return new PrismaClient({
     adapter,
     log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
   })
+}
+
+function hasCurrentSchemaDelegates(client: PrismaClient | undefined): client is PrismaClient {
+  if (!client) {
+    return false
+  }
+
+  const candidate = client as PrismaClient & Record<string, unknown>
+  return typeof candidate.memories_share !== 'undefined'
+}
+
+export const prisma =
+  hasCurrentSchemaDelegates(global.prisma)
+    ? global.prisma
+    : createPrismaClient()
 
 // MongoDB with Mongoose
 let cached = global.mongoose

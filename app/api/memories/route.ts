@@ -45,6 +45,44 @@ export async function GET(request: NextRequest) {
       },
     });
 
+    const sharedMemories = await prisma.memories_share.findMany({
+      where: {
+        user_id: session.userId,
+        memory: {
+          deleted_at: null,
+        },
+      },
+      orderBy: {
+        created_at: "desc",
+      },
+      select: {
+        id: true,
+        comment: true,
+        created_at: true,
+        user: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        memory: {
+          select: {
+            id: true,
+            title: true,
+            content: true,
+            created_at: true,
+            updated_at: true,
+            user: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
     // Decrypt the encrypted fields for each memory
     // Handle decryption errors gracefully - some memories might have invalid encrypted data
     const decryptedMemories = memories.map((memory: { id: number; title: string | null; content: string; created_at: Date; updated_at: Date }) => {
@@ -66,8 +104,42 @@ export async function GET(request: NextRequest) {
       }
     });
 
+    const decryptedSharedMemories = sharedMemories.map((share) => {
+      const memory = share.memory;
+
+      try {
+        return {
+          id: memory.id,
+          title: memory.title ? decryptContent(memory.title) : null,
+          content: decryptContent(memory.content),
+          created_at: memory.created_at,
+          updated_at: memory.updated_at,
+          shareId: share.id,
+          comment: share.comment,
+          sharedAt: share.created_at,
+          owner: memory.user,
+          sharedUser: share.user,
+        };
+      } catch (error) {
+        console.error(`Failed to decrypt shared memory ${memory.id}:`, error);
+        return {
+          id: memory.id,
+          title: memory.title,
+          content: memory.content,
+          created_at: memory.created_at,
+          updated_at: memory.updated_at,
+          shareId: share.id,
+          comment: share.comment,
+          sharedAt: share.created_at,
+          owner: memory.user,
+          sharedUser: share.user,
+        };
+      }
+    });
+
     return NextResponse.json({
       memories: decryptedMemories,
+      sharedMemories: decryptedSharedMemories,
       count: decryptedMemories.length,
     });
   } catch (error) {

@@ -6,7 +6,7 @@ export default function MemoriesPage() {
   return (
     <DashboardPageShell
       title="Memories"
-      description="Store and recall your important memories"
+      description="Keep your own memories close and revisit the ones shared by your circle."
       icon={<Brain className="w-4 h-4" />}
     >
       <MemoryGrid />
