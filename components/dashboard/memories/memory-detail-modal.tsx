@@ -10,7 +10,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { BookHeart, Calendar, Copy, Loader2, PencilLine, Send, Trash2, Users } from "lucide-react";
+import { Copy, Loader2, PencilLine, Send, Trash2, Users } from "lucide-react";
 
 interface PersonSummary {
   id: string;
@@ -468,15 +468,20 @@ export function MemoryDetailModal({ memory, open, onOpenChange, onUpdate }: Memo
                   ) : null}
                 </div>
               ) : (
-                <>
-                  <Button onClick={handleSave} disabled={isSaving} className="h-10 w-3/4 rounded-xl px-4 text-sm">
+                <div className="grid w-full grid-cols-1 items-center gap-2 md:grid-cols-2">
+                  <Button
+                    variant="outline"
+                    onClick={handleCancel}
+                    disabled={isSaving}
+                    className="h-10 min-w-0 w-full rounded-xl border-[#dacbbb] bg-white/90 px-4 text-sm text-[#4a392c] hover:bg-white"
+                  >
+                    Cancel
+                  </Button>
+                  <Button onClick={handleSave} disabled={isSaving} className="h-10 min-w-0 w-full rounded-xl px-4 text-sm">
                     {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                     {isOwner ? "Save changes" : "Save note"}
                   </Button>
-                  <Button variant="outline" onClick={handleCancel} disabled={isSaving} className="h-10 w-3/4 rounded-xl border-[#dacbbb] bg-white/90 text-sm text-[#4a392c] hover:bg-white">
-                    Cancel
-                  </Button>
-                </>
+                </div>
               )}
             </DialogFooter>
           </div>
