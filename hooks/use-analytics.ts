@@ -1,5 +1,18 @@
 import useSWR from "swr";
 
+export type AnalyticsRange = "7d" | "30d" | "90d" | "all";
+
+export interface TrendPoint {
+  bucket: string;
+  label: string;
+  count: number;
+}
+
+export interface WeekdayLoadPoint {
+  label: string;
+  count: number;
+}
+
 // Types for the analytics API response
 export interface MessageAnalytics {
   total: number;
@@ -7,10 +20,14 @@ export interface MessageAnalytics {
   byAssistant: number;
   daysActive: number;
   messagesThisWeek: number;
+  messagesInRange: number;
   averageMessagesPerActiveDay: number;
   longestStreak: number;
   currentStreak: number;
+  peakHour: number;
+  peakHourLabel: string;
   messagesByHour: number[];
+  trend: TrendPoint[];
 }
 
 export interface OverviewAnalytics {
@@ -30,7 +47,37 @@ export interface ActivityAnalytics {
   };
 }
 
+export interface MemoryAnalytics {
+  total: number;
+  createdInRange: number;
+  createdThisWeek: number;
+  sharedByYou: number;
+  received: number;
+  trend: TrendPoint[];
+}
+
+export interface ReminderAnalytics {
+  total: number;
+  pending: number;
+  completed: number;
+  missed: number;
+  dueSoon: number;
+  createdInRange: number;
+  trend: TrendPoint[];
+}
+
+export interface CalendarAnalytics {
+  total: number;
+  upcoming: number;
+  recurring: number;
+  createdInRange: number;
+  trend: TrendPoint[];
+  weekdayLoad: WeekdayLoadPoint[];
+}
+
 export interface AnalyticsData {
+  range: AnalyticsRange;
+  generatedAt: string;
   overview: OverviewAnalytics;
   activity: ActivityAnalytics;
   recentMemories: Array<{
@@ -44,6 +91,9 @@ export interface AnalyticsData {
     count: number;
   }>;
   messages: MessageAnalytics;
+  memories: MemoryAnalytics;
+  reminders: ReminderAnalytics;
+  calendar: CalendarAnalytics;
   cached: boolean;
 }
 
@@ -53,9 +103,11 @@ const fetcher = async (url: string): Promise<AnalyticsData> => {
   return res.json();
 };
 
-export function useAnalytics() {
+export function useAnalytics(range: AnalyticsRange = "30d") {
+  const apiUrl = `/api/analytics?range=${range}`;
+
   const { data, error, isValidating, mutate } = useSWR<AnalyticsData>(
-    "/api/analytics",
+    apiUrl,
     fetcher,
     {
       revalidateOnFocus: false,
@@ -66,7 +118,7 @@ export function useAnalytics() {
 
   const refresh = async () => {
     // Force refresh by calling API with refresh=1 to bypass Redis cache
-    const freshData = await fetcher("/api/analytics?refresh=1");
+    const freshData = await fetcher(`${apiUrl}&refresh=1`);
     mutate(freshData, { revalidate: false });
   };
 
@@ -81,6 +133,9 @@ export function useAnalytics() {
     overview: data?.overview,
     activity: data?.activity,
     messages: data?.messages,
+    memories: data?.memories,
+    reminders: data?.reminders,
+    calendar: data?.calendar,
     recentMemories: data?.recentMemories,
     feedbacksByTag: data?.feedbacksByTag,
   };

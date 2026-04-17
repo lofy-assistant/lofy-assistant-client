@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import {
+  BarChart3,
   Bug,
   ChevronRight,
   HelpCircle,
@@ -40,6 +41,7 @@ type AboutRow = {
 };
 
 const PRIMARY_LINKS: AboutRow[] = [
+  { href: "/dashboard/analytics", label: "Analytics", icon: BarChart3 },
   { href: "/guides", label: "Guide", icon: HelpCircle },
   { href: "/dashboard/feedback", label: "Report a Bug", icon: Bug },
   { href: "/privacy-policy", label: "Privacy Policy", icon: Lock },

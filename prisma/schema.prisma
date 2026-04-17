@@ -143,6 +143,7 @@ model calendar_events {
   recurrence      String?
   next_recurrence DateTime?  @db.Timestamptz(6)
   google_event_id String?
+  google_credential_id Int?
   reminders       reminders? @relation(fields: [reminder_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   user            users      @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
@@ -150,6 +151,7 @@ model calendar_events {
   @@index([start_time])
   @@index([end_time])
   @@index([next_recurrence])
+  @@index([google_credential_id])
   @@map("calendar_events")
 }
 
@@ -197,6 +199,7 @@ model integration_credentials {
   user_id       String         @db.Uuid
   provider_name String
   external_id   String?
+  display_name  String?
   credentials   Json           @default("{}")
   created_at    DateTime       @default(now()) @db.Timestamptz(6)
   updated_at    DateTime       @updatedAt @db.Timestamptz(6)
