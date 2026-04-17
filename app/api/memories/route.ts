@@ -3,6 +3,10 @@ import { prisma } from '@/lib/database';
 import { verifySession } from "@/lib/session";
 import { decryptContent } from "@/lib/encryption";
 
+function serializeShareId(shareId: bigint) {
+  return shareId.toString();
+}
+
 export async function GET(request: NextRequest) {
   try {
     const token = request.cookies.get("session")?.value;
@@ -114,7 +118,7 @@ export async function GET(request: NextRequest) {
           content: decryptContent(memory.content),
           created_at: memory.created_at,
           updated_at: memory.updated_at,
-          shareId: share.id,
+          shareId: serializeShareId(share.id),
           comment: share.comment,
           sharedAt: share.created_at,
           owner: memory.user,
@@ -128,7 +132,7 @@ export async function GET(request: NextRequest) {
           content: memory.content,
           created_at: memory.created_at,
           updated_at: memory.updated_at,
-          shareId: share.id,
+          shareId: serializeShareId(share.id),
           comment: share.comment,
           sharedAt: share.created_at,
           owner: memory.user,

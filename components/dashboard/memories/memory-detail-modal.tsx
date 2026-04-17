@@ -35,7 +35,7 @@ interface Memory {
   created_at: string;
   updated_at: string;
   accessLevel: "owned" | "shared";
-  shareId?: number;
+  shareId?: string;
   comment?: string | null;
   sharedAt?: string;
   owner?: PersonSummary;

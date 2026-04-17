@@ -3,6 +3,10 @@ import { prisma } from '@/lib/database';
 import { verifySession } from "@/lib/session";
 import { decryptContent } from "@/lib/encryption";
 
+function serializeShareId(shareId: bigint) {
+  return shareId.toString();
+}
+
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
@@ -107,7 +111,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
         : {
             isOwner: false,
             accessLevel: "shared",
-            shareId: sharedMemory?.id,
+          shareId: sharedMemory ? serializeShareId(sharedMemory.id) : undefined,
             sharedAt: sharedMemory?.created_at,
             owner: sharedMemory?.memory.user,
             comment: sharedMemory?.comment,
@@ -224,7 +228,10 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     });
 
     return NextResponse.json({
-      share: updatedShare,
+      share: {
+        ...updatedShare,
+        id: serializeShareId(updatedShare.id),
+      },
       message: "Memory comment updated successfully",
     });
   } catch (error) {
