@@ -70,24 +70,6 @@ function getDisplayName(person?: PersonSummary | null) {
   return person?.name?.trim() || "Someone in your circle";
 }
 
-function getRecipientLabel(recipients: MemoryShareRecipient[]) {
-  const names = recipients.map((recipient) => recipient.name?.trim()).filter(Boolean) as string[];
-
-  if (names.length === 0) {
-    return "Shared with your circle";
-  }
-
-  if (names.length === 1) {
-    return `Shared with ${names[0]}`;
-  }
-
-  if (names.length === 2) {
-    return `Shared with ${names[0]} and ${names[1]}`;
-  }
-
-  return `Shared with ${names[0]}, ${names[1]}, and ${names.length - 2} more`;
-}
-
 export function MemoryGrid() {
   const [ownedMemories, setOwnedMemories] = useState<Memory[]>([]);
   const [sharedMemories, setSharedMemories] = useState<Memory[]>([]);
@@ -199,10 +181,10 @@ export function MemoryGrid() {
                 Shared memory space
               </span>
               <div className="space-y-1">
-                <h2 className="text-[1.05rem] font-semibold tracking-[-0.02em] text-[#3d2e22]">
+                <h2 className="text-sm font-medium tracking-[-0.02em] text-[#3d2e22]">
                   One feed for what you saved and what your circle trusted you with.
                 </h2>
-                <p className="text-sm leading-relaxed text-[#8d7563]">
+                <p className="text-xs leading-relaxed text-[#8d7563]">
                   Review your own memories, spot the ones shared with you, and open any card for the full context.
                 </p>
               </div>
@@ -219,7 +201,7 @@ export function MemoryGrid() {
                 Your library
               </div>
               <p className="mt-2 text-2xl font-semibold tracking-[-0.04em] text-[#3d2e22]">{ownedMemories.length}</p>
-              <p className="mt-1 text-[11px] leading-relaxed text-[#9a8070]">Memories you captured for yourself.</p>
+              <p className="mt-1 text-[11px] leading-relaxed text-[#9a8070]">Memories captured from yourself.</p>
             </div>
             <div className="rounded-[1.4rem] border border-[#cae4da] bg-[#f2fbf7] p-3">
               <div className="flex items-center gap-2 text-xs font-medium text-[#487565]">
@@ -227,23 +209,25 @@ export function MemoryGrid() {
                 Shared with you
               </div>
               <p className="mt-2 text-2xl font-semibold tracking-[-0.04em] text-[#204a3f]">{sharedMemories.length}</p>
-              <p className="mt-1 text-[11px] leading-relaxed text-[#5c8577]">Memories arriving from people in your circle.</p>
+              <p className="mt-1 text-[11px] leading-relaxed text-[#5c8577]">Memories shared by people in your circle.</p>
             </div>
           </div>
 
-          <div className="flex items-center justify-between rounded-[1.4rem] border border-dashed border-[#d8cab9] bg-white/55 px-4 py-3">
+          <div className="flex flex-col items-center gap-4 rounded-[1.4rem] border border-dashed border-[#d8cab9] bg-white/55 px-4 py-3">
             <div>
-              <p className="text-sm font-medium text-[#3d2e22]">Sharing works best when your circle is ready.</p>
-              <p className="mt-1 text-xs text-[#8d7563]">Invite friends, then open one of your memories to share it directly.</p>
+              <p className="text-xs md:text-sm font-medium text-[#3d2e22]">Sharing works best when your circle is ready.</p>
+              <p className="mt-1 text-[11px] text-[#8d7563]">Invite friends, then open one of your memories to share it directly.</p>
             </div>
-            <Button asChild variant="outline" className="h-9 rounded-xl border-[#dacbbb] bg-white/80 px-3 text-[#4a392c] hover:bg-white">
+             <Button asChild variant="outline" className="w-full h-9 rounded-xl border-[#dacbbb] bg-white/80 px-3 text-[#4a392c] hover:bg-white">
               <Link href="/dashboard/friends">
                 Friends
                 <ArrowUpRight className="ml-2 h-3.5 w-3.5" />
               </Link>
             </Button>
           </div>
+          
         </div>
+
       </section>
 
       <div className="relative">
@@ -326,23 +310,23 @@ export function MemoryGrid() {
                     >
                       <CardContent className="space-y-4 p-4">
                         <div className="flex items-start justify-between gap-3">
-                          <div className="space-y-2">
+                          <div className="min-w-0 space-y-2">
                             <span className="inline-flex items-center rounded-full border border-[#b7dccd] bg-[#edf8f3] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#2e715d]">
                               Shared with you
                             </span>
-                            <h3 className="text-base font-semibold leading-snug text-[#214538]">{memory.title || "Untitled memory"}</h3>
+                            <h3 className="break-words text-base font-semibold leading-snug text-[#214538]">{memory.title || "Untitled memory"}</h3>
                           </div>
                           <span className="shrink-0 rounded-full bg-white/80 px-2.5 py-1 text-[10px] font-medium text-[#6a8f82]">
                             {format(memoryDate, "MMM d")}
                           </span>
                         </div>
 
-                        <p className="text-sm leading-relaxed text-[#557b6d]">{truncateContent(memory.content)}</p>
+                        <p className="break-all text-sm leading-relaxed text-[#557b6d]">{truncateContent(memory.content)}</p>
 
                         {memory.comment ? (
                           <div className="rounded-[1.15rem] border border-[#d6ebe2] bg-white/80 px-3 py-2.5">
                             <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#6b8d81]">Your note</p>
-                            <p className="mt-1 text-sm leading-relaxed text-[#426a5b]">{truncateContent(memory.comment, 120)}</p>
+                            <p className="break-words mt-1 text-sm leading-relaxed text-[#426a5b]">{truncateContent(memory.comment, 120)}</p>
                           </div>
                         ) : null}
 
@@ -403,18 +387,6 @@ export function MemoryGrid() {
                         </div>
 
                         <p className="text-sm leading-relaxed text-[#7c6657]">{truncateContent(memory.content)}</p>
-
-                        {isShared ? (
-                          <div className="rounded-[1.15rem] border border-[#d9ebe2] bg-[#f6fbf8] px-3 py-2.5">
-                            <div className="flex items-start gap-2">
-                              <Users className="mt-0.5 h-3.5 w-3.5 text-[#4b806d]" />
-                              <div className="space-y-1">
-                                <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#5b8576]">Already shared</p>
-                                <p className="text-sm leading-relaxed text-[#416759]">{getRecipientLabel(sharedRecipients)}</p>
-                              </div>
-                            </div>
-                          </div>
-                        ) : null}
 
                         <Separator className="bg-[#ede3d8]" />
 
