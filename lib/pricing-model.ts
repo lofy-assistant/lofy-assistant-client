@@ -1,8 +1,7 @@
 /**
  * Three-tier pricing: Pro (self-serve), Premium (self-serve when Stripe is configured),
- * Enterprise (contact sales). List prices are marketing display; Stripe charges the
- * List prices are marketing only. Stripe billing uses one Price id per plan in
- * stripe-plans.ts (Pro: monthly, quarterly, yearly products). Checkout may still
+ * Enterprise (contact sales). List prices are marketing only; Stripe billing uses one
+ * Price id per plan in stripe-plans.ts (Pro: monthly, quarterly, yearly). Checkout may
  * show RM vs $ on this site from geo; Stripe handles charge currency for that price.
  */
 
@@ -146,12 +145,32 @@ export const PRICING_FAQ: readonly { q: string; a: string }[] = [
     a: "Recipes are reusable workflows you define once, like a checklist or playbook, and run whenever you need them so repeat work stays consistent.",
   },
   {
+    q: "Should I choose Pro or Premium?",
+    a: "Choose Pro if you want Lofy on WhatsApp with strong context, a personal knowledge base, calendar hooks, and friends features. Choose Premium when you want everything in Pro plus recipes you can reuse and the execution agent for longer, tool-using runs.",
+  },
+  {
+    q: "Where do I use Lofy?",
+    a: "Lofy is built around WhatsApp as the primary place you chat and get things done. Calendar and other integrations connect so scheduling and context stay in sync where we support them.",
+  },
+  {
+    q: "What is the knowledge base (RAG)?",
+    a: "You can save facts and notes Lofy should remember. Answers can pull from what you saved so replies stay grounded in your own information instead of generic guesses.",
+  },
+  {
+    q: "How do monthly, quarterly, and yearly billing differ?",
+    a: "You pick how often you are billed. Longer plans are priced lower per month than paying one month at a time, which is why the quarterly and yearly tabs show a savings badge. You can switch plans through billing when your account supports it.",
+  },
+  {
     q: "What happens after the trial?",
     a: `Your first message starts a ${TRIAL_DAYS}-day trial. After that, an active subscription (Pro or Premium, when checkout is enabled) keeps full access for that tier.`,
   },
   {
-    q: "How do I buy Enterprise?",
-    a: "Use Contact us on the Enterprise card so we can align on security, volume, integrations, and contract terms. We typically respond within one business day.",
+    q: "Can I cancel or change my plan?",
+    a: "Self-serve subscriptions are managed through Stripe where checkout is enabled. You can cancel before the next renewal so you are not charged again; upgrade or downgrade paths depend on what we expose in the product and billing UI at the time.",
+  },
+  {
+    q: "How do friends and reminders work?",
+    a: "On Pro, you can work with accepted friends: for example, reminders can go to their number, and you can share memories you own when that fits your workflow. Permissions respect who accepted what.",
   },
 ];
 
