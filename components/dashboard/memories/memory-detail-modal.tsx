@@ -9,7 +9,6 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { BookHeart, Calendar, Clock, Copy, Loader2, PencilLine, Send, Trash2, Users } from "lucide-react";
 
@@ -261,233 +260,283 @@ export function MemoryDetailModal({ memory, open, onOpenChange, onUpdate }: Memo
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className={`flex max-h-[85vh] w-[calc(100%-1.5rem)] max-w-3xl flex-col overflow-hidden rounded-[2rem] border p-0 shadow-[0_28px_80px_rgba(74,55,37,0.18)] ${modalToneClasses}`}>
-          <DialogHeader className="gap-0 text-left">
-            <div className={`mx-4 mt-4 overflow-hidden rounded-[1.75rem] border p-5 shadow-[0_14px_34px_rgba(76,57,39,0.08)] ${heroToneClasses}`}>
-              <div className="flex flex-wrap items-center gap-2 pb-3">
-                <span className={`inline-flex rounded-full border px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] ${badgeToneClasses}`}>
-                  {isOwner ? "Your memory" : "Shared with you"}
-                </span>
-                {!isOwner ? (
-                  <span className="inline-flex items-center gap-1 rounded-full bg-white/75 px-2.5 py-1 text-[10px] font-medium text-[#56786b] shadow-sm">
-                    <Users className="h-3 w-3" />
-                    From {ownerName}
+        <DialogContent className={`grid h-[calc(100dvh-1rem)] w-[calc(100vw-1rem)] max-w-none grid-rows-[auto_minmax(0,1fr)_auto] overflow-hidden rounded-[2rem] border p-0 shadow-[0_28px_80px_rgba(74,55,37,0.18)] sm:h-[min(92dvh,960px)] sm:w-[min(96vw,1180px)] ${modalToneClasses}`}>
+          <DialogHeader className="border-b border-white/45 bg-white/30 px-4 py-4 text-left backdrop-blur-sm sm:px-5 sm:py-5">
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+              <div className="space-y-3">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className={`inline-flex rounded-full border px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] ${badgeToneClasses}`}>
+                    {isOwner ? "Your memory" : "Shared with you"}
                   </span>
-                ) : null}
+                  {!isOwner ? (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-white/80 px-2.5 py-1 text-[10px] font-medium text-[#56786b] shadow-sm">
+                      <Users className="h-3 w-3" />
+                      From {ownerName}
+                    </span>
+                  ) : null}
+                  {isSharedByOwner ? (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-[#f2fbf7] px-2.5 py-1 text-[10px] font-medium text-[#4d786a] shadow-sm">
+                      <Send className="h-3 w-3" />
+                      Shared to {sharedRecipients.length} {sharedRecipients.length === 1 ? "friend" : "friends"}
+                    </span>
+                  ) : null}
+                </div>
+
+                <div className="space-y-2">
+                  <DialogTitle className="max-w-4xl text-[1.6rem] font-semibold tracking-[-0.03em] text-[#3d2e22] sm:text-[2rem] lg:text-[2.3rem]">
+                    {isEditing ? (isOwner ? "Edit Memory" : "Edit Shared Note") : memory.title || "Untitled Memory"}
+                  </DialogTitle>
+                  <DialogDescription className="max-w-3xl text-sm leading-relaxed text-[#8d7563] sm:text-[15px]">
+                    {isEditing
+                      ? isOwner
+                        ? "Refine the details, keep the language clear, and save the version you want to revisit later."
+                        : "Update your note so this shared memory stays useful when you come back to it later."
+                      : isOwner
+                        ? "A larger reading surface for reviewing, editing, and sharing without squeezing the memory into a small dialog."
+                        : "A shared memory presented with enough room to read the original note and keep your own context beside it."}
+                  </DialogDescription>
+                </div>
+              </div>
+
+              <div className={`w-full max-w-[22rem] rounded-[1.5rem] border p-4 shadow-[0_14px_30px_rgba(76,57,39,0.08)] ${heroToneClasses}`}>
+                <div className="grid gap-2 sm:grid-cols-3 lg:grid-cols-1">
+                  <div className="rounded-[1.1rem] border border-white/70 bg-white/78 px-3.5 py-3 shadow-sm">
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#8f7866]">Created</p>
+                    <div className="mt-2 flex items-center gap-2 text-sm font-medium text-[#4b392c]">
+                      <Calendar className="h-3.5 w-3.5 text-[#aa7b53]" />
+                      {format(new Date(memory.created_at), "MMM d, yyyy")}
+                    </div>
+                  </div>
+                  <div className="rounded-[1.1rem] border border-white/70 bg-white/78 px-3.5 py-3 shadow-sm">
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#8f7866]">Time</p>
+                    <div className="mt-2 flex items-center gap-2 text-sm font-medium text-[#4b392c]">
+                      <Clock className="h-3.5 w-3.5 text-[#aa7b53]" />
+                      {format(new Date(memory.created_at), "h:mm a")}
+                    </div>
+                  </div>
+                  <div className="rounded-[1.1rem] border border-white/70 bg-white/78 px-3.5 py-3 shadow-sm">
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#8f7866]">Status</p>
+                    <div className="mt-2 flex items-center gap-2 text-sm font-medium text-[#4b392c]">
+                      {isOwner ? <BookHeart className="h-3.5 w-3.5 text-[#aa7b53]" /> : <Users className="h-3.5 w-3.5 text-[#3d8a73]" />}
+                      {isOwner ? (isSharedByOwner ? `Shared with ${sharedRecipients.length}` : "Private memory") : memory.sharedAt ? `Shared ${format(new Date(memory.sharedAt), "MMM d")}` : "Shared memory"}
+                    </div>
+                  </div>
+                </div>
+
                 {isSharedByOwner ? (
-                  <span className="inline-flex items-center gap-1 rounded-full bg-[#f2fbf7] px-2.5 py-1 text-[10px] font-medium text-[#4d786a] shadow-sm">
-                    <Send className="h-3 w-3" />
-                    Shared to {sharedRecipients.length} {sharedRecipients.length === 1 ? "friend" : "friends"}
-                  </span>
+                  <div className="mt-3 rounded-[1.2rem] border border-[#d8ebe3] bg-[#f7fcfa] px-4 py-3.5">
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#6b8d81]">Currently shared with</p>
+                    <p className="mt-1 text-sm leading-relaxed text-[#426a5b]">{getRecipientNames(sharedRecipients)}</p>
+                  </div>
                 ) : null}
               </div>
-
-              <div className="space-y-2">
-                <DialogTitle className="text-[1.55rem] font-semibold tracking-[-0.03em] text-[#3d2e22] sm:text-[1.9rem]">
-                  {isEditing ? (isOwner ? "Edit Memory" : "Edit Shared Note") : memory.title || "Untitled Memory"}
-                </DialogTitle>
-                <DialogDescription className="max-w-2xl text-sm leading-relaxed text-[#8d7563] sm:text-[15px]">
-                  {isEditing
-                    ? isOwner
-                      ? "Refine the details, keep the language clear, and save the version you want to revisit later."
-                      : "Update your note so this shared memory stays useful when you come back to it later."
-                    : isOwner
-                      ? "Your private memory space, styled to review quickly and share deliberately when it matters."
-                      : "A memory someone in your circle trusted you with, along with the context you want to keep attached to it."}
-                </DialogDescription>
-              </div>
-
-              <div className="mt-4 grid gap-2 sm:grid-cols-3">
-                <div className="rounded-[1.2rem] border border-white/70 bg-white/72 px-3.5 py-3 shadow-sm">
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#8f7866]">Created</p>
-                  <div className="mt-2 flex items-center gap-2 text-sm font-medium text-[#4b392c]">
-                    <Calendar className="h-3.5 w-3.5 text-[#aa7b53]" />
-                    {format(new Date(memory.created_at), "MMM d, yyyy")}
-                  </div>
-                </div>
-                <div className="rounded-[1.2rem] border border-white/70 bg-white/72 px-3.5 py-3 shadow-sm">
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#8f7866]">Time</p>
-                  <div className="mt-2 flex items-center gap-2 text-sm font-medium text-[#4b392c]">
-                    <Clock className="h-3.5 w-3.5 text-[#aa7b53]" />
-                    {format(new Date(memory.created_at), "h:mm a")}
-                  </div>
-                </div>
-                <div className="rounded-[1.2rem] border border-white/70 bg-white/72 px-3.5 py-3 shadow-sm">
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#8f7866]">Status</p>
-                  <div className="mt-2 flex items-center gap-2 text-sm font-medium text-[#4b392c]">
-                    {isOwner ? <BookHeart className="h-3.5 w-3.5 text-[#aa7b53]" /> : <Users className="h-3.5 w-3.5 text-[#3d8a73]" />}
-                    {isOwner ? (isSharedByOwner ? `Shared with ${sharedRecipients.length}` : "Private memory") : memory.sharedAt ? `Shared ${format(new Date(memory.sharedAt), "MMM d")}` : "Shared memory"}
-                  </div>
-                </div>
-              </div>
-
-              {isSharedByOwner ? (
-                <div className="mt-4 rounded-[1.3rem] border border-[#d8ebe3] bg-[#f7fcfa] px-4 py-3.5">
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#6b8d81]">Currently shared with</p>
-                  <p className="mt-1 text-sm leading-relaxed text-[#426a5b]">{getRecipientNames(sharedRecipients)}</p>
-                </div>
-              ) : null}
             </div>
           </DialogHeader>
 
-          <div className="px-4 pb-4">
-            <Separator className="bg-[#e7ddd2]" />
-          </div>
+          <div className="min-h-0 overflow-hidden px-4 py-4 sm:px-5 sm:py-5">
+            <div className="grid h-full min-h-0 gap-4 lg:grid-cols-[320px_minmax(0,1fr)]">
+              <aside className="hidden min-h-0 overflow-y-auto rounded-[1.75rem] border border-[#e8ddd1] bg-[linear-gradient(180deg,rgba(255,255,255,0.88)_0%,rgba(252,246,241,0.94)_100%)] p-4 shadow-[0_14px_28px_rgba(76,57,39,0.06)] lg:block">
+                <div className="space-y-4">
+                  <div className="rounded-[1.35rem] border border-[#eadfd3] bg-white/78 p-4">
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#8f7866]">Overview</p>
+                    <p className="mt-2 text-sm leading-relaxed text-[#5c493b]">
+                      {isOwner
+                        ? "Use the main panel to read or edit the full memory without compressing the text into a narrow card."
+                        : "Keep the original memory visible at full width while maintaining your personal note beside it."}
+                    </p>
+                  </div>
 
-          <div className="flex-1 overflow-y-auto px-4 pb-4">
-            {isEditing ? (
-              <div className="space-y-4">
-                {isOwner ? (
-                  <div className={`space-y-4 rounded-[1.6rem] border p-4 shadow-sm ${sectionToneClasses}`}>
-                    <div className="flex items-center gap-2">
-                      <PencilLine className="h-4 w-4 text-[#aa7b53]" />
-                      <div>
-                        <p className="text-sm font-semibold text-[#3d2e22]">Edit memory</p>
-                        <p className="text-xs text-[#8d7563]">Keep the title crisp and the details readable.</p>
+                  {!isOwner ? (
+                    <div className="rounded-[1.35rem] border border-[#d8ebe3] bg-[#f7fcfa] p-4">
+                      <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#6b8d81]">Shared by</p>
+                      <p className="mt-2 text-base font-medium text-[#214538]">{ownerName}</p>
+                      <p className="mt-1 text-sm leading-relaxed text-[#5f7c72]">
+                        Review the memory in full, then add context in your note when you need to remember why it matters.
+                      </p>
+                    </div>
+                  ) : null}
+
+                  {isOwner ? (
+                    <div className="rounded-[1.35rem] border border-[#eadfd3] bg-white/78 p-4">
+                      <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#8f7866]">Sharing</p>
+                      <p className="mt-2 text-sm leading-relaxed text-[#5c493b]">
+                        {isSharedByOwner
+                          ? `This memory is already shared with ${getRecipientNames(sharedRecipients)}.`
+                          : "This memory is private right now. Open sharing from the footer when you want to send it to a friend."}
+                      </p>
+                    </div>
+                  ) : null}
+                </div>
+              </aside>
+
+              <div className="min-h-0 overflow-y-auto pr-1">
+                {isEditing ? (
+                  <div className="space-y-4">
+                    {isOwner ? (
+                      <div className={`space-y-4 rounded-[1.75rem] border p-5 shadow-sm ${sectionToneClasses}`}>
+                        <div className="flex items-center gap-2">
+                          <PencilLine className="h-4 w-4 text-[#aa7b53]" />
+                          <div>
+                            <p className="text-sm font-semibold text-[#3d2e22]">Edit memory</p>
+                            <p className="text-xs text-[#8d7563]">Large fields, better spacing, and enough room to work through longer notes.</p>
+                          </div>
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor="title" className="text-sm font-medium text-[#5b483a]">
+                            Title
+                          </Label>
+                          <Input
+                            id="title"
+                            value={formData.title}
+                            onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                            placeholder="Untitled Memory"
+                            className="h-12 rounded-2xl border-[#eadfd3] bg-white/90 text-base shadow-sm placeholder:text-[#b49f90]"
+                          />
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor="content" className="text-sm font-medium text-[#5b483a]">
+                            Content
+                          </Label>
+                          <Textarea
+                            id="content"
+                            value={formData.content}
+                            onChange={(e) => setFormData({ ...formData, content: e.target.value })}
+                            placeholder="Enter your memory content here..."
+                            rows={14}
+                            className="min-h-[46dvh] resize-none rounded-[1.5rem] border-[#eadfd3] bg-white/92 px-5 py-4 text-sm leading-relaxed shadow-sm placeholder:text-[#b49f90] sm:text-base"
+                          />
+                        </div>
                       </div>
-                    </div>
+                    ) : (
+                      <div className="grid gap-4 xl:grid-cols-[minmax(0,1.2fr)_minmax(320px,0.8fr)]">
+                        <section className="space-y-3 rounded-[1.75rem] border border-[#d6ebe2] bg-white/82 p-5 shadow-sm">
+                          <div>
+                            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#6b8d81]">Original memory</p>
+                            <p className="mt-1 text-sm font-medium text-[#214538]">Full note from {ownerName}</p>
+                          </div>
+                          <div className="rounded-[1.35rem] border border-[#d9ebe3] bg-white/90 px-4 py-4">
+                            <p className="whitespace-pre-wrap text-sm leading-relaxed text-[#517465] sm:text-[15px]">{memory.content}</p>
+                          </div>
+                        </section>
 
-                    <div className="space-y-2">
-                      <Label htmlFor="title" className="text-sm font-medium text-[#5b483a]">
-                        Title
-                      </Label>
-                      <Input
-                        id="title"
-                        value={formData.title}
-                        onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                        placeholder="Untitled Memory"
-                        className="h-12 rounded-2xl border-[#eadfd3] bg-white/90 text-base shadow-sm placeholder:text-[#b49f90]"
-                      />
-                    </div>
+                        <div className={`space-y-4 rounded-[1.75rem] border p-5 shadow-sm ${sectionToneClasses}`}>
+                          <div className="flex items-center gap-2">
+                            <PencilLine className="h-4 w-4 text-[#3d8a73]" />
+                            <div>
+                              <p className="text-sm font-semibold text-[#214538]">Edit your note</p>
+                              <p className="text-xs text-[#6c8b80]">Capture why this shared memory matters to you.</p>
+                            </div>
+                          </div>
 
-                    <div className="space-y-2">
-                      <Label htmlFor="content" className="text-sm font-medium text-[#5b483a]">
-                        Content
-                      </Label>
-                      <Textarea
-                        id="content"
-                        value={formData.content}
-                        onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-                        placeholder="Enter your memory content here..."
-                        rows={8}
-                        className="min-h-[220px] resize-none rounded-[1.4rem] border-[#eadfd3] bg-white/90 px-4 py-3 text-sm leading-relaxed shadow-sm placeholder:text-[#b49f90] sm:text-base"
-                      />
-                    </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="comment" className="text-sm font-medium text-[#4a6d61]">
+                              Your note
+                            </Label>
+                            <Textarea
+                              id="comment"
+                              value={formData.comment}
+                              onChange={(e) => setFormData({ ...formData, comment: e.target.value })}
+                              placeholder="Add a note about why this shared memory matters to you..."
+                              rows={12}
+                              className="min-h-[38dvh] resize-none rounded-[1.5rem] border-[#d4e8df] bg-white/92 px-5 py-4 text-sm leading-relaxed shadow-sm placeholder:text-[#8eb0a3] sm:text-base"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 ) : (
-                  <div className={`space-y-4 rounded-[1.6rem] border p-4 shadow-sm ${sectionToneClasses}`}>
-                    <div className="flex items-center gap-2">
-                      <PencilLine className="h-4 w-4 text-[#3d8a73]" />
-                      <div>
-                        <p className="text-sm font-semibold text-[#214538]">Edit your note</p>
-                        <p className="text-xs text-[#6c8b80]">Capture why this shared memory matters to you.</p>
+                  <div className="space-y-4">
+                    <section className={`space-y-4 rounded-[1.75rem] border p-5 shadow-sm ${sectionToneClasses}`}>
+                      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                        <div>
+                          <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#8f7866]">Memory content</p>
+                          <p className="mt-1 text-base font-medium text-[#3d2e22]">Full note</p>
+                        </div>
+                        <Button variant="outline" size="sm" onClick={handleCopy} className="h-10 rounded-xl border-[#dbcfc3] bg-white/90 px-3 text-[#5b483a] hover:bg-white">
+                          <Copy className="h-3.5 w-3.5" />
+                          Copy
+                        </Button>
                       </div>
-                    </div>
+                      <div className="rounded-[1.5rem] border border-[#eee3d8] bg-white/90 px-5 py-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.7)]">
+                        <p className="whitespace-pre-wrap text-sm leading-7 text-[#5b483a] sm:text-[15px]">{memory.content}</p>
+                      </div>
+                    </section>
 
-                    <div className="space-y-2">
-                      <Label htmlFor="comment" className="text-sm font-medium text-[#4a6d61]">
-                        Your note
-                      </Label>
-                      <Textarea
-                        id="comment"
-                        value={formData.comment}
-                        onChange={(e) => setFormData({ ...formData, comment: e.target.value })}
-                        placeholder="Add a note about why this shared memory matters to you..."
-                        rows={7}
-                        className="min-h-[200px] resize-none rounded-[1.4rem] border-[#d4e8df] bg-white/90 px-4 py-3 text-sm leading-relaxed shadow-sm placeholder:text-[#8eb0a3] sm:text-base"
-                      />
-                    </div>
+                    {!isOwner ? (
+                      <section className="space-y-3 rounded-[1.75rem] border border-[#d8ebe3] bg-[#f7fcfa] p-5 shadow-sm">
+                        <div>
+                          <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#6b8d81]">Your note</p>
+                          <p className="mt-1 text-base font-medium text-[#214538]">Why it matters</p>
+                        </div>
+                        <div className="rounded-[1.4rem] border border-[#d9ebe3] bg-white/86 px-5 py-5">
+                          <p className="whitespace-pre-wrap text-sm leading-7 text-[#517465] sm:text-[15px]">
+                            {memory.comment?.trim() ? memory.comment : "No note added yet. You can add one to remember why this shared memory matters."}
+                          </p>
+                        </div>
+                      </section>
+                    ) : null}
+
+                    {isOwner && sharePanelOpen ? (
+                      <section className="space-y-3 rounded-[1.75rem] border border-[#e4d7ca] bg-[#fcf7f2] p-5 shadow-sm">
+                        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                          <div>
+                            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#8f7866]">Share this memory</p>
+                            <p className="mt-1 text-base font-medium text-[#3d2e22]">Send it to a friend in your circle</p>
+                            <p className="mt-1 text-sm leading-relaxed text-[#8d7563]">Only accepted friends can receive this memory.</p>
+                          </div>
+                          <div className="rounded-full bg-white/85 px-2.5 py-1 text-[10px] font-medium text-[#8a6544] shadow-sm">
+                            {friends.length} available
+                          </div>
+                        </div>
+
+                        {friendsLoading ? (
+                          <div className="flex items-center justify-center rounded-[1.3rem] border border-dashed border-[#dfd2c5] bg-white/70 py-10">
+                            <Loader2 className="h-5 w-5 animate-spin text-[#9a8070]" />
+                          </div>
+                        ) : friends.length === 0 ? (
+                          <div className="rounded-[1.3rem] border border-dashed border-[#dfd2c5] bg-white/75 px-4 py-5 text-sm text-[#7c6657]">
+                            <p>You do not have any accepted friends yet.</p>
+                            <Button asChild variant="outline" className="mt-3 h-9 rounded-xl border-[#dacbbb] bg-white/90 px-3 text-[#4a392c] hover:bg-white">
+                              <Link href="/dashboard/friends">Open friends</Link>
+                            </Button>
+                          </div>
+                        ) : (
+                          <div className="grid gap-2 xl:grid-cols-2">
+                            {friends.map((friend) => {
+                              const alreadyShared = sharedRecipients.some((recipient) => recipient.id === friend.id);
+
+                              return (
+                                <div key={friend.id} className="flex items-center justify-between gap-3 rounded-[1.2rem] border border-[#eadfd3] bg-white/88 px-3.5 py-3 shadow-sm">
+                                  <div className="min-w-0">
+                                    <p className="truncate text-sm font-medium text-[#3d2e22]">{friend.name?.trim() || "Unnamed friend"}</p>
+                                    <p className="mt-1 text-xs text-[#8d7563]">Friend since {format(new Date(friend.friendsSince), "MMM d, yyyy")}</p>
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    {alreadyShared ? (
+                                      <span className="rounded-full bg-[#edf8f3] px-2.5 py-1 text-[10px] font-medium text-[#2e715d]">Shared</span>
+                                    ) : null}
+                                    <Button size="sm" onClick={() => handleShare(friend.id)} disabled={sharingFriendId === friend.id} className="h-9 rounded-xl px-3">
+                                      {sharingFriendId === friend.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Send className="h-3.5 w-3.5" />}
+                                      <span className="ml-2">{alreadyShared ? "Share again" : "Share"}</span>
+                                    </Button>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </section>
+                    ) : null}
                   </div>
                 )}
               </div>
-            ) : (
-              <div className="space-y-4">
-                <section className={`space-y-3 rounded-[1.6rem] border p-4 shadow-sm ${sectionToneClasses}`}>
-                  <div className="flex items-center justify-between gap-3">
-                    <div>
-                      <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#8f7866]">Memory content</p>
-                      <p className="mt-1 text-sm font-medium text-[#3d2e22]">Full note</p>
-                    </div>
-                    <Button variant="outline" size="sm" onClick={handleCopy} className="h-9 rounded-xl border-[#dbcfc3] bg-white/90 px-3 text-[#5b483a] hover:bg-white">
-                      <Copy className="h-3.5 w-3.5" />
-                      Copy
-                    </Button>
-                  </div>
-                  <div className="rounded-[1.3rem] border border-[#eee3d8] bg-white/88 px-4 py-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.7)]">
-                    <p className="whitespace-pre-wrap text-sm leading-relaxed text-[#5b483a] sm:text-[15px]">{memory.content}</p>
-                  </div>
-                </section>
-
-                {!isOwner ? (
-                  <section className="space-y-3 rounded-[1.6rem] border border-[#d8ebe3] bg-[#f7fcfa] p-4 shadow-sm">
-                    <div>
-                      <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#6b8d81]">Your note</p>
-                      <p className="mt-1 text-sm font-medium text-[#214538]">Why it matters</p>
-                    </div>
-                    <div className="rounded-[1.3rem] border border-[#d9ebe3] bg-white/86 px-4 py-4">
-                      <p className="whitespace-pre-wrap text-sm leading-relaxed text-[#517465]">
-                        {memory.comment?.trim() ? memory.comment : "No note added yet. You can add one to remember why this shared memory matters."}
-                      </p>
-                    </div>
-                  </section>
-                ) : null}
-
-                {isOwner && sharePanelOpen ? (
-                  <section className="space-y-3 rounded-[1.6rem] border border-[#e4d7ca] bg-[#fcf7f2] p-4 shadow-sm">
-                    <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#8f7866]">Share this memory</p>
-                        <p className="mt-1 text-sm font-medium text-[#3d2e22]">Send it to a friend in your circle</p>
-                        <p className="mt-1 text-xs leading-relaxed text-[#8d7563]">Only accepted friends can receive this memory.</p>
-                      </div>
-                      <div className="rounded-full bg-white/85 px-2.5 py-1 text-[10px] font-medium text-[#8a6544] shadow-sm">
-                        {friends.length} available
-                      </div>
-                    </div>
-
-                    {friendsLoading ? (
-                      <div className="flex items-center justify-center rounded-[1.3rem] border border-dashed border-[#dfd2c5] bg-white/70 py-8">
-                        <Loader2 className="h-5 w-5 animate-spin text-[#9a8070]" />
-                      </div>
-                    ) : friends.length === 0 ? (
-                      <div className="rounded-[1.3rem] border border-dashed border-[#dfd2c5] bg-white/75 px-4 py-5 text-sm text-[#7c6657]">
-                        <p>You do not have any accepted friends yet.</p>
-                        <Button asChild variant="outline" className="mt-3 h-9 rounded-xl border-[#dacbbb] bg-white/90 px-3 text-[#4a392c] hover:bg-white">
-                          <Link href="/dashboard/friends">Open friends</Link>
-                        </Button>
-                      </div>
-                    ) : (
-                      <div className="space-y-2">
-                        {friends.map((friend) => {
-                          const alreadyShared = sharedRecipients.some((recipient) => recipient.id === friend.id);
-
-                          return (
-                            <div key={friend.id} className="flex items-center justify-between gap-3 rounded-[1.2rem] border border-[#eadfd3] bg-white/85 px-3.5 py-3 shadow-sm">
-                              <div className="min-w-0">
-                                <p className="text-sm font-medium text-[#3d2e22]">{friend.name?.trim() || "Unnamed friend"}</p>
-                                <p className="mt-1 text-xs text-[#8d7563]">Friend since {format(new Date(friend.friendsSince), "MMM d, yyyy")}</p>
-                              </div>
-                              <div className="flex items-center gap-2">
-                                {alreadyShared ? (
-                                  <span className="rounded-full bg-[#edf8f3] px-2.5 py-1 text-[10px] font-medium text-[#2e715d]">Shared</span>
-                                ) : null}
-                                <Button size="sm" onClick={() => handleShare(friend.id)} disabled={sharingFriendId === friend.id} className="h-9 rounded-xl px-3">
-                                  {sharingFriendId === friend.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Send className="h-3.5 w-3.5" />}
-                                  <span className="ml-2">{alreadyShared ? "Share again" : "Share"}</span>
-                                </Button>
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    )}
-                  </section>
-                ) : null}
-              </div>
-            )}
+            </div>
           </div>
 
-          <div className="border-t border-[#eadfd3] bg-white/70 px-4 py-4 backdrop-blur-sm">
+          <div className="border-t border-[#eadfd3] bg-white/72 px-4 py-4 backdrop-blur-sm sm:px-5">
             <DialogFooter className="gap-2 sm:items-center sm:justify-between">
               {!isEditing ? (
                 <>
@@ -501,7 +550,7 @@ export function MemoryDetailModal({ memory, open, onOpenChange, onUpdate }: Memo
                   </div>
                   <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
                     {isOwner ? (
-                      <Button variant="outline" onClick={() => setSharePanelOpen((value) => !value)} className="h-10 rounded-xl border-[#dacbbb] bg-white/85 text-[#4a392c] hover:bg-white">
+                      <Button variant="outline" onClick={() => setSharePanelOpen((value) => !value)} className="h-10 rounded-xl border-[#dacbbb] bg-white/90 text-[#4a392c] hover:bg-white">
                         <Send className="mr-2 h-4 w-4" />
                         {sharePanelOpen ? "Hide share" : "Share memory"}
                       </Button>
@@ -514,7 +563,7 @@ export function MemoryDetailModal({ memory, open, onOpenChange, onUpdate }: Memo
                 </>
               ) : (
                 <div className="flex w-full flex-col gap-2 sm:ml-auto sm:w-auto sm:flex-row">
-                  <Button variant="outline" onClick={handleCancel} disabled={isSaving} className="h-10 rounded-xl border-[#dacbbb] bg-white/85 text-[#4a392c] hover:bg-white">
+                  <Button variant="outline" onClick={handleCancel} disabled={isSaving} className="h-10 rounded-xl border-[#dacbbb] bg-white/90 text-[#4a392c] hover:bg-white">
                     Cancel
                   </Button>
                   <Button onClick={handleSave} disabled={isSaving} className="h-10 rounded-xl px-4">
