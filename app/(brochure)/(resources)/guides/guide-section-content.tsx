@@ -453,6 +453,13 @@ export function GuideSectionContent({ sectionId }: { sectionId: GuideSectionId }
             <div className="mt-4 space-y-1">
               <CopyableExample text="Remind Alex tomorrow at 9am to bring the tickets" />
             </div>
+            <Callout type="info" title="Invites first">
+              The other person has to accept your friend invite before delivery works. Sending invites, pending requests, and your list live under{" "}
+              <Link href={`${GUIDE_BASE_PATH}/friends`} className="font-medium text-primary underline-offset-4 hover:underline">
+                Friends
+              </Link>{" "}
+              in this guide (and in the dashboard).
+            </Callout>
           </div>
 
           <div>
@@ -504,6 +511,14 @@ export function GuideSectionContent({ sectionId }: { sectionId: GuideSectionId }
             <Callout type="tip">After a memory search, you may get a link to open your full memory list in the dashboard.</Callout>
           </div>
 
+          <p className="text-sm text-muted-foreground">
+            To send something you saved to an accepted friend by name, see the{" "}
+            <Link href={`${GUIDE_BASE_PATH}/friends`} className="font-medium text-primary underline-offset-4 hover:underline">
+              Friends
+            </Link>{" "}
+            section for sharing in chat.
+          </p>
+
           <Link
             href="/dashboard/memories"
             className="inline-flex w-fit items-center gap-2 rounded-full border border-border bg-background px-4 py-2 text-sm font-medium transition hover:bg-muted/70"
@@ -511,6 +526,74 @@ export function GuideSectionContent({ sectionId }: { sectionId: GuideSectionId }
             <LayoutDashboard className="h-4 w-4" aria-hidden />
             Open memories
           </Link>
+        </section>
+      );
+
+    case "friends":
+      return (
+        <section className="not-prose space-y-10">
+          <div>
+            <GuideKicker icon={Users}>Your circle</GuideKicker>
+            <GuidePageTitle
+              icon={Users}
+              title="Friends"
+              description="Invite people by phone, grow a trusted circle, then use Lofy in chat to remind them or share memories you own. Everything ties back to accepted friendships."
+            />
+          </div>
+
+          <Card className="border-border/70 shadow-md">
+            <CardContent className="space-y-4 p-6 sm:p-7">
+              <GuideSubheading>Dashboard</GuideSubheading>
+              <p className="text-sm leading-relaxed text-muted-foreground">
+                Open{" "}
+                <strong className="font-medium text-foreground">Friends</strong> in the dashboard to send an invite with a mobile number, see who you are already connected to, and track pending invites until they accept or the invite expires. When the system can reach them on WhatsApp, an invite may go out that way too.
+              </p>
+              <Link
+                href="/dashboard/friends"
+                className="inline-flex w-fit items-center gap-2 rounded-full border border-border bg-background px-4 py-2 text-sm font-medium transition hover:bg-muted/70"
+              >
+                <LayoutDashboard className="h-4 w-4" aria-hidden />
+                Open Friends
+              </Link>
+            </CardContent>
+          </Card>
+
+          <div>
+            <GuideSubheading>Remind a friend in chat</GuideSubheading>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Once someone is an accepted friend, ask Lofy to ping them at a time you choose. Use the name they appear under in your circle; if several people match, Lofy will ask you to narrow it down.
+            </p>
+            <div className="mt-4">
+              <GuideExamplePanel title="Try saying (tap to copy)">
+                <CopyableExample text="Remind Jamie Friday at 6pm we are meeting at the gate" />
+                <CopyableExample text="Tell Alex tomorrow morning to send the contract" />
+              </GuideExamplePanel>
+            </div>
+            <p className="mt-3 text-sm text-muted-foreground">
+              More on timing and formats in{" "}
+              <Link href={`${GUIDE_BASE_PATH}/reminders`} className="font-medium text-primary underline-offset-4 hover:underline">
+                Reminders
+              </Link>
+              .
+            </p>
+          </div>
+
+          <div>
+            <GuideSubheading>Share a memory with a friend</GuideSubheading>
+            <p className="mt-2 text-sm text-muted-foreground">
+              You can send a memory you stored to someone in your circle. Describe the memory and who should get it; if multiple memories match, Lofy will list choices before sending.
+            </p>
+            <div className="mt-4">
+              <GuideExamplePanel title="Try saying (tap to copy)">
+                <CopyableExample text="Share the hotel check-in memory with Sam" />
+                <CopyableExample text="Send my wifi password note to Jordan" />
+              </GuideExamplePanel>
+            </div>
+          </div>
+
+          <Callout type="tip" title="Names and privacy">
+            Friend-targeted actions only work for accepted friends. You cannot remind or share to arbitrary numbers from chat without that connection.
+          </Callout>
         </section>
       );
 

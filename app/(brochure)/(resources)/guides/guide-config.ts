@@ -1,4 +1,4 @@
-import { Brain, Bell, Calendar, MessageSquare, Lightbulb, HelpCircle, Rocket, Plug, User, Cat } from "lucide-react";
+import { Brain, Bell, Calendar, MessageSquare, Lightbulb, HelpCircle, Rocket, Plug, User, Cat, Users } from "lucide-react";
 
 export const GUIDE_SECTIONS = [
   { id: "getting-started", label: "Getting Started", icon: Rocket },
@@ -7,6 +7,7 @@ export const GUIDE_SECTIONS = [
   { id: "calendar", label: "Calendar Events", icon: Calendar },
   { id: "reminders", label: "Reminders", icon: Bell },
   { id: "memory", label: "Memory Storage & Recall", icon: Brain },
+  { id: "friends", label: "Friends", icon: Users },
   { id: "personas", label: "Personas", icon: User },
   { id: "story", label: "The Lofy Origin", icon: Cat },
   { id: "quick-tips", label: "Quick Tips", icon: Lightbulb },
