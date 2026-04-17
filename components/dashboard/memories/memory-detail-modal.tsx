@@ -260,7 +260,7 @@ export function MemoryDetailModal({ memory, open, onOpenChange, onUpdate }: Memo
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className={`flex h-[min(100dvh,52rem)] w-[min(100vw,26rem)] max-w-none flex-col overflow-hidden rounded-none border-0 p-0 shadow-none md:h-[90dvh] md:rounded-[2rem] md:border md:shadow-[0_28px_80px_rgba(74,55,37,0.18)] ${modalToneClasses}`}>
+        <DialogContent className={`flex h-[100dvh] w-[min(100vw,26rem)] max-w-none flex-col overflow-hidden rounded-none border-0 p-0 shadow-none md:h-[95dvh] md:rounded-[2rem] md:border md:shadow-[0_28px_80px_rgba(74,55,37,0.18)] ${modalToneClasses}`}>
           <DialogHeader className="gap-4 border-b border-white/45 bg-white/35 px-4 pb-4 pt-5 text-left backdrop-blur-sm">
             <div className={`rounded-[1.6rem] border p-4 shadow-[0_14px_34px_rgba(76,57,39,0.08)] ${heroToneClasses}`}>
               <div className="flex flex-wrap items-center gap-2">
