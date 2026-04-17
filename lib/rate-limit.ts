@@ -12,7 +12,7 @@ export const rateLimiter = new Ratelimit({
   prefix: '@upstash/ratelimit',
 });
 
-// Auth routes: stricter — 5 requests per minute
+// Auth routes: stricter, 5 requests per minute
 export const authRateLimiter = new Ratelimit({
   redis,
   limiter: Ratelimit.slidingWindow(5, '1 m'),
@@ -40,7 +40,7 @@ export async function checkRateLimit(
     return { limited: false, limit, remaining, reset };
   } catch (err) {
     // If Redis is unreachable, fail open to avoid blocking all traffic
-    console.error('[rate-limit] Redis error — failing open:', err);
+    console.error('[rate-limit] Redis error; failing open:', err);
     return { limited: false, limit: 0, remaining: 0, reset: 0 };
   }
 }

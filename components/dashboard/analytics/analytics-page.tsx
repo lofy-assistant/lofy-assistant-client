@@ -53,7 +53,7 @@ function SummaryCard({
 }) {
   return (
     <Card className="border-[#eadfd2] bg-white/90 py-4 shadow-[0_12px_32px_-24px_rgba(61,46,34,0.65)]">
-      <CardHeader className="flex flex-row items-center gap-3 space-y-0 pb-3">
+      <CardHeader className="flex flex-col items-start gap-3 space-y-0 pb-3">
         <div className={cn("rounded-2xl p-2.5", accentClassName)}>
           <Icon className="h-4 w-4" />
         </div>
@@ -93,7 +93,7 @@ function LoadingState() {
           <Skeleton key={range.value} className="h-8 w-14 rounded-full" />
         ))}
       </div>
-      <div className="grid gap-3 sm:grid-cols-2">
+      <div className="flex flex-col gap-3">
         {Array.from({ length: 4 }).map((_, index) => (
           <Card key={index} className="py-4">
             <CardHeader className="pb-3">
@@ -192,7 +192,7 @@ export function AnalyticsPage() {
   return (
     <div className="space-y-5 pb-6">
       <div className="rounded-[1.75rem] border border-[#eadfd2] bg-[radial-gradient(circle_at_top_left,_rgba(255,255,255,0.95),_rgba(255,244,234,0.95)_58%,_rgba(246,226,206,0.96)_100%)] p-4 shadow-[0_18px_36px_-28px_rgba(61,46,34,0.55)]">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div className="flex flex-col gap-4">
           <div className="space-y-1.5">
             <div className="inline-flex items-center gap-2 rounded-full border border-[#ebd7c5] bg-white/80 px-3 py-1 text-[11px] font-medium tracking-[0.16em] text-[#9b7a67] uppercase">
               <Sparkles className="h-3.5 w-3.5" />
@@ -240,7 +240,7 @@ export function AnalyticsPage() {
         </div>
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-2">
+      <div className="flex flex-col gap-3">
         <SummaryCard
           title="Conversation rhythm"
           value={messages.messagesInRange.toLocaleString()}
@@ -264,7 +264,7 @@ export function AnalyticsPage() {
         />
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="flex flex-col gap-3">
         <InsightCard
           title="Current streak"
           value={`${messages.currentStreak} day${messages.currentStreak === 1 ? "" : "s"}`}
@@ -288,7 +288,7 @@ export function AnalyticsPage() {
       </div>
 
       <Tabs defaultValue="messages" className="space-y-3">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-3">
           <div>
             <h3 className="text-sm font-semibold text-[#3d2e22]">Trend explorer</h3>
             <p className="text-xs text-[#8d7566]">Switch between conversations, memories, reminders, and calendar activity.</p>

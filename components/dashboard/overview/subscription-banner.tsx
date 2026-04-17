@@ -85,7 +85,7 @@ function resolveBanner(sub: Subscription): BannerContent | null {
         days > 0 ? (
           <>
             You&apos;re on a free trial.{" "}
-            <span className="font-semibold">{days} day{days !== 1 ? "s" : ""} left</span> — trial
+            <span className="font-semibold">{days} day{days !== 1 ? "s" : ""} left</span>; trial
             ends on <span className="font-semibold">{formatDate(currentPeriodEnd)}</span>.
           </>
         ) : (
@@ -169,7 +169,7 @@ export function SubscriptionBanner() {
 
         timerRef.current = setTimeout(dismiss, AUTO_DISMISS_MS);
       } catch {
-        // silent — don't block the dashboard if this fails
+        // silent: don't block the dashboard if this fails
       }
     })();
 

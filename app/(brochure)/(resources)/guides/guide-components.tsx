@@ -1,9 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { Copy, Check } from "lucide-react";
+import { Copy, Check, type LucideIcon } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
 
 export function CopyableExample({ text, className }: { text: string; className?: string }) {
   const [copied, setCopied] = useState(false);
@@ -66,4 +67,52 @@ export function Callout({
       <div className="text-sm text-muted-foreground">{children}</div>
     </div>
   );
+}
+
+export function GuideKicker({ icon: Icon, children }: { icon?: LucideIcon; children: React.ReactNode }) {
+  return (
+    <Badge variant="indigo" className="mb-5 w-fit gap-1.5 px-3 py-1 font-medium">
+      {Icon ? <Icon className="size-3.5" aria-hidden /> : null}
+      {children}
+    </Badge>
+  );
+}
+
+export function GuidePageTitle({
+  icon: Icon,
+  title,
+  description,
+}: {
+  icon: LucideIcon;
+  title: string;
+  description?: string;
+}) {
+  return (
+    <header className="space-y-4">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div className="flex items-start gap-4">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-primary/15 bg-gradient-to-br from-primary/12 to-accent/10 shadow-sm">
+            <Icon className="h-6 w-6 text-primary" aria-hidden />
+          </div>
+          <div className="min-w-0 space-y-2">
+            <h1 className="text-balance text-3xl font-semibold tracking-tight text-foreground md:text-4xl">{title}</h1>
+            {description ? <p className="text-pretty text-base leading-relaxed text-muted-foreground md:text-lg">{description}</p> : null}
+          </div>
+        </div>
+      </div>
+    </header>
+  );
+}
+
+export function GuideExamplePanel({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div className="rounded-xl border border-border/70 bg-muted/35 p-4 shadow-sm sm:p-5">
+      <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">{title}</p>
+      <div className="space-y-1">{children}</div>
+    </div>
+  );
+}
+
+export function GuideSubheading({ className, children }: { className?: string; children: React.ReactNode }) {
+  return <h2 className={cn("text-lg font-semibold tracking-tight text-foreground", className)}>{children}</h2>;
 }

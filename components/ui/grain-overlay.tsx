@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react";
 
-/** Same noise algorithm as `grainy-gradient-blob.tsx` — full-rect coverage, no blob shape */
+/** Same noise algorithm as `grainy-gradient-blob.tsx`: full-rect coverage, no blob shape */
 const TILE = 256;
 
 function fillTileCanvas(

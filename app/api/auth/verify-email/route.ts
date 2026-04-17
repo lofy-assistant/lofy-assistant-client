@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
     }
 
     if (user.email_verified) {
-      // Already verified — just create a session and let them in
+      // Already verified: just create a session and let them in
       const response = NextResponse.json({ success: true }, { status: 200 });
       const token = await createSession(user.id);
       response.cookies.set("session", token, {

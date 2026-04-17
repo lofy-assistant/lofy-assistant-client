@@ -76,7 +76,7 @@ export function DashboardHero() {
 
   return (
     /* ── Outer wrapper
-         mobile : plain #faf6f2 (same as card) — no visible background
+         mobile : plain #faf6f2 (same as card); no visible background
          desktop: warm peach gradient behind the centred card            ── */
     <div className="relative flex items-start md:items-stretch justify-center w-full min-h-[calc(100dvh-var(--header-height))] bg-[#faf6f2] md:bg-[linear-gradient(160deg,#bde0f0_0%,#a4d4ed_30%,#8ec5e8_60%,#a8d8f0_100%)]">
       {/* ── Card
@@ -138,7 +138,7 @@ export function DashboardHero() {
 
         {/* ── Quick actions (above grain) ── */}
         <div className="relative z-20 px-4 pb-6 pt-1 flex flex-col gap-2">
-          {/* Row 1 — 2 buttons */}
+          {/* Row 1: 2 buttons */}
           <div className="grid grid-cols-2 gap-2">
             {topActions.map(({ label, icon: Icon, href }) => (
               <Link
@@ -155,7 +155,7 @@ export function DashboardHero() {
               </Link>
             ))}
           </div>
-          {/* Row 2 — 3 buttons */}
+          {/* Row 2: 3 buttons */}
           <div className="grid grid-cols-3 gap-2">
             {bottomActions.map(({ label, icon: Icon, href, external }) => (
               <Link

@@ -16,7 +16,6 @@ import {
 /** TikTok brand mark (no Lucide/Tabler icon in our deps). */
 function TikTokIcon({
   className,
-  strokeWidth: _s,
 }: {
   className?: string;
   strokeWidth?: number;
@@ -60,7 +59,7 @@ const SECONDARY_LINKS: AboutRow[] = [
 
 function LinkRow({ href, label, external, icon: Icon }: AboutRow) {
   const className =
-    "flex items-center gap-3 px-4 py-3.5 text-[15px] text-[#1a1a1a] hover:bg-neutral-50 active:bg-neutral-100/80 transition-colors";
+    "flex items-center gap-3 px-4 py-3.5 md:py-2.5 text-sm text-[#1a1a1a] hover:bg-neutral-50 active:bg-neutral-100/80 transition-colors";
 
   const content = (
     <>
@@ -117,7 +116,7 @@ export function LofyAboutScreen() {
         </Link>
       </header>
 
-      <div className="mx-auto flex w-full max-w-md flex-1 flex-col overflow-y-auto px-5 pb-10">
+      <div className="scrollbar-hidden mx-auto flex w-full max-w-md flex-1 flex-col overflow-y-auto px-5 pb-10">
         <div className="flex flex-col items-center pt-2 pb-8">
           <div className="relative h-20 w-20">
             <Image
@@ -129,7 +128,7 @@ export function LofyAboutScreen() {
               priority
             />
           </div>
-          <h1 className="mt-4 text-xl font-semibold tracking-tight text-neutral-900">
+          <h1 className="mt-4 text-lg font-semibold tracking-tight text-neutral-900">
             Lofy AI
           </h1>
         </div>
@@ -139,7 +138,7 @@ export function LofyAboutScreen() {
           <LinkGroup rows={SECONDARY_LINKS} />
         </div>
 
-        <p className="mt-10 text-center text-sm leading-relaxed text-neutral-400">
+        <p className="mt-10 text-center text-xs leading-relaxed text-neutral-400">
           Made with love, Malaysia 🇲🇾
           <br />
           <Link

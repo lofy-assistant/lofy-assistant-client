@@ -5,7 +5,7 @@ import { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Features",
   description:
-    "Explore Lofy AI features: Apps Integration, Limitless Reminders, Save to Memory, and four personas—A.T.L.A.S, Brad, Lexi, and Rocco.",
+    "Explore Lofy AI features: Apps Integration, Limitless Reminders, Save to Memory, and four personas (A.T.L.A.S, Brad, Lexi, and Rocco).",
   alternates: {
     canonical: "/features",
   },
@@ -45,7 +45,7 @@ const Features = () => {
     {
       title: "Personality Modes",
       description:
-        "Pick A.T.L.A.S, Brad, Lexi, or Rocco—each with its own voice—so Lofy matches your mood and moment.",
+        "Pick A.T.L.A.S, Brad, Lexi, or Rocco, each with its own voice, so Lofy matches your mood and moment.",
       icon: "✅",
       href: "/features/personality-modes",
       badge: "Personality",

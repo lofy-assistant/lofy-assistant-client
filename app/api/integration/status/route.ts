@@ -29,24 +29,54 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    // Build a map of integration statuses
-    const integrationStatuses: Record<string, { isActive: boolean; status: "connected" | "disconnected" | "error" }> = {};
+    const integrationStatuses: Record<
+      string,
+      {
+        isActive: boolean;
+        status: "connected" | "disconnected" | "error";
+        accounts?: Array<{
+          credentialId: number;
+          displayName: string | null;
+          googleEmail: string | null;
+          isActive: boolean;
+        }>;
+      }
+    > = {};
+
+    const googleAccounts: Array<{
+      credentialId: number;
+      displayName: string | null;
+      googleEmail: string | null;
+      isActive: boolean;
+    }> = [];
 
     for (const cred of credentials) {
-      // For Google Calendar, check if there's a calendar integration
-      if (cred.provider_name === "google") {
-        const calendarIntegration = cred.integrations.find(
-          (i) => i.integration_type === "google_calendar"
-        );
-        
-        if (calendarIntegration) {
-          integrationStatuses["google-calendar"] = {
-            isActive: calendarIntegration.is_active,
-            status: calendarIntegration.is_active ? "connected" : "disconnected",
-          };
-        }
-      }
+      if (cred.provider_name !== "google" || cred.deleted_at) continue;
+      const calendarIntegration = cred.integrations.find(
+        (i) => i.integration_type === "google_calendar" && !i.deleted_at
+      );
+      if (!calendarIntegration) continue;
+
+      const settings = calendarIntegration.settings as Record<string, unknown> | null;
+      const credJson = cred.credentials as Record<string, unknown> | null;
+      const googleEmail =
+        (typeof credJson?.google_email === "string" ? credJson.google_email : null) ??
+        (typeof settings?.google_email === "string" ? settings.google_email : null);
+
+      googleAccounts.push({
+        credentialId: cred.id,
+        displayName: cred.display_name ?? (typeof settings?.label === "string" ? settings.label : null),
+        googleEmail,
+        isActive: calendarIntegration.is_active,
+      });
     }
+
+    const anyGoogleActive = googleAccounts.some((a) => a.isActive);
+    integrationStatuses["google-calendar"] = {
+      isActive: anyGoogleActive,
+      status: anyGoogleActive ? "connected" : googleAccounts.length ? "disconnected" : "disconnected",
+      accounts: googleAccounts,
+    };
 
     return NextResponse.json({ integrations: integrationStatuses });
   } catch (error) {

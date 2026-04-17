@@ -6,9 +6,9 @@ import { weatherCodeToDescription } from "@/lib/weather-codes";
 
 countries.registerLocale(en);
 
-/** Vercel — ISO 3166-1 alpha-2 from edge. */
+/** Vercel: ISO 3166-1 alpha-2 from edge. */
 const VERCEL_IP_COUNTRY = "x-vercel-ip-country";
-/** Cloudflare — same semantics when proxied through CF. */
+/** Cloudflare: same semantics when proxied through CF. */
 const CF_IP_COUNTRY = "cf-ipcountry";
 
 const DEFAULT_FALLBACK_COUNTRY = "US";

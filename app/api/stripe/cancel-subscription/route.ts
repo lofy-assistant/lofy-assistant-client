@@ -84,7 +84,7 @@ export async function POST() {
       );
     }
 
-    // ── Cancel at period end (graceful — user keeps access until billing end) ─
+    // ── Cancel at period end (graceful: user keeps access until billing end) ─
     const updated = await stripe.subscriptions.update(targetSub.id, {
       cancel_at_period_end: true,
     });

@@ -9,7 +9,7 @@ export default function Page() {
           "--header-height": "calc(var(--spacing) * 12)",
         } as React.CSSProperties
       }>
-      {/* Hero section — full warm-gradient background with card */}
+      {/* Hero section: full warm-gradient background with card */}
       <DashboardHero />
     </SidebarProvider>
   );

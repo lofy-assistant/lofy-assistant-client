@@ -102,7 +102,7 @@ export async function POST(req: NextRequest) {
         });
 
         if (subscriptionRecord) {
-          // Only update status — do NOT finalize current_period_end yet.
+          // Only update status; do NOT finalize current_period_end yet.
           // The date Stripe sends here is often "now" because payment hasn't
           // been confirmed. invoice.paid will carry the real future date.
           await prisma.subscriptions.update({
@@ -145,7 +145,7 @@ export async function POST(req: NextRequest) {
 
         if (subscriptionRecord) {
           // If Stripe marks cancel_at_period_end = true, the raw status stays
-          // "active" — we encode it as "cancel_at_period_end" so the app UI
+          // "active": we encode it as "cancel_at_period_end" so the app UI
           // can display the correct pending-cancellation state.
           const cancelAtPeriodEnd = rawObject.cancel_at_period_end === true;
           const resolvedStatus =
@@ -185,7 +185,7 @@ export async function POST(req: NextRequest) {
             : invoice.customer?.id;
 
         if (!customerId) {
-          console.log("⏭️ invoice.paid has no customer — skipping");
+          console.log("⏭️ invoice.paid has no customer; skipping");
           break;
         }
 
@@ -195,7 +195,7 @@ export async function POST(req: NextRequest) {
             : invoice.parent?.subscription_details?.subscription?.id ?? null;
 
         if (!subscriptionId) {
-          console.log("⏭️ invoice.paid is not for a subscription — skipping");
+          console.log("⏭️ invoice.paid is not for a subscription; skipping");
           break;
         }
 
@@ -294,11 +294,11 @@ export async function POST(req: NextRequest) {
         });
 
         // If the period_end is essentially "now" (less than 1 hour in the
-        // future), Stripe hasn't finalised the billing cycle yet — the real
+        // future), Stripe hasn't finalised the billing cycle yet; the real
         // date will arrive via invoice.paid. Use a +1 month fallback so the
         // user isn't immediately locked out.
         if (!currentPeriodEnd || isPeriodEndPlaceholder(currentPeriodEnd)) {
-          console.log("⚠️ period_end is a placeholder — applying +1 month fallback");
+          console.log("⚠️ period_end is a placeholder; applying +1 month fallback");
           currentPeriodEnd = new Date();
           currentPeriodEnd.setMonth(currentPeriodEnd.getMonth() + 1);
         }

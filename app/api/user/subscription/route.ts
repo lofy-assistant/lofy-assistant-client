@@ -63,7 +63,7 @@ export async function GET() {
     // period ends, so we read it directly from Stripe only when needed. For
     // display purposes we surface the raw status field and let the UI decide.
     // If the user just hit cancel, the webhook will have updated the status to
-    // reflect "active" with cancel_at_period_end = true — we encode that as a
+    // reflect "active" with cancel_at_period_end = true; we encode that as a
     // separate field by checking our own DB or relying on Stripe status values.
     // We also expose a derived `cancelAtPeriodEnd` flag based on the status
     // stored after our cancel endpoint fires (we set it to "cancel_at_period_end").

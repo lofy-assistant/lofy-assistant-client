@@ -62,7 +62,7 @@ export default function LimitlessReminderPage() {
             <Badge className="mb-4">🔔 Reminder Types</Badge>
             <h2 className="text-4xl font-bold mb-4">Flexible Scheduling</h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              From quick one-time alerts to complex recurring schedules—Lofy handles it all.
+              From quick one-time alerts to complex recurring schedules: Lofy handles it all.
             </p>
           </div>
 
@@ -98,7 +98,7 @@ export default function LimitlessReminderPage() {
             <Badge className="mb-4">✨ Features</Badge>
             <h2 className="text-4xl font-bold mb-4">Smart Reminder Features</h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              More than just notifications—intelligent reminders that adapt to your life.
+              More than just notifications: intelligent reminders that adapt to your life.
             </p>
           </div>
 
@@ -113,7 +113,7 @@ export default function LimitlessReminderPage() {
               <CardContent>
                 <p className="text-muted-foreground">
                   Just talk naturally. "Remind me next Tuesday at 2pm" or "Every Friday remind me to submit timesheet."
-                  No forms, no menus—just chat.
+                  No forms, no menus, just chat.
                 </p>
               </CardContent>
             </Card>
@@ -182,7 +182,7 @@ export default function LimitlessReminderPage() {
               <div className="text-5xl font-bold text-primary mb-2">∞</div>
               <h3 className="text-xl font-bold mb-2">Limitless Reminder</h3>
               <p className="text-muted-foreground">
-                Create as many reminders as you need. Personal, work, family—no restrictions.
+                Create as many reminders as you need. Personal, work, family: no restrictions.
               </p>
             </div>
 
@@ -274,7 +274,7 @@ export default function LimitlessReminderPage() {
               </div>
 
               {/* Later notification */}
-              <div className="text-center text-xs text-muted-foreground py-2">— Friday, 5:00 PM —</div>
+              <div className="text-center text-xs text-muted-foreground py-2">(Friday, 5:00 PM)</div>
 
               {/* AI notification */}
               <div className="flex justify-start">

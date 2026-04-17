@@ -44,12 +44,12 @@ export function DashboardPageShell({
           <p className="shrink-0 px-5 pt-3 pb-1 text-xs text-[#9a8070]">{description}</p>
         )}
 
-        {/* Scroll area — the ONLY scrollable element on the page */}
+        {/* Scroll area: the ONLY scrollable element on the page */}
         <div className={cn("scrollbar-hidden r flex-1 overflow-y-auto px-4 py-4", scrollClassName)}>
           {children}
         </div>
 
-        {/* Fade overlay — outside the scroll container, positioned at bottom of card */}
+        {/* Fade overlay: outside the scroll container, positioned at bottom of card */}
         <div
           aria-hidden="true"
           className="pointer-events-none h-10 -mt-10 shrink-0 rounded-b-[2rem] bg-[#faf6f2] md:h-16 md:rounded-4xl"

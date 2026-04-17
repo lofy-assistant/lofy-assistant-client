@@ -1,234 +1,230 @@
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import Image from "next/image";
+import Link from "next/link";
+import {
+  Brain,
+  Calendar,
+  Cat,
+  CheckCircle2,
+  Clock,
+  Guitar,
+  Heart,
+  MessageSquare,
+  Mic,
+  Shield,
+  Sparkles,
+  Target,
+  Users,
+  Zap,
+} from "lucide-react";
 
-import { Sparkles, Brain, Calendar, MessageSquare, Zap, Heart, Cat, Users, Clock, Target, Lightbulb, ArrowRight, CheckCircle2, Guitar, Mic, Shield } from "lucide-react";
 import CTA from "@/components/brochure/home/cta";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
+import { formatThousandsPlus, getAboutPlatformStats } from "@/lib/brochure/about-stats";
 
-const stats = [
-  { value: "5K+", label: "Reminders Sent" },
-  { value: "2K+", label: "Calendar Events Created" },
-  { value: "100K+", label: "Conversations" },
-  { value: "8hrs", label: "Saved Weekly" },
-];
+export const revalidate = 3600;
 
 const values = [
   {
     icon: Shield,
-    title: "Privacy First",
-    description: "Your data belongs to you. We use end-to-end encryption and never sell your information.",
+    title: "Privacy first",
+    description:
+      "Your data belongs to you. We use strong security practices and do not sell your personal information.",
   },
   {
-    icon: Lightbulb,
-    title: "Radical Simplicity",
-    description: "Complex technology, simple experience. Lofy handles the complexity so you don't have to.",
+    icon: Sparkles,
+    title: "Radical simplicity",
+    description:
+      "Complex technology, calm experience. Lofy handles the orchestration so you can stay in flow.",
   },
   {
     icon: Heart,
-    title: "Human-Centered",
-    description: "AI should amplify human potential, not replace human connection. We design for real people.",
+    title: "Human-centered",
+    description:
+      "AI should amplify your intent, not add noise. We design for real routines, not demos.",
   },
   {
     icon: Users,
-    title: "Inclusive Design",
-    description: "Built for everyone. Accessible, intuitive, and respectful of diverse needs and preferences.",
+    title: "Inclusive by default",
+    description:
+      "Clear language, respectful defaults, and room for different communication styles.",
   },
 ];
 
 const capabilities = [
   {
     icon: Brain,
-    title: "Context-Aware Intelligence",
-    description: "Understands the relationships between your tasks, events, and preferences to provide relevant assistance.",
+    title: "Context-aware help",
+    description: "Connects tasks, events, and preferences so suggestions stay relevant.",
   },
   {
     icon: Calendar,
-    title: "Smart Scheduling",
-    description: "Learns your patterns and preferences to suggest optimal times for tasks and meetings.",
+    title: "Scheduling that respects you",
+    description: "Works with your calendar and reminders without turning life into a spreadsheet.",
   },
   {
     icon: MessageSquare,
-    title: "Natural Conversation",
-    description: "Interact naturally without learning commands. Just talk to Lofy like you would a trusted friend.",
+    title: "Natural conversation",
+    description: "Talk like yourself, with no command language or rigid syntax required.",
   },
   {
     icon: Zap,
-    title: "Proactive Reminders",
-    description: "Gets ahead of your needs with intelligent reminders based on context, not just time.",
+    title: "Proactive nudges",
+    description: "Reminders that consider timing and context, not only the clock.",
   },
   {
     icon: Target,
-    title: "Goal Tracking",
-    description: "Keeps you aligned with your long-term goals by connecting daily tasks to bigger aspirations.",
+    title: "Goals in view",
+    description: "Helps tie day-to-day actions back to what you said actually matters.",
   },
   {
     icon: Clock,
-    title: "Persistent Memory",
-    description: "Remembers everything you share, building a comprehensive understanding of your life over time.",
+    title: "Persistent memory",
+    description: "Remembers what you choose to save so you do not have to repeat yourself.",
   },
 ];
 
-export default function AboutUsPage() {
+const personaCards = [
+  {
+    key: "atlas",
+    name: "A.T.L.A.S",
+    tagline: "The intelligent",
+    desc: "Fast, structured, razor-sharp clarity.",
+    icon: Zap,
+  },
+  {
+    key: "brad",
+    name: "Brad",
+    tagline: "The bro",
+    desc: "Confident, playful, always in your corner.",
+    icon: Guitar,
+  },
+  {
+    key: "lexi",
+    name: "Lexi",
+    tagline: "The bestie",
+    desc: "Warm, steady, real, and your ride-or-die energy.",
+    icon: Heart,
+  },
+  {
+    key: "rocco",
+    name: "Rocco",
+    tagline: "The roaster",
+    desc: "Quick wit on the mic, playful and never cruel.",
+    icon: Mic,
+  },
+] as const;
+
+function personaVoiceSharePercent(personas: { key: string; percent: number }[], key: string): number | null {
+  const row = personas.find((p) => p.key === key);
+  if (!row || row.percent <= 0) return null;
+  return row.percent;
+}
+
+export default async function AboutUsPage() {
+  const stats = await getAboutPlatformStats();
+
+  const statStrip = [
+    {
+      value: formatThousandsPlus(stats.remindersCompleted),
+      label: "Reminders completed",
+    },
+    {
+      value: formatThousandsPlus(stats.calendarEvents),
+      label: "Calendar events",
+    },
+    {
+      value: formatThousandsPlus(stats.registeredUsers),
+      label: "Registered users",
+    },
+    {
+      value: formatThousandsPlus(stats.assistantCalls),
+      label: "Assistant calls",
+    },
+  ];
+
+  const refreshed = new Intl.DateTimeFormat("en-MY", {
+    dateStyle: "medium",
+    timeStyle: "short",
+  }).format(new Date(stats.generatedAt));
+
   return (
-    <div className="min-h-screen bg-background">
-      {/* Subtle background pattern */}
-      <div className="fixed inset-0 -z-10 overflow-hidden">
-        <div className="absolute top-0 left-1/4 w-[600px] h-[600px] bg-primary/5 rounded-full blur-3xl" />
-        <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-accent/5 rounded-full blur-3xl" />
+    <div className="min-h-screen bg-background text-foreground">
+      <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
+        <div className="absolute -left-32 top-0 h-[420px] w-[420px] rounded-full bg-primary/[0.07] blur-3xl" />
+        <div className="absolute bottom-0 right-[-120px] h-[380px] w-[380px] rounded-full bg-accent/[0.06] blur-3xl" />
+        <div
+          className="absolute inset-0 opacity-[0.35]"
+          style={{
+            backgroundImage: `radial-gradient(circle at 1px 1px, hsl(var(--border)) 1px, transparent 0)`,
+            backgroundSize: "48px 48px",
+          }}
+        />
       </div>
 
-      {/* Hero Section */}
-      <section className="relative px-4 pt-20 pb-16 mx-auto max-w-6xl sm:px-6 lg:px-8">
-        <div className="text-center max-w-3xl mx-auto">
-          <Badge variant="indigo" className="mb-6 px-4 py-1.5 text-sm border-primary/30 bg-primary/5">
-            <Cat className="w-3.5 h-3.5 mr-2" />
-            About Lofy
-          </Badge>
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight mb-6 text-balance">
-            Your Intelligent
-            <span className="text-primary"> Personal Assistant</span>
-          </h1>
-          <p className="text-lg md:text-xl text-muted-foreground leading-relaxed max-w-2xl mx-auto text-pretty">Like a warm loaf of bread always there when you need it, Lofy remembers what matters, reminds you when needed, and helps you navigate life with ease.</p>
-        </div>
-
-        {/* Stats */}
-        <div className="mt-16 grid grid-cols-2 md:grid-cols-4 gap-8 max-w-4xl mx-auto">
-          {stats.map((stat, index) => (
-            <div key={index} className="text-center">
-              <div className="text-3xl md:text-4xl font-bold text-primary mb-1">{stat.value}</div>
-              <div className="text-sm text-muted-foreground">{stat.label}</div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Story Section */}
-      <section className="px-4 py-20 mx-auto max-w-6xl sm:px-6 lg:px-8">
-        <div className="grid lg:grid-cols-2 gap-12 items-center">
-          <div>
-            <Badge variant="indigo" className="mb-4 px-3 py-1">
-              Our Story
+      <section className="border-b border-border/60 bg-gradient-to-b from-muted/40 to-background">
+        <div className="mx-auto flex max-w-6xl flex-col gap-12 px-4 py-16 sm:px-6 lg:flex-row lg:items-end lg:justify-between lg:px-8 lg:py-24">
+          <div className="max-w-xl space-y-6">
+            <Badge variant="indigo" className="w-fit gap-1.5 px-3 py-1">
+              <Cat className="size-3.5" aria-hidden />
+              About Lofy
             </Badge>
-            <h2 className="text-3xl md:text-4xl font-bold mb-6 text-balance">Born from a Simple Observation</h2>
-            <div className="space-y-4 text-muted-foreground leading-relaxed">
-              <p>
-                Lofy is named after a cat named <span className="font-semibold text-foreground">Lofy</span>
-                —a quiet companion who had a remarkable way of being present without being intrusive. The name came from how Lofy would curl up into a perfect loaf shape, looking just like a warm loaf of bread resting peacefully.
-              </p>
-              <p>This cat would subtly remind the founder of important things: a gentle nudge when it was time to take a break, a quiet presence during late-night work sessions, and an uncanny sense of knowing when something needed attention.</p>
-              <p className="font-medium text-foreground">Like that cat, Lofy was designed to be a subtle, intelligent presence in your life—one that remembers what matters, reminds you when needed, and understands your context without overwhelming you.</p>
+            <h1 className="text-balance text-4xl font-semibold tracking-tight sm:text-5xl lg:text-6xl">
+              A quiet assistant for a loud world.
+            </h1>
+            <p className="text-pretty text-lg leading-relaxed text-muted-foreground sm:text-xl">
+              Lofy remembers what matters, nudges you when it helps, and stays out of the way when it does not, like
+              the companion who inspired the name.
+            </p>
+            <div className="flex flex-wrap gap-3 pt-2">
+              <Link
+                href="/register"
+                className="inline-flex h-11 items-center justify-center rounded-full bg-primary px-6 text-sm font-medium text-primary-foreground shadow-sm transition hover:opacity-95"
+              >
+                Get started
+              </Link>
+              <Link
+                href="/features"
+                className="inline-flex h-11 items-center justify-center rounded-full border border-border bg-background/80 px-6 text-sm font-medium backdrop-blur transition hover:bg-muted/60"
+              >
+                Explore features
+              </Link>
             </div>
           </div>
-          <div className="relative">
-            <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-accent/10 rounded-3xl blur-2xl" />
-            <Card className="relative border-2 border-primary/10 shadow-xl">
-              <CardContent className="p-8">
-                <div className="mb-6">
-                  <div className="font-bold text-lg">The Lofy Philosophy</div>
-                  <div className="text-sm text-muted-foreground">Inspired by Lofy the cat</div>
-                </div>
-                <ul className="space-y-3">
-                  {["Present when needed, never intrusive", "Remembers what matters to you", "Adapts to your rhythm", "Quietly reliable, always there"].map((item, i) => (
-                    <li key={i} className="flex items-center gap-3">
-                      <CheckCircle2 className="w-5 h-5 text-primary shrink-0" />
-                      <span className="text-muted-foreground">{item}</span>
-                    </li>
-                  ))}
-                </ul>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </section>
 
-      {/* Lore Section */}
-      <section className="relative overflow-hidden px-4 py-24 mx-auto max-w-6xl sm:px-6 lg:px-8">
-        {/* Ambient background */}
-        <div className="absolute inset-0 -z-10">
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full bg-primary/[0.03] blur-3xl" />
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_0%,hsl(var(--background))_70%)]" />
-        </div>
-
-        <div className="max-w-3xl mx-auto text-center mb-16">
-          <Badge variant="indigo" className="mb-6 px-4 py-1.5 text-sm border-primary/30 bg-primary/5">
-            <Cat className="w-3.5 h-3.5 mr-2" />
-            Lore
-          </Badge>
-          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight text-balance mb-6">The Lofy Origin</h2>
-        </div>
-
-        {/* Narrative prose */}
-        <div className="max-w-2xl mx-auto space-y-8 text-lg text-muted-foreground leading-relaxed">
-          <p className="text-xl md:text-2xl text-foreground font-medium">Lofy started with a cat.</p>
-          <p>Lofy wasn&apos;t clever in an obvious way. He didn&apos;t demand attention or make noise. He just showed up at the right moments — during long nights, stressful days, or quiet breaks in between. Always present. Never intrusive.</p>
-          <p className="text-foreground font-medium">That behavior stuck.</p>
-          <p>When Lofy was built, the goal wasn&apos;t to create the smartest assistant in the room. It was to build something that understood timing. Something that watched, remembered, and stepped in only when it actually helped.</p>
-          <p>As Lofy grew, one personality wasn&apos;t enough. Different moments needed different energy. So the system adapted — the same way a cat does.</p>
-        </div>
-
-        {/* Persona cards - bento grid */}
-        <div className="mt-16 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 max-w-5xl mx-auto">
-          {[
-            {
-              name: "A.T.L.A.S",
-              tagline: "The Intelligent",
-              desc: "Fast, structured, razor-sharp clarity.",
-              icon: Zap,
-            },
-            {
-              name: "Brad",
-              tagline: "The Bro",
-              desc: "Confident, playful, always in your corner.",
-              icon: Guitar,
-            },
-            {
-              name: "Lexi",
-              tagline: "The Bestie",
-              desc: "Warm, steady, real—your ride-or-die energy.",
-              icon: Heart,
-            },
-            {
-              name: "Rocco",
-              tagline: "The Roaster",
-              desc: "Quick wit on the mic—fun, never cruel.",
-              icon: Mic,
-            },
-          ].map((persona) => (
-            <Card key={persona.name} className="group border-2 border-primary/10 hover:border-primary/30 bg-card/80 backdrop-blur-sm transition-all duration-300 overflow-hidden">
-              <CardContent className="p-5">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="p-2 rounded-lg bg-primary/10 group-hover:bg-primary/20 transition-colors">
-                    <persona.icon className="w-4 h-4 text-primary" />
+          <div className="relative mx-auto w-full max-w-sm shrink-0 lg:mx-0">
+            <div className="absolute inset-0 -rotate-3 rounded-[2rem] bg-gradient-to-br from-primary/15 to-accent/10 blur-xl" />
+            <Card className="relative overflow-hidden border-border/80 shadow-lg">
+              <CardContent className="space-y-5 p-7">
+                <div className="flex items-center gap-3">
+                  <div className="relative size-14 shrink-0 overflow-hidden rounded-2xl border border-border/60 bg-muted/30">
+                    <Image
+                      src="/assets/icons/lofy-logo-1.png"
+                      alt="Lofy"
+                      fill
+                      className="object-contain p-2"
+                      sizes="56px"
+                      priority
+                    />
                   </div>
                   <div>
-                    <div className="font-bold text-foreground">{persona.name}</div>
-                    <div className="text-xs text-muted-foreground">{persona.tagline}</div>
+                    <p className="text-sm font-medium text-muted-foreground">Live platform pulse</p>
+                    <p className="text-xs text-muted-foreground/80">Rounded counts from our database</p>
                   </div>
                 </div>
-                <p className="text-sm text-muted-foreground">{persona.desc}</p>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-
-        <p className="text-center text-muted-foreground mt-10 italic max-w-xl mx-auto">Same intelligence. Different modes.</p>
-
-        {/* Core mantra */}
-        <div className="mt-16 max-w-2xl mx-auto">
-          <div className="relative">
-            <div className="absolute -inset-1 bg-gradient-to-r from-primary/20 to-accent/20 rounded-2xl blur-lg opacity-60" />
-            <Card className="relative border-2 border-primary/20 bg-card overflow-hidden">
-              <CardContent className="p-8 md:p-10 text-center">
-                <p className="text-foreground text-lg md:text-xl font-medium leading-relaxed mb-4">At its core, Lofy follows one rule:</p>
-                <blockquote className="space-y-4">
-                  <p className="text-2xl md:text-3xl font-bold text-primary tracking-tight">Be there when needed.</p>
-                  <p className="text-2xl md:text-3xl font-bold text-primary tracking-tight">Stay out of the way when not.</p>
-                </blockquote>
-                <p className="mt-6 text-muted-foreground flex items-center justify-center gap-2">
-                  Just like the cat that inspired it.
-                  <span className="text-2xl" aria-hidden>
-                    🐾
-                  </span>
+                <dl className="grid grid-cols-2 gap-4">
+                  {statStrip.map((item) => (
+                    <div key={item.label} className="rounded-xl border border-border/60 bg-muted/20 p-3">
+                      <dt className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+                        {item.label}
+                      </dt>
+                      <dd className="mt-1 font-mono text-2xl font-semibold tracking-tight text-primary">{item.value}</dd>
+                    </div>
+                  ))}
+                </dl>
+                <p className="text-[11px] leading-relaxed text-muted-foreground">
+                  Figures aggregate production-style activity (reminders marked completed, active calendar rows, user
+                  accounts, and logged assistant calls). Refreshed at least hourly; last build snapshot {refreshed}.
                 </p>
               </CardContent>
             </Card>
@@ -236,91 +232,224 @@ export default function AboutUsPage() {
         </div>
       </section>
 
-      {/* Mission & Vision */}
-      <section className="px-4 py-20 bg-muted/30">
-        <div className="mx-auto max-w-6xl sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <Badge variant="indigo" className="mb-4 px-3 py-1">
-              Purpose
-            </Badge>
-            <h2 className="text-3xl md:text-4xl font-bold text-balance">What Drives Us</h2>
+      <section className="mx-auto max-w-6xl px-4 py-20 sm:px-6 lg:px-8">
+        <div className="grid gap-14 lg:grid-cols-12 lg:gap-10">
+          <div className="space-y-6 lg:col-span-5">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">Our story</p>
+            <h2 className="text-balance text-3xl font-semibold tracking-tight sm:text-4xl">Named after a cat who understood timing.</h2>
+            <div className="space-y-4 text-muted-foreground leading-relaxed">
+              <p>
+                Lofy is named after a cat named <span className="font-medium text-foreground">Lofy</span>, a quiet
+                companion who showed up in the right moments without demanding the room.
+              </p>
+              <p>
+                That idea carried into the product: be present when needed, remember what matters, and avoid the kind
+                of constant interruption that turns assistants into chores.
+              </p>
+            </div>
           </div>
-          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-            <Card className="border-2 hover:border-primary/20 transition-colors">
-              <CardContent className="p-8">
-                <div className="p-3 rounded-xl bg-primary/10 w-fit mb-4">
-                  <Target className="w-6 h-6 text-primary" />
+          <div className="space-y-6 lg:col-span-7">
+            <Card className="border-border/80 bg-card/70 backdrop-blur-sm">
+              <CardContent className="space-y-6 p-8">
+                <div>
+                  <h3 className="text-lg font-semibold">The Lofy philosophy</h3>
+                  <p className="text-sm text-muted-foreground">How we think about helpful software</p>
                 </div>
-                <h3 className="text-xl font-bold mb-3">Our Mission</h3>
-                <p className="text-muted-foreground leading-relaxed">To create an AI assistant that truly understands and supports individuals in managing their lives—remembering what matters, reminding when needed, and adapting to each person{"'"}s unique context.</p>
-              </CardContent>
-            </Card>
-            <Card className="border-2 hover:border-primary/20 transition-colors">
-              <CardContent className="p-8">
-                <div className="p-3 rounded-xl bg-accent/10 w-fit mb-4">
-                  <Sparkles className="w-6 h-6 text-primary" />
-                </div>
-                <h3 className="text-xl font-bold mb-3">Our Vision</h3>
-                <p className="text-muted-foreground leading-relaxed">A world where technology amplifies human potential rather than adding complexity. Where personal AI assistants help people reclaim mental space and focus on what brings joy.</p>
+                <ul className="grid gap-3 sm:grid-cols-2">
+                  {[
+                    "Present when needed, not performative",
+                    "Remembers what you choose to share",
+                    "Adapts to your rhythm and tone",
+                    "Reliable without being loud",
+                  ].map((item) => (
+                    <li key={item} className="flex gap-3 text-sm text-muted-foreground">
+                      <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden />
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+                <blockquote className="border-l-2 border-primary/40 pl-4 text-sm italic text-muted-foreground">
+                  We are not optimizing for “the smartest model in the room.” We are optimizing for the right intervention
+                  at the right time.
+                </blockquote>
               </CardContent>
             </Card>
           </div>
         </div>
       </section>
 
-      {/* Values Section */}
-      <section className="px-4 py-20 mx-auto max-w-6xl sm:px-6 lg:px-8">
-        <div className="text-center mb-12">
-          <Badge variant="indigo" className="mb-4 px-3 py-1">
-            Our Values
-          </Badge>
-          <h2 className="text-3xl md:text-4xl font-bold mb-4 text-balance">Principles That Guide Us</h2>
-          <p className="text-muted-foreground max-w-2xl mx-auto">Every feature we build and every decision we make is rooted in these core values.</p>
-        </div>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {values.map((value, index) => (
-            <Card key={index} className="group border-2 hover:border-primary/20 hover:shadow-lg transition-all duration-300">
-              <CardContent className="p-6">
-                <div className="p-3 rounded-xl bg-primary/10 w-fit mb-4 group-hover:bg-primary/20 transition-colors">
-                  <value.icon className="w-6 h-6 text-primary" />
-                </div>
-                <h3 className="font-bold text-lg mb-2">{value.title}</h3>
-                <p className="text-sm text-muted-foreground leading-relaxed">{value.description}</p>
-              </CardContent>
-            </Card>
-          ))}
+      <section className="border-y border-border/60 bg-muted/25">
+        <div className="mx-auto max-w-6xl space-y-12 px-4 py-20 sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-2xl text-center space-y-4">
+            <Badge variant="indigo" className="mx-auto w-fit gap-1.5 px-3 py-1">
+              <Cat className="size-3.5" aria-hidden />
+              Lore
+            </Badge>
+            <h2 className="text-balance text-3xl font-semibold tracking-tight sm:text-4xl">Same intelligence. Different energy.</h2>
+            <p className="text-muted-foreground leading-relaxed">
+              People do not feel the same every day, so Lofy offers distinct voices you can switch between. Percentages
+              show each mode&apos;s share among users who picked a named voice.
+            </p>
+          </div>
+
+          <ul className="grid list-none grid-cols-1 gap-4 p-0 sm:grid-cols-2 lg:grid-cols-4">
+            {personaCards.map((persona) => {
+              const Icon = persona.icon;
+              const sharePct = personaVoiceSharePercent(stats.personas, persona.key);
+              return (
+                <li key={persona.key}>
+                  <Card className="group flex h-full flex-col border-border/80 bg-background/90 shadow-sm ring-1 ring-black/[0.03] transition hover:-translate-y-0.5 hover:border-primary/35 hover:shadow-md dark:ring-white/[0.04]">
+                    <CardContent className="flex flex-1 flex-col gap-0 p-6 sm:p-7">
+                      <div className="flex gap-4">
+                        <div
+                          className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary transition group-hover:bg-primary/[0.14]"
+                          aria-hidden
+                        >
+                          <Icon className="size-[18px]" strokeWidth={1.75} />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
+                            <h3 className="text-[15px] font-semibold leading-snug tracking-tight">{persona.name}</h3>
+                            {sharePct !== null ? (
+                              <span
+                                className="shrink-0 rounded-md border border-border/70 bg-muted/40 px-2 py-0.5 text-xs font-medium tabular-nums tracking-tight text-muted-foreground"
+                                title="Approximate share of users who selected a named voice mode (live data)"
+                                aria-label={`${sharePct} percent of users who picked a named voice chose this mode`}
+                              >
+                                {sharePct}%
+                              </span>
+                            ) : null}
+                          </div>
+                          <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">{persona.tagline}</p>
+                          <p className="mt-4 border-t border-border/50 pt-4 text-sm leading-relaxed text-muted-foreground">
+                            {persona.desc}
+                          </p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </li>
+              );
+            })}
+          </ul>
+
+          <Card className="mx-auto max-w-3xl border-primary/20 bg-gradient-to-br from-primary/[0.06] to-transparent">
+            <CardContent className="space-y-4 p-8 text-center sm:p-10">
+              <p className="text-sm font-medium text-muted-foreground">At its core, Lofy follows one rule:</p>
+              <p className="text-2xl font-semibold tracking-tight text-primary sm:text-3xl">Be there when needed.</p>
+              <p className="text-2xl font-semibold tracking-tight text-primary sm:text-3xl">Stay out of the way when not.</p>
+              <p className="text-sm text-muted-foreground">Just like the cat that inspired it.</p>
+            </CardContent>
+          </Card>
         </div>
       </section>
 
-      {/* Technology / Capabilities */}
-      <section className="px-4 py-20 bg-muted/30">
-        <div className="mx-auto max-w-6xl sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <Badge variant="indigo" className="mb-4 px-3 py-1">
-              Technology
-            </Badge>
-            <h2 className="text-3xl md:text-4xl font-bold mb-4 text-balance">Intelligent Capabilities</h2>
-            <p className="text-muted-foreground max-w-2xl mx-auto">Powered by advanced AI to deliver a truly personalized assistant experience.</p>
+      <section className="mx-auto max-w-6xl px-4 py-20 sm:px-6 lg:px-8">
+        <div className="mb-12 max-w-2xl space-y-3">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">Purpose</p>
+          <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">What drives us</h2>
+        </div>
+        <div className="grid gap-6 md:grid-cols-2">
+          <Card className="border-border/80">
+            <CardContent className="space-y-4 p-8">
+              <div className="flex size-11 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+                <Target className="size-5" aria-hidden />
+              </div>
+              <h3 className="text-xl font-semibold">Mission</h3>
+              <p className="leading-relaxed text-muted-foreground">
+                Build an assistant that truly supports day-to-day life by remembering what you asked it to hold,
+                reminding you when it helps, and adapting to your context without turning every ping into pressure.
+              </p>
+            </CardContent>
+          </Card>
+          <Card className="border-border/80">
+            <CardContent className="space-y-4 p-8">
+              <div className="flex size-11 items-center justify-center rounded-2xl bg-accent/15 text-primary">
+                <Sparkles className="size-5" aria-hidden />
+              </div>
+              <h3 className="text-xl font-semibold">Vision</h3>
+              <p className="leading-relaxed text-muted-foreground">
+                A world where personal AI gives people mental breathing room, with less juggling and more room for what
+                actually feels meaningful.
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+      </section>
+
+      <section className="border-t border-border/60 bg-muted/20">
+        <div className="mx-auto max-w-6xl px-4 py-20 sm:px-6 lg:px-8">
+          <div className="mb-12 max-w-2xl space-y-3">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">Principles</p>
+            <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">How we build</h2>
+            <p className="text-muted-foreground leading-relaxed">Values we return to when tradeoffs get noisy.</p>
           </div>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {capabilities.map((cap, index) => (
-              <Card key={index} className="border-0 shadow-md hover:shadow-xl transition-shadow duration-300 bg-card">
-                <CardContent className="p-6">
-                  <div className="flex items-start gap-4">
-                    <div className="p-2.5 rounded-lg bg-primary/10 shrink-0">
-                      <cap.icon className="w-5 h-5 text-primary" />
+          <div className="grid gap-5 sm:grid-cols-2">
+            {values.map((value) => {
+              const Icon = value.icon;
+              return (
+                <Card key={value.title} className="border-border/70 bg-background/80">
+                  <CardContent className="flex items-center gap-4 p-6 sm:p-7">
+                    <div className="mt-0.5 rounded-xl bg-primary/10 p-2.5 text-primary">
+                      <Icon className="size-5" aria-hidden />
                     </div>
-                    <div>
-                      <h3 className="font-semibold mb-2">{cap.title}</h3>
-                      <p className="text-sm text-muted-foreground leading-relaxed">{cap.description}</p>
+                    <div className="space-y-2">
+                      <h3 className="font-semibold">{value.title}</h3>
+                      <p className="text-sm leading-relaxed text-muted-foreground">{value.description}</p>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                  </CardContent>
+                </Card>
+              );
+            })}
           </div>
         </div>
       </section>
+
+      <section className="mx-auto max-w-6xl px-4 py-20 sm:px-6 lg:px-8">
+        <div className="mb-12 max-w-2xl space-y-3">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">Product</p>
+          <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">What Lofy is good at</h2>
+          <p className="text-muted-foreground leading-relaxed">
+            Capabilities grounded in how people actually use the assistant, not a speculative feature laundry list.
+          </p>
+        </div>
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          {capabilities.map((cap) => {
+            const Icon = cap.icon;
+            return (
+              <div
+                key={cap.title}
+                className="flex items-center gap-4 rounded-2xl border border-border/60 bg-card/50 p-5 transition hover:border-primary/25 hover:bg-card"
+              >
+                <div className="mt-0.5 shrink-0 rounded-lg bg-muted p-2 text-primary">
+                  <Icon className="size-5" aria-hidden />
+                </div>
+                <div className="space-y-1.5">
+                  <h3 className="text-sm font-semibold">{cap.title}</h3>
+                  <p className="text-sm leading-relaxed text-muted-foreground">{cap.description}</p>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </section>
+
+      <section className="border-t border-border/60 bg-muted/15">
+        <div className="mx-auto max-w-6xl px-4 py-14 text-center sm:px-6 lg:px-8">
+          <p className="text-sm text-muted-foreground">
+            Made with care in{" "}
+            <span className="font-medium text-foreground">Malaysia</span>
+            <span className="mx-1" aria-hidden>
+              🇲🇾
+            </span>
+            ·{" "}
+            <Link href="/" className="text-foreground underline-offset-4 hover:underline">
+              lofy.ai
+            </Link>
+          </p>
+        </div>
+      </section>
+
       <CTA />
     </div>
   );

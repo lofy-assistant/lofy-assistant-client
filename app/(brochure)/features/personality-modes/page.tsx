@@ -5,7 +5,7 @@ import FeatureHeader from "@/components/brochure/features/feature-header";
 export const metadata: Metadata = {
   title: "Personality Modes Feature",
   description:
-    "Meet A.T.L.A.S, Brad, Lexi, and Rocco—four Lofy personas you can switch anytime so your assistant matches your mood.",
+    "Meet A.T.L.A.S, Brad, Lexi, and Rocco: four Lofy personas you can switch anytime so your assistant matches your mood.",
   alternates: {
     canonical: "/features/personality-modes",
   },
@@ -28,7 +28,7 @@ export default function PersonalityModesPage() {
           <FeatureHeader
             badge="🎭 Adaptive AI"
             title="Personality Modes"
-            description="An AI assistant that truly understands you. Lofy adapts its voice—A.T.L.A.S, Brad, Lexi, or Rocco—to match your context, mood, and preferences."
+            description="An AI assistant that truly understands you. Lofy adapts its voice (A.T.L.A.S, Brad, Lexi, or Rocco) to match your context, mood, and preferences."
           />
         </div>
       </section>
@@ -104,7 +104,7 @@ export default function PersonalityModesPage() {
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground">
-                  Brad brings bro energy and light teasing; Rocco turns up the wit on the mic—always playful, never punching down.
+                  Brad brings bro energy and light teasing; Rocco turns up the wit on the mic, always playful, never punching down.
                 </p>
               </CardContent>
             </Card>
@@ -115,7 +115,7 @@ export default function PersonalityModesPage() {
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground">
-                  Change personas on the fly—in settings or by asking Lofy to switch to Brad, Lexi, Rocco, or A.T.L.A.S.
+                  Change personas on the fly in settings or by asking Lofy to switch to Brad, Lexi, Rocco, or A.T.L.A.S.
                 </p>
               </CardContent>
             </Card>
@@ -151,7 +151,7 @@ export default function PersonalityModesPage() {
               </div>
               <h3 className="text-xl font-bold mb-2">Pick Your Vibe</h3>
               <p className="text-muted-foreground">
-                Choose A.T.L.A.S, Brad, Lexi, or Rocco in settings—or just tell Lofy who you want today.
+                Choose A.T.L.A.S, Brad, Lexi, or Rocco in settings, or just tell Lofy who you want today.
               </p>
             </div>
 

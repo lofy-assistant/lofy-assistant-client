@@ -239,7 +239,7 @@ export function SubscriptionSettings() {
                 Billing cycle
               </p>
               <p className="font-semibold capitalize">
-                {subscription.billingCycle ?? "—"}
+                {subscription.billingCycle ?? "Not set"}
               </p>
             </div>
           </div>
@@ -287,7 +287,7 @@ export function SubscriptionSettings() {
                       </span>
                       . After that date your account will be downgraded and you
                       will lose access to Pro features. This action cannot be
-                      undone from here — you would need to subscribe again.
+                      undone from here; you would need to subscribe again.
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>

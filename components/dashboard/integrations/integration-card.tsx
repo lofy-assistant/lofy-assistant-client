@@ -22,6 +22,13 @@ export interface Integration {
   hasVoted?: boolean;
 }
 
+type GoogleAccountRow = {
+  credentialId: number;
+  displayName: string | null;
+  googleEmail: string | null;
+  isActive: boolean;
+};
+
 const COMING_SOON_INTEGRATIONS: Omit<Integration, "enabled" | "status">[] = [
   {
     id: "slack",
@@ -133,6 +140,7 @@ export function IntegrationCard() {
   const [remainingVotes, setRemainingVotes] = useState(3);
   const [isVoting, setIsVoting] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [googleAccounts, setGoogleAccounts] = useState<GoogleAccountRow[]>([]);
 
   useEffect(() => {
     const fetchIntegrationStatus = async () => {
@@ -144,7 +152,21 @@ export function IntegrationCard() {
 
         if (response.ok) {
           const data = await response.json();
-          const statuses = data.integrations as Record<string, { isActive: boolean; status: "connected" | "disconnected" | "error" }>;
+          const statuses = data.integrations as Record<
+            string,
+            {
+              isActive: boolean;
+              status: "connected" | "disconnected" | "error";
+              accounts?: GoogleAccountRow[];
+            }
+          >;
+
+          const g = statuses["google-calendar"];
+          if (g?.accounts) {
+            setGoogleAccounts(g.accounts);
+          } else {
+            setGoogleAccounts([]);
+          }
 
           setIntegrations((prev) =>
             prev.map((integration) => {
@@ -197,45 +219,60 @@ export function IntegrationCard() {
     });
   }, []);
 
+  const startGoogleOAuth = async (integrationLabel: string) => {
+    const response = await fetch("/api/integration", {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ integrationLabel }),
+    });
+    if (response.ok) {
+      const data = (await response.json()) as { redirectUrl?: string };
+      if (data?.redirectUrl) {
+        window.location.href = data.redirectUrl;
+        return;
+      }
+    }
+    const errorData = (await response.json().catch(() => ({}))) as { error?: string };
+    throw new Error(errorData.error || "Failed to initiate authorization");
+  };
+
+  const disconnectGoogleAccount = async (credentialId: number) => {
+    const response = await fetch("/api/integration/google/disconnect", {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ credentialId }),
+    });
+    if (!response.ok) {
+      const err = (await response.json().catch(() => ({}))) as { error?: string };
+      throw new Error(err.error || "Disconnect failed");
+    }
+    toast.success("Google account disconnected");
+    const statusRes = await fetch("/api/integration/status", { method: "GET", credentials: "include" });
+    if (statusRes.ok) {
+      const data = (await statusRes.json()) as {
+        integrations: Record<string, { isActive: boolean; status: "connected" | "disconnected" | "error"; accounts?: GoogleAccountRow[] }>;
+      };
+      const g = data.integrations["google-calendar"];
+      setGoogleAccounts(g?.accounts ?? []);
+      setIntegrations((prev) =>
+        prev.map((integration) =>
+          integration.id === "google-calendar"
+            ? {
+                ...integration,
+                enabled: g?.isActive ?? false,
+                status: g?.isActive ? "connected" : "disconnected",
+              }
+            : integration,
+        ),
+      );
+    }
+  };
+
   const handleToggle = async (id: string, currentEnabled: boolean, comingSoon?: boolean) => {
     if (comingSoon) return;
-    // If turning on, redirect to Google authorization
-    if (!currentEnabled && id === "google-calendar") {
-      try {
-        const response = await fetch("/api/integration", {
-          method: "GET",
-          credentials: "include",
-          redirect: "manual", // Don't automatically follow redirects
-        });
-
-        // Handle successful response - API returns JSON with redirectUrl
-        if (response.ok) {
-          const data = await response.json();
-          if (data?.redirectUrl) {
-            // Navigate to the Google OAuth URL
-            window.location.href = data.redirectUrl;
-            return;
-          }
-        }
-
-        // Handle errors
-        if (!response.ok) {
-          const errorData = await response.json().catch(() => ({}));
-          throw new Error(errorData.error || "Failed to initiate authorization");
-        }
-      } catch (error) {
-        console.error("Failed to initiate Google authorization:", error);
-        setIntegrations((prev) =>
-          prev.map((integration) =>
-            integration.id === id
-              ? {
-                  ...integration,
-                  status: "error",
-                }
-              : integration,
-          ),
-        );
-      }
+    if (id === "google-calendar") {
       return;
     }
 
@@ -351,9 +388,64 @@ export function IntegrationCard() {
                     </div>
                     <div className="flex shrink-0 items-center gap-2">
                       {getStatusBadge(integration.status)}
-                      {integration.id !== "whatsapp" && <Switch checked={integration.enabled} onCheckedChange={() => handleToggle(integration.id, integration.enabled, integration.comingSoon)} />}
+                      {integration.id === "whatsapp" && (
+                        <Switch checked={integration.enabled} onCheckedChange={() => handleToggle(integration.id, integration.enabled, integration.comingSoon)} />
+                      )}
                     </div>
                   </div>
+                  {integration.id === "google-calendar" && (
+                    <div className="mt-3 space-y-2 border-t border-[#ede5da] pt-3">
+                      {googleAccounts.length > 0 && (
+                        <ul className="space-y-2">
+                          {googleAccounts.map((a) => (
+                            <li key={a.credentialId} className="flex items-center justify-between gap-2 rounded-lg bg-[#faf7f2] px-2 py-1.5 text-xs">
+                              <div className="min-w-0">
+                                <p className="font-medium truncate">{a.displayName || "Google account"}</p>
+                                {a.googleEmail && <p className="text-muted-foreground truncate">{a.googleEmail}</p>}
+                              </div>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="h-7 shrink-0 text-xs"
+                                onClick={async () => {
+                                  try {
+                                    await disconnectGoogleAccount(a.credentialId);
+                                  } catch (e) {
+                                    toast.error(e instanceof Error ? e.message : "Disconnect failed");
+                                  }
+                                }}
+                              >
+                                Disconnect
+                              </Button>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                      <Button
+                        variant="default"
+                        size="sm"
+                        className="w-full h-8 text-xs"
+                        onClick={async () => {
+                          const name = window.prompt("Name this Google connection (e.g. Work, Personal):");
+                          if (!name?.trim()) {
+                            toast.error("A name is required to add a Google account.");
+                            return;
+                          }
+                          try {
+                            await startGoogleOAuth(name.trim());
+                          } catch (e) {
+                            console.error(e);
+                            toast.error(e instanceof Error ? e.message : "Could not start Google sign-in");
+                            setIntegrations((prev) =>
+                              prev.map((i) => (i.id === "google-calendar" ? { ...i, status: "error" as const } : i)),
+                            );
+                          }
+                        }}
+                      >
+                        Add Google account
+                      </Button>
+                    </div>
+                  )}
                 </CardHeader>
               </Card>
             ))}

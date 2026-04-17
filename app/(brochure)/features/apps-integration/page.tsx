@@ -216,7 +216,7 @@ export default function AppsIntegrationPage() {
               <CardContent>
                 <p className="text-muted-foreground">
                   All integrations use OAuth 2.0 for secure authentication. Your credentials
-                  are never stored—only secure access tokens.
+                  are never stored; only secure access tokens are kept.
                 </p>
               </CardContent>
             </Card>

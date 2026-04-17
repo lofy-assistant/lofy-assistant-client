@@ -28,7 +28,7 @@ const PUBLIC_ROUTES = [
     '/api/auth/verify-email',
     '/api/auth/resend-verification',
     '/api/auth/change-email',
-    '/api/stripe',   // checkout, webhooks – supports guest checkout
+    '/api/stripe',   // checkout, webhooks; supports guest checkout
     '/api/geo',     // pricing geo detection
 ];
 
@@ -119,7 +119,7 @@ export async function proxy(request: NextRequest) {
 
         if (phone) {
             try {
-                // Call DB directly — avoids a self-fetch back through middleware
+                // Call DB directly: avoids a self-fetch back through middleware
                 // which would double-spend a rate-limit token and add latency.
                 const hasPin = await checkUserHasPin(phone);
                 const redirectPath = hasPin ? '/login' : '/register';

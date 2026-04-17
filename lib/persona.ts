@@ -33,10 +33,10 @@ const MARKETING: Record<Persona, Omit<PersonaMarketing, "value">> = {
     cardTitle: "A.T.L.A.S, the Intelligent",
     heroEmoji: "🤖",
     description:
-      "Composed, highly intelligent, and efficient. Cuts through the noise with clarity and precision—calm, articulate, and confident, a partner who anticipates your needs.",
+      "Composed, highly intelligent, and efficient. Cuts through the noise with clarity and precision: calm, articulate, and confident, a partner who anticipates your needs.",
     examples: [
       "Reminder set for 3 PM. You're clear until then.",
-      "Added to calendar. You've got three events back-to-back tomorrow — buffer time might help.",
+      "Added to calendar. You've got three events back-to-back tomorrow, so buffer time might help.",
       "Memory stored. I'll remember that.",
     ],
     colorClass: "bg-slate-500/10 border-slate-500/20",
@@ -48,10 +48,10 @@ const MARKETING: Record<Persona, Omit<PersonaMarketing, "value">> = {
     cardTitle: "Brad, the Bro",
     heroEmoji: "🎸",
     description:
-      "Confident, playful, and chill—the bro who always has your back. Light teasing, friendly tone, and quick help. Riffs on the situation, never on you.",
+      "Confident, playful, and chill, the bro who always has your back. Light teasing, friendly tone, and quick help. Riffs on the situation, never on you.",
     examples: [
       "Alright alright, reminder set. I got you.",
-      "Done. Bold of you to trust me again—but I deliver.",
+      "Done. Bold of you to trust me again, but I deliver.",
       "On it. What are friends for?",
     ],
     colorClass: "bg-amber-500/10 border-amber-500/20",
@@ -63,7 +63,7 @@ const MARKETING: Record<Persona, Omit<PersonaMarketing, "value">> = {
     cardTitle: "Lexi, the Bestie",
     heroEmoji: "💅🏽",
     description:
-      "Optimistic, resilient, and real—your bestie with boundaries. Steady through uncertainty, encouraging but honest—the voice that keeps you moving forward.",
+      "Optimistic, resilient, and real, your bestie with boundaries. Steady through uncertainty, encouraging but honest, the voice that keeps you moving forward.",
     examples: [
       "Reminder set. One less thing to carry.",
       "There are risks. None of them are irreversible. Let's go step by step.",
@@ -78,9 +78,9 @@ const MARKETING: Record<Persona, Omit<PersonaMarketing, "value">> = {
     cardTitle: "Rocco, the Roaster",
     heroEmoji: "🎤",
     description:
-      "Sharp, quick, and hilarious on the mic—roasts the moment, not you. Discreet when it counts, memorable when you need a laugh. Loyal hype with edge.",
+      "Sharp, quick, and hilarious on the mic: roasts the moment, not you. Discreet when it counts, memorable when you need a laugh. Loyal hype with edge.",
     examples: [
-      "Reminder set. I'll hold you to it—fair warning.",
+      "Reminder set. I'll hold you to it, fair warning.",
       "Calendar updated. Tomorrow's stacked; pace yourself, superstar.",
       "Saved. Don't say I never remember the important stuff.",
     ],

@@ -6,7 +6,7 @@ const pillars = [
   {
     icon: Lock,
     title: "End-to-End Encryption",
-    description: "All data in transit and at rest is encrypted using AES-256, ensuring no one — not even us — can read your messages.",
+    description: "All data in transit and at rest is encrypted using AES-256, ensuring no one, not even us, can read your messages.",
   },
   {
     icon: KeyRound,

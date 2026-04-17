@@ -55,7 +55,7 @@ export default function SaveToMemoryPage() {
             <Badge className="mb-4">💭 What Can You Save?</Badge>
             <h2 className="text-4xl font-bold mb-4">Your Second Brain</h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              From fleeting thoughts to important details—Lofy remembers everything so you don't have to.
+              From fleeting thoughts to important details: Lofy remembers everything so you don't have to.
             </p>
           </div>
 
@@ -91,7 +91,7 @@ export default function SaveToMemoryPage() {
             <Badge className="mb-4">✨ Features</Badge>
             <h2 className="text-4xl font-bold mb-4">Smart Memory Management</h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              More than just storage—Lofy understands and organizes your memories intelligently.
+              More than just storage: Lofy understands and organizes your memories intelligently.
             </p>
           </div>
 
@@ -120,7 +120,7 @@ export default function SaveToMemoryPage() {
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground">
-                  Lofy automatically tags and categorizes your memories. No manual organization needed—just
+                  Lofy automatically tags and categorizes your memories. No manual organization needed: just
                   save and let AI do the heavy lifting.
                 </p>
               </CardContent>
@@ -151,7 +151,7 @@ export default function SaveToMemoryPage() {
               <CardContent>
                 <p className="text-muted-foreground">
                   Your memories are encrypted and private. Only you can access them. Delete anytime
-                  and they're gone forever—no backups, no traces.
+                  and they're gone forever, with no backups and no traces.
                 </p>
               </CardContent>
             </Card>
@@ -228,7 +228,7 @@ export default function SaveToMemoryPage() {
               </div>
 
               {/* Later... */}
-              <div className="text-center text-xs text-muted-foreground py-2">— 2 months later —</div>
+              <div className="text-center text-xs text-muted-foreground py-2">(2 months later)</div>
 
               {/* User message */}
               <div className="flex justify-end">
