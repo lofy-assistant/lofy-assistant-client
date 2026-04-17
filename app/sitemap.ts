@@ -13,6 +13,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: '/features/apps-integration', priority: 0.8, changeFrequency: 'monthly' as const },
     { url: '/about-us', priority: 0.7, changeFrequency: 'monthly' as const },
     { url: '/privacy-policy', priority: 0.4, changeFrequency: 'yearly' as const },
+    { url: '/cookie-policy', priority: 0.4, changeFrequency: 'yearly' as const },
     { url: '/terms', priority: 0.4, changeFrequency: 'yearly' as const },
     { url: '/gdpr', priority: 0.4, changeFrequency: 'yearly' as const },
   ].map(({ url, priority, changeFrequency }) => ({

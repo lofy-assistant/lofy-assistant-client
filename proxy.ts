@@ -16,6 +16,7 @@ const PUBLIC_ROUTES = [
     '/about-us',
     '/guides',
     '/privacy-policy',
+    '/cookie-policy',
     '/terms',
     '/gdpr',
     '/api/auth/login',
