@@ -7,6 +7,13 @@ function serializeShareId(shareId: bigint) {
   return shareId.toString();
 }
 
+function serializePersonSummary(person: { id: string; name: string | null }) {
+  return {
+    id: person.id,
+    name: person.name,
+  };
+}
+
 export async function GET(request: NextRequest) {
   try {
     const token = request.cookies.get("session")?.value;
@@ -46,6 +53,20 @@ export async function GET(request: NextRequest) {
         content: true,
         created_at: true,
         updated_at: true,
+        memories_share: {
+          select: {
+            id: true,
+            user: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+          },
+          orderBy: {
+            created_at: "asc",
+          },
+        },
       },
     });
 
@@ -89,21 +110,29 @@ export async function GET(request: NextRequest) {
 
     // Decrypt the encrypted fields for each memory
     // Handle decryption errors gracefully - some memories might have invalid encrypted data
-    const decryptedMemories = memories.map((memory: { id: number; title: string | null; content: string; created_at: Date; updated_at: Date }) => {
+    const decryptedMemories = memories.map((memory) => {
+      const sharedWith = memory.memories_share.map((share) => serializePersonSummary(share.user));
+
       try {
         return {
-          ...memory,
+          id: memory.id,
           title: memory.title ? decryptContent(memory.title) : null,
           content: decryptContent(memory.content),
+          created_at: memory.created_at,
+          updated_at: memory.updated_at,
+          sharedWith,
         };
       } catch (error) {
         // If decryption fails for a specific memory, log it but continue with other memories
         console.error(`Failed to decrypt memory ${memory.id}:`, error);
         // Return the memory as-is (might already be decrypted or corrupted)
         return {
-          ...memory,
+          id: memory.id,
           title: memory.title,
           content: memory.content,
+          created_at: memory.created_at,
+          updated_at: memory.updated_at,
+          sharedWith,
         };
       }
     });

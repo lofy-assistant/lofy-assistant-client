@@ -16,6 +16,11 @@ interface PersonSummary {
   name: string | null;
 }
 
+interface MemoryShareRecipient {
+  id: string;
+  name: string | null;
+}
+
 interface Memory {
   id: number;
   title: string | null;
@@ -26,6 +31,7 @@ interface Memory {
   shareId?: string;
   comment?: string | null;
   sharedAt?: string;
+  sharedWith?: MemoryShareRecipient[];
   owner?: PersonSummary;
   sharedUser?: PersonSummary;
 }
@@ -37,6 +43,7 @@ type MemoryApiResponse = {
     content: string;
     created_at: string;
     updated_at: string;
+    sharedWith?: MemoryShareRecipient[];
   }>;
   sharedMemories?: Array<{
     id: number;
@@ -61,6 +68,24 @@ function truncateContent(content: string, maxLength: number = 170) {
 
 function getDisplayName(person?: PersonSummary | null) {
   return person?.name?.trim() || "Someone in your circle";
+}
+
+function getRecipientLabel(recipients: MemoryShareRecipient[]) {
+  const names = recipients.map((recipient) => recipient.name?.trim()).filter(Boolean) as string[];
+
+  if (names.length === 0) {
+    return "Shared with your circle";
+  }
+
+  if (names.length === 1) {
+    return `Shared with ${names[0]}`;
+  }
+
+  if (names.length === 2) {
+    return `Shared with ${names[0]} and ${names[1]}`;
+  }
+
+  return `Shared with ${names[0]}, ${names[1]}, and ${names.length - 2} more`;
 }
 
 export function MemoryGrid() {
@@ -139,7 +164,7 @@ export function MemoryGrid() {
       return true;
     }
 
-    const haystacks = [memory.title, memory.content, memory.owner?.name, memory.comment].filter(Boolean) as string[];
+    const haystacks = [memory.title, memory.content, memory.owner?.name, memory.comment, ...(memory.sharedWith?.map((recipient) => recipient.name) ?? [])].filter(Boolean) as string[];
     return haystacks.some((value) => value.toLowerCase().includes(normalizedQuery));
   };
 
@@ -355,6 +380,8 @@ export function MemoryGrid() {
               <div className="space-y-3">
                 {visibleOwnedMemories.map((memory) => {
                   const memoryDate = new Date(memory.created_at);
+                  const sharedRecipients = memory.sharedWith ?? [];
+                  const isShared = sharedRecipients.length > 0;
 
                   return (
                     <Card
@@ -377,6 +404,18 @@ export function MemoryGrid() {
 
                         <p className="text-sm leading-relaxed text-[#7c6657]">{truncateContent(memory.content)}</p>
 
+                        {isShared ? (
+                          <div className="rounded-[1.15rem] border border-[#d9ebe2] bg-[#f6fbf8] px-3 py-2.5">
+                            <div className="flex items-start gap-2">
+                              <Users className="mt-0.5 h-3.5 w-3.5 text-[#4b806d]" />
+                              <div className="space-y-1">
+                                <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#5b8576]">Already shared</p>
+                                <p className="text-sm leading-relaxed text-[#416759]">{getRecipientLabel(sharedRecipients)}</p>
+                              </div>
+                            </div>
+                          </div>
+                        ) : null}
+
                         <Separator className="bg-[#ede3d8]" />
 
                         <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-[11px] text-[#8d7563]">
@@ -384,6 +423,12 @@ export function MemoryGrid() {
                             <Calendar className="h-3.5 w-3.5" />
                             Saved {format(memoryDate, "MMM d, yyyy 'at' h:mm a")}
                           </span>
+                          {isShared ? (
+                            <span className="inline-flex items-center gap-1.5 text-[#537b6b]">
+                              <Users className="h-3.5 w-3.5" />
+                              {sharedRecipients.length} {sharedRecipients.length === 1 ? "friend" : "friends"}
+                            </span>
+                          ) : null}
                           <span className="inline-flex items-center gap-1.5 text-[#9a8070]">
                             <ArrowUpRight className="h-3.5 w-3.5" />
                             Open to edit or share
