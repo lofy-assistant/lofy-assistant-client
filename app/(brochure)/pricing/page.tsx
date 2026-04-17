@@ -3,20 +3,39 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Check, Loader2 } from "lucide-react";
 import { useState, useEffect } from "react";
-import { plans, resolveCurrency } from "@/lib/stripe-plans";
+import {
+  checkoutAvailableFor,
+  getStripePlan,
+  resolveCurrency,
+  type BillingCycle,
+} from "@/lib/stripe-plans";
+import type { SubscriptionTierId } from "@/lib/pricing-model";
+import {
+  PRICING_FAQ,
+  PRICING_PAGE_COPY,
+  SUBSCRIPTION_TIERS,
+  getEnterpriseMailtoHref,
+  getListPriceMoney,
+  tabDiscountPercent,
+} from "@/lib/pricing-model";
+import { cn } from "@/lib/utils";
+
+function formatMoney(amount: number): string {
+  return amount.toFixed(2);
+}
 
 export default function PricingPage() {
-  const [billingCycle, setBillingCycle] = useState<"monthly" | "yearly">("monthly");
-  const [isLoading, setIsLoading] = useState(false);
+  const [billingCycle, setBillingCycle] = useState<BillingCycle>("monthly");
+  const [loadingTier, setLoadingTier] = useState<SubscriptionTierId | null>(null);
   const [displayCurrency, setDisplayCurrency] = useState<"usd" | "myr">("usd");
   const [countryForCheckout, setCountryForCheckout] = useState<string | undefined>(undefined);
 
-  const monthlyPlan = plans.find((p) => p.billingCycle === "monthly")!;
-  const yearlyPlan = plans.find((p) => p.billingCycle === "yearly")!;
+  const pctQuarterly = tabDiscountPercent("quarterly");
+  const pctYearly = tabDiscountPercent("yearly");
 
-  // Detect user's country and currency
   useEffect(() => {
     let cancelled = false;
 
@@ -33,10 +52,11 @@ export default function PricingPage() {
         applyGeo(data.country, data.currency as "usd" | "myr");
       })
       .catch(() => {
-        // Fallback to browser locale
-        const locale = typeof navigator !== "undefined"
-          ? navigator.language ?? (typeof navigator.languages !== "undefined" ? navigator.languages[0] : undefined)
-          : undefined;
+        const locale =
+          typeof navigator !== "undefined"
+            ? navigator.language ??
+              (typeof navigator.languages !== "undefined" ? navigator.languages[0] : undefined)
+            : undefined;
         const country = locale?.toLowerCase().endsWith("-my") ? "MY" : undefined;
         applyGeo(country ?? null, resolveCurrency(country) as "usd" | "myr");
       });
@@ -47,20 +67,29 @@ export default function PricingPage() {
   }, []);
 
   const currencySymbol = displayCurrency === "myr" ? "RM" : "$";
-  const monthlyPrice = displayCurrency === "myr" ? monthlyPlan.priceMyr : monthlyPlan.priceUsd;
-  const yearlyPrice = displayCurrency === "myr" ? yearlyPlan.priceMyr : yearlyPlan.priceUsd;
-  const monthlySavings = (monthlyPrice * 12 - yearlyPrice).toFixed(0);
 
-  const handleGetStarted = async () => {
-    setIsLoading(true);
+  const handleCheckout = async (tierId: SubscriptionTierId) => {
+    if (!checkoutAvailableFor(tierId, billingCycle)) return;
+    const plan = getStripePlan(tierId, billingCycle);
+    if (!plan) return;
+
+    const useHostedCheckoutApi =
+      countryForCheckout === "MY" && Boolean(plan.priceIdMyr);
+
+    if (!useHostedCheckoutApi && plan.link.startsWith("https://")) {
+      setLoadingTier(tierId);
+      globalThis.location.assign(plan.link);
+      return;
+    }
+
+    setLoadingTier(tierId);
     try {
       const response = await fetch("/api/stripe/create-checkout-session", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           billingCycle,
+          tierId,
           ...(countryForCheckout && { country: countryForCheckout }),
         }),
       });
@@ -68,153 +97,215 @@ export default function PricingPage() {
       const data = await response.json();
 
       if (data.url) {
-        window.location.href = data.url;
+        globalThis.location.assign(data.url);
       } else {
-        console.error("No checkout URL returned");
-        setIsLoading(false);
+        console.error("No checkout URL returned", data);
+        setLoadingTier(null);
       }
     } catch (error) {
       console.error("Error creating checkout session:", error);
-      setIsLoading(false);
+      setLoadingTier(null);
     }
   };
-
-  const features = [
-    "Unlimited usage",
-    "Apps integration",
-    "Limitless reminders",
-    "RAG powered memories",
-    "Four personas: A.T.L.A.S, Brad, Lexi & Rocco",
-    "Priority support",
-    "Advanced analytics",
-    "24/7 availability",
-  ];
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
       <div className="px-4 py-16 mx-auto max-w-7xl sm:px-6 lg:px-8">
         <div className="mb-12 text-center">
           <Badge variant="indigo" className="mb-4">
-            Pricing
+            {PRICING_PAGE_COPY.badge}
           </Badge>
           <h1 className="mb-4 text-4xl font-bold text-gray-900 sm:text-5xl">
-            Simple, Transparent Pricing
+            {PRICING_PAGE_COPY.headline}
           </h1>
           <p className="max-w-3xl mx-auto text-md md:text-xl text-gray-600">
-            Unlock full Lofy capabilities. Try free for 14 days
+            {PRICING_PAGE_COPY.subhead}
           </p>
         </div>
 
-        {/* Billing Toggle */}
-        <div className="flex items-center justify-center mb-12 gap-4">
-          <span className={`text-lg font-medium transition-colors ${billingCycle === "monthly" ? "text-gray-900" : "text-gray-500"}`}>
-            Monthly
-          </span>
-          <button
-            onClick={() => setBillingCycle(billingCycle === "monthly" ? "yearly" : "monthly")}
-            className="relative inline-flex h-6 w-11 items-center rounded-full bg-gray-400 hover:bg-gray-500 transition-colors focus:outline-none focus:ring-2 focus:ring-foreground focus:ring-offset-2"
-            aria-label="Toggle billing cycle"
+        <p className="mb-3 text-center text-sm text-muted-foreground">{PRICING_PAGE_COPY.billingTabsHint}</p>
+
+        <div className="mb-12 flex justify-center">
+          <Tabs
+            value={billingCycle}
+            onValueChange={(v) => setBillingCycle(v as BillingCycle)}
+            className="w-full max-w-2xl"
           >
-            <span
-              className={`inline-block h-4 w-4 transform rounded-full bg-gray-900 transition-transform ${billingCycle === "yearly" ? "translate-x-6" : "translate-x-1"
-                }`}
-            />
-          </button>
-          <span className={`text-lg font-medium transition-colors ${billingCycle === "yearly" ? "text-gray-900" : "text-gray-500"}`}>
-            Yearly
-          </span>
-
+            <TabsList className="grid h-auto w-full grid-cols-3 gap-1 p-1">
+              <TabsTrigger value="monthly" className="flex-col gap-0.5 py-2.5 text-xs sm:text-sm">
+                <span>1 Month</span>
+              </TabsTrigger>
+              <TabsTrigger value="quarterly" className="flex-col gap-0.5 py-2.5 text-xs sm:text-sm">
+                <span>3 Months</span>
+                <span className="text-[10px] font-semibold text-emerald-600 sm:text-xs">[{pctQuarterly}%]</span>
+              </TabsTrigger>
+              <TabsTrigger value="yearly" className="flex-col gap-0.5 py-2.5 text-xs sm:text-sm">
+                <span>12 Months</span>
+                <span className="text-[10px] font-semibold text-emerald-600 sm:text-xs">[{pctYearly}%]</span>
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
         </div>
 
-        {/* Pricing Card */}
-        <div className="flex justify-center">
-          <Card className="w-full max-w-lg py-3 border-2 hover:border-primary/20 transition-all hover:shadow-xl">
-            <CardHeader className="text-center">
-              <div className="flex items-center justify-center">
-                <CardTitle className="text-2xl font-bold">Basic Plan</CardTitle>
-                {billingCycle === "yearly" && (
-                  <Badge variant="indigo" className="ml-3">
-                    25% OFF
-                  </Badge>
-                )}
-              </div>
-              <CardDescription className="text-base">
-                Everything you need to stay organized and productive
-              </CardDescription>
-              
-              {/* Trial Info */}
-              <div className="mt-6 p-4 bg-emerald-50 rounded-lg border border-emerald-200">
-                <Badge variant="emerald" className="mb-2">
-                  14 Days Free Trial
-                </Badge>
-                <p className="text-sm text-gray-700 font-medium">
-                  Trial starts after your first message with Lofy
-                </p>
-                <a 
-                  href={`${process.env.NEXT_PUBLIC_APP_URL}/dashboard`}
-                  className="text-sm text-primary hover:underline inline-flex items-center gap-1 mt-1"
-                >
-                  Check dashboard for details →
-                </a>
-              </div>
+        <div className="grid gap-8 lg:grid-cols-3 lg:gap-6">
+          {SUBSCRIPTION_TIERS.map((tier) => {
+            const prices = getListPriceMoney(tier.id, billingCycle);
+            const yearlyMoney = getListPriceMoney(tier.id, "yearly");
+            const quarterlyMoney = getListPriceMoney(tier.id, "quarterly");
+            const canCheckout = checkoutAvailableFor(tier.id, billingCycle);
+            const isEnterprise = tier.id === "enterprise";
 
-              {/* Pricing */}
-              <div className="mt-6">
-                <p className="text-sm text-gray-600 mb-2">Then</p>
-                <span className="text-5xl font-bold">
-                  {currencySymbol}{billingCycle === "monthly" ? monthlyPrice : yearlyPrice}
-                </span>
-                <span className="text-gray-600 text-lg">
-                  /{billingCycle === "monthly" ? "month" : "year"}
-                </span>
-              </div>
-              {billingCycle === "yearly" && (
-                <>
-                  <Badge variant="emerald" className="mx-auto mt-2">
-                    Save {currencySymbol}{monthlySavings}
-                  </Badge>
-                  <p className="text-sm text-gray-500 mt-1">
-                    {currencySymbol}{(yearlyPrice / 12).toFixed(2)} per month, billed annually
-                  </p>
-                </>
-              )}
-            </CardHeader>
-            <CardContent>
-              <ul className="space-y-3">
-                {features.map((feature, index) => (
-                  <li key={index} className="flex items-center gap-3">
-                    <div className="flex items-center justify-center w-5 h-5 rounded-full bg-emerald-100">
-                      <Check className="w-3.5 h-3.5 text-emerald-600" />
-                    </div>
-                    <span className="text-gray-700">{feature}</span>
-                  </li>
-                ))}
-              </ul>
-            </CardContent>
-            <CardFooter>
-              <Button
-                onClick={handleGetStarted}
-                className="w-full text-lg py-6 cursor-pointer hover:scale-[1.02] transition-transform"
-                size="lg"
-                disabled={isLoading}
+            const priceFormatted =
+              prices &&
+              `${currencySymbol}${formatMoney(displayCurrency === "myr" ? prices.myr : prices.usd)}`;
+
+            const perMonthFromYearly =
+              !isEnterprise && yearlyMoney && billingCycle === "yearly"
+                ? formatMoney(displayCurrency === "myr" ? yearlyMoney.myr / 12 : yearlyMoney.usd / 12)
+                : null;
+
+            const perMonthFromQuarterly =
+              !isEnterprise && quarterlyMoney && billingCycle === "quarterly"
+                ? formatMoney(displayCurrency === "myr" ? quarterlyMoney.myr / 3 : quarterlyMoney.usd / 3)
+                : null;
+
+            const periodSuffix =
+              billingCycle === "monthly" ? "month" : billingCycle === "quarterly" ? "3 months" : "year";
+
+            return (
+              <Card
+                key={tier.id}
+                className={cn(
+                  "flex flex-col py-3 border-2 transition-all hover:shadow-xl",
+                  tier.id === "premium" && "border-primary/35 lg:scale-[1.02] lg:z-[1]"
+                )}
               >
-                {isLoading ? (
-                  <>
-                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                    Processing...
-                  </>
-                ) : (
-                  "Start Free Trial"
-                )}
-              </Button>
-            </CardFooter>
-          </Card>
+                <CardHeader className="text-center">
+                  <div className="flex flex-wrap items-center justify-center gap-2">
+                    <CardTitle className="text-2xl font-bold">{tier.name}</CardTitle>
+                    {tier.id === "pro" && (
+                      <Badge variant="indigo" className="text-xs">
+                        Start here
+                      </Badge>
+                    )}
+                    {tier.id === "premium" && (
+                      <Badge variant="indigo" className="text-xs">
+                        Most automation
+                      </Badge>
+                    )}
+                  </div>
+                  <CardDescription className="text-base pt-1">{tier.shortDescription}</CardDescription>
+
+                  {tier.id === "pro" && (
+                    <div className="mt-4 p-4 bg-emerald-50 rounded-lg border border-emerald-200 text-left">
+                      <Badge variant="emerald" className="mb-2">
+                        {PRICING_PAGE_COPY.trialBadge}
+                      </Badge>
+                      <p className="text-sm text-gray-700 font-medium">{PRICING_PAGE_COPY.trialDetail}</p>
+                      <a
+                        href={`${process.env.NEXT_PUBLIC_APP_URL}/dashboard`}
+                        className="text-sm text-primary hover:underline inline-flex items-center gap-1 mt-1"
+                      >
+                        Check dashboard for details →
+                      </a>
+                    </div>
+                  )}
+
+                  <div className="mt-6">
+                    {isEnterprise ? (
+                      <>
+                        <p className="text-sm text-gray-600 mb-2">Investment</p>
+                        <span className="text-4xl font-bold sm:text-5xl">{PRICING_PAGE_COPY.enterprisePriceLabel}</span>
+                        <p className="text-sm text-gray-500 mt-2">We&apos;ll scope seats, integrations, and security together.</p>
+                      </>
+                    ) : (
+                      <>
+                        <p className="text-sm text-gray-600 mb-2">{tier.id === "pro" ? "Then" : "From"}</p>
+                        <span className="text-4xl font-bold sm:text-5xl">{priceFormatted}</span>
+                        <span className="text-gray-600 text-lg">/{periodSuffix}</span>
+                      </>
+                    )}
+                  </div>
+                  {!isEnterprise && billingCycle === "yearly" && perMonthFromYearly && (
+                    <p className="text-sm text-gray-500 mt-1">
+                      {currencySymbol}
+                      {perMonthFromYearly} per month, billed annually
+                    </p>
+                  )}
+                  {!isEnterprise && billingCycle === "quarterly" && perMonthFromQuarterly && (
+                    <p className="text-sm text-gray-500 mt-1">
+                      {currencySymbol}
+                      {perMonthFromQuarterly} per month, billed every 3 months
+                    </p>
+                  )}
+                </CardHeader>
+                <CardContent className="flex-1">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 mb-3">This tier</p>
+                  <ul className="space-y-2 mb-6">
+                    {tier.tierHighlights.map((line) => (
+                      <li key={line} className="flex items-start gap-2 text-sm text-gray-700">
+                        <div className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-100">
+                          <Check className="h-3 w-3 text-emerald-600" />
+                        </div>
+                        <span>{line}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </CardContent>
+                <CardFooter className="flex-col gap-2 pt-0">
+                  {isEnterprise ? (
+                    <Button
+                      asChild
+                      className="w-full text-base py-6 cursor-pointer hover:scale-[1.02] transition-transform"
+                      size="lg"
+                      variant="default"
+                    >
+                      <a href={getEnterpriseMailtoHref()}>{PRICING_PAGE_COPY.ctaEnterprise}</a>
+                    </Button>
+                  ) : (
+                    <Button
+                      type="button"
+                      onClick={() => handleCheckout(tier.id)}
+                      className="w-full text-base py-6 cursor-pointer hover:scale-[1.02] transition-transform"
+                      size="lg"
+                      disabled={!canCheckout || loadingTier !== null}
+                      variant={tier.id === "pro" || (tier.id === "premium" && canCheckout) ? "default" : "secondary"}
+                    >
+                      {loadingTier === tier.id ? (
+                        <>
+                          <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                          Processing...
+                        </>
+                      ) : canCheckout ? (
+                        PRICING_PAGE_COPY.cta
+                      ) : (
+                        PRICING_PAGE_COPY.ctaUnavailable
+                      )}
+                    </Button>
+                  )}
+                </CardFooter>
+              </Card>
+            );
+          })}
         </div>
 
-        <div className="mt-6 text-center">
-          <p className="text-sm text-gray-500">
-            Secure payments powered by Stripe • Cancel anytime
-          </p>
+        <section className="mx-auto mt-16 max-w-3xl">
+          <h2 className="mb-6 text-center text-xl font-semibold text-gray-900">Common questions</h2>
+          <dl className="space-y-6">
+            {PRICING_FAQ.map((item) => (
+              <div
+                key={item.q}
+                className="rounded-lg border border-gray-200 bg-white/80 px-5 py-4 shadow-sm"
+              >
+                <dt className="font-medium text-gray-900">{item.q}</dt>
+                <dd className="mt-2 text-sm leading-relaxed text-gray-600">{item.a}</dd>
+              </div>
+            ))}
+          </dl>
+        </section>
+
+        <div className="mt-10 text-center">
+          <p className="text-sm text-gray-500">{PRICING_PAGE_COPY.footnote}</p>
         </div>
       </div>
     </div>

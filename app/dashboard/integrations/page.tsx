@@ -6,7 +6,7 @@ export default function IntegrationsPage() {
   return (
     <DashboardPageShell
       title="Integrations"
-      description="Connect your favourite apps to your Lofy account and get more done."
+      description="Link Google with OAuth (multiple accounts supported) and manage WhatsApp."
       icon={<Plug className="w-4 h-4" />}
     >
       <IntegrationCard />

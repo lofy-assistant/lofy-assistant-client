@@ -31,9 +31,16 @@ interface Subscription {
   priceId: string;
   currentPeriodEnd: string;
   cancelAtPeriodEnd: boolean;
-  billingCycle: "monthly" | "yearly" | null;
+  billingCycle: "monthly" | "quarterly" | "yearly" | null;
   planLabel: string;
   totalTokensUsed: number;
+}
+
+function formatBillingCycleLabel(cycle: Subscription["billingCycle"]): string {
+  if (!cycle) return "Not set";
+  if (cycle === "monthly") return "Monthly";
+  if (cycle === "quarterly") return "Every 3 months";
+  return "Annual";
 }
 
 function statusConfig(status: string, cancelAtPeriodEnd: boolean) {
@@ -174,7 +181,7 @@ export function SubscriptionSettings() {
             <div>
               <p className="font-medium">No active subscription</p>
               <p className="text-sm text-muted-foreground mt-1">
-                Upgrade to Pro to unlock all features.
+                Choose a paid plan to unlock all features.
               </p>
             </div>
             <Button asChild>
@@ -238,9 +245,7 @@ export function SubscriptionSettings() {
               <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                 Billing cycle
               </p>
-              <p className="font-semibold capitalize">
-                {subscription.billingCycle ?? "Not set"}
-              </p>
+              <p className="font-semibold">{formatBillingCycleLabel(subscription.billingCycle)}</p>
             </div>
           </div>
 
@@ -286,7 +291,7 @@ export function SubscriptionSettings() {
                         {formatDate(subscription.currentPeriodEnd)}
                       </span>
                       . After that date your account will be downgraded and you
-                      will lose access to Pro features. This action cannot be
+                      will lose access to paid features. This action cannot be
                       undone from here; you would need to subscribe again.
                     </AlertDialogDescription>
                   </AlertDialogHeader>

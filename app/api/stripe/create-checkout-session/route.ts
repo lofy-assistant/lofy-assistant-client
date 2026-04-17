@@ -3,12 +3,15 @@ import Stripe from "stripe";
 import { cookies } from "next/headers";
 import { verifySession } from "@/lib/session";
 import { prisma } from '@/lib/database';
-import { plans, resolveCurrencyFromIP } from "@/lib/stripe-plans";
+import { stripeSubscriptionPlans, resolveCurrencyFromIP, type BillingCycle } from "@/lib/stripe-plans";
+import type { SubscriptionTierId } from "@/lib/pricing-model";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
 interface CheckoutRequestBody {
   billingCycle: string;
+  /** Defaults to pro when omitted (older clients). */
+  tierId?: SubscriptionTierId;
   country?: string;
   email?: string;
 }
@@ -24,7 +27,16 @@ interface CheckoutErrorResponse {
 export async function POST(req: NextRequest) {
   try {
     const body: CheckoutRequestBody = await req.json();
-    const { billingCycle } = body;
+    const rawBc = body.billingCycle;
+    const billingCycle: BillingCycle =
+      rawBc === "monthly" || rawBc === "quarterly" || rawBc === "yearly" ? rawBc : "monthly";
+    const rawTier = body.tierId;
+    const tierId: SubscriptionTierId =
+      rawTier === "pro" || rawTier === "premium" || rawTier === "enterprise"
+        ? rawTier
+        : rawTier === "business"
+          ? "premium"
+          : "pro";
     const country =
       body.country ??
       req.headers.get("x-vercel-ip-country")?.toUpperCase() ??
@@ -83,16 +95,20 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    const plan = plans.find((p) => p.billingCycle === billingCycle);
+    const plan = stripeSubscriptionPlans.find(
+      (p) => p.billingCycle === billingCycle && p.tierId === tierId
+    );
     if (!plan) {
       return NextResponse.json<CheckoutErrorResponse>(
-        { error: "Invalid billing cycle" },
+        { error: "Invalid billing cycle or tier, or checkout not enabled for this tier yet" },
         { status: 400 }
       );
     }
 
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL;
     const currency = resolveCurrencyFromIP(country);
+    const priceId =
+      currency === "myr" && plan.priceIdMyr ? plan.priceIdMyr : plan.priceId;
 
     // Apple Pay and Google Pay are automatically enabled with "card"
     const paymentMethodTypes: Stripe.Checkout.SessionCreateParams.PaymentMethodType[] = ["card", "link"];
@@ -100,8 +116,7 @@ export async function POST(req: NextRequest) {
     const sessionParams: Stripe.Checkout.SessionCreateParams = {
       mode: "subscription",
       payment_method_types: paymentMethodTypes,
-      currency,
-      line_items: [{ price: plan.priceId, quantity: 1 }],
+      line_items: [{ price: priceId, quantity: 1 }],
       payment_method_options: {
         card: { request_three_d_secure: "automatic" },
       },
@@ -118,7 +133,7 @@ export async function POST(req: NextRequest) {
 
     // Always pass userId in metadata when available so webhook can find the user
     if (userId) {
-      sessionParams.metadata = { userId };
+      sessionParams.metadata = { userId, tierId: plan.tierId };
     }
 
     const stripeSession = await stripe.checkout.sessions.create(sessionParams);

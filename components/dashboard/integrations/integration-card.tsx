@@ -6,8 +6,16 @@ import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { IconArrowBigUp, IconCheck } from "@tabler/icons-react";
-import { Loader2 } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Calendar, CheckCircle2, CircleDot, Loader2, Shield } from "lucide-react";
 import { toast } from "sonner";
 
 export interface Integration {
@@ -17,9 +25,6 @@ export interface Integration {
   icon: React.ReactNode;
   enabled: boolean;
   status: "connected" | "disconnected" | "error";
-  comingSoon?: boolean;
-  votes?: number;
-  hasVoted?: boolean;
 }
 
 type GoogleAccountRow = {
@@ -28,89 +33,6 @@ type GoogleAccountRow = {
   googleEmail: string | null;
   isActive: boolean;
 };
-
-const COMING_SOON_INTEGRATIONS: Omit<Integration, "enabled" | "status">[] = [
-  {
-    id: "slack",
-    name: "Slack",
-    description: "Get reminders and updates in your workspace",
-    icon: <Image src="/assets/icons/slack-icon.svg" alt="Slack" width={32} height={32} className="size-8 object-contain" />,
-    comingSoon: true,
-    votes: 0,
-  },
-  {
-    id: "microsoft-teams",
-    name: "Microsoft Teams",
-    description: "Collaborate and get notifications in Teams",
-    icon: <Image src="/assets/icons/teams-icon.svg" alt="Microsoft Teams" width={32} height={32} className="size-8 object-contain" />,
-    comingSoon: true,
-    votes: 0,
-  },
-  {
-    id: "discord",
-    name: "Discord",
-    description: "Receive updates and reminders in Discord",
-    icon: <Image src="/assets/icons/discord-icon.svg" alt="Discord" width={32} height={32} className="size-8 object-contain" />,
-    comingSoon: true,
-    votes: 0,
-  },
-  {
-    id: "telegram",
-    name: "Telegram",
-    description: "Get notifications in Telegram",
-    icon: <Image src="/assets/icons/telegram-icon.svg" alt="Telegram" width={32} height={32} className="size-8 object-contain" />,
-    comingSoon: true,
-    votes: 0,
-  },
-  {
-    id: "gmail",
-    name: "Gmail",
-    description: "Sync emails and schedule from your inbox",
-    icon: <Image src="/assets/icons/gmail-icon.svg" alt="Gmail" width={32} height={32} className="size-8 object-contain" />,
-    comingSoon: true,
-    votes: 0,
-  },
-  {
-    id: "outlook",
-    name: "Microsoft Outlook",
-    description: "Connect Outlook Calendar and Mail",
-    icon: <Image src="/assets/icons/outlook-icon.svg" alt="Outlook" width={32} height={32} className="size-8 object-contain" />,
-    comingSoon: true,
-    votes: 0,
-  },
-  {
-    id: "google-drive",
-    name: "Google Drive",
-    description: "Access and manage your files from Drive",
-    icon: <Image src="/assets/icons/drive-icon.svg" alt="Google Drive" width={32} height={32} className="size-8 object-contain" />,
-    comingSoon: true,
-    votes: 0,
-  },
-  {
-    id: "onedrive",
-    name: "OneDrive",
-    description: "Sync files and documents from OneDrive",
-    icon: <Image src="/assets/icons/onedrive-icon.svg" alt="OneDrive" width={32} height={32} className="size-8 object-contain" />,
-    comingSoon: true,
-    votes: 0,
-  },
-  {
-    id: "trello",
-    name: "Trello",
-    description: "Manage boards and get task updates",
-    icon: <Image src="/assets/icons/trello-icon.svg" alt="Trello" width={32} height={32} className="size-8 object-contain" />,
-    comingSoon: true,
-    votes: 0,
-  },
-  {
-    id: "web-search",
-    name: "Web Search API",
-    description: "Search the web and get relevant results",
-    icon: <Image src="/assets/icons/web-search-icon.svg" alt="Web Search API" width={32} height={32} className="size-8 object-contain" />,
-    comingSoon: true,
-    votes: 0,
-  },
-];
 
 export function IntegrationCard() {
   const [integrations, setIntegrations] = useState<Integration[]>([
@@ -124,23 +46,18 @@ export function IntegrationCard() {
     },
     {
       id: "google-calendar",
-      name: "Google Calendar",
-      description: "Sync events and availability with Google Calendar",
-      icon: <Image src="/assets/icons/google-calendar-icon.svg" alt="Google Calendar" width={32} height={32} className="size-8 object-contain" />,
+      name: "Google",
+      description: "Calendar, mail, and Drive through one OAuth connection per account",
+      icon: <Image src="/assets/icons/google-calendar-icon.svg" alt="Google" width={32} height={32} className="size-8 object-contain" />,
       enabled: false,
       status: "disconnected",
     },
-    ...COMING_SOON_INTEGRATIONS.map((i) => ({
-      ...i,
-      enabled: false,
-      status: "disconnected" as const,
-      hasVoted: false,
-    })),
   ]);
-  const [remainingVotes, setRemainingVotes] = useState(3);
-  const [isVoting, setIsVoting] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [googleAccounts, setGoogleAccounts] = useState<GoogleAccountRow[]>([]);
+  const [googleDialogOpen, setGoogleDialogOpen] = useState(false);
+  const [newAccountLabel, setNewAccountLabel] = useState("");
+  const [oauthSubmitting, setOauthSubmitting] = useState(false);
 
   useEffect(() => {
     const fetchIntegrationStatus = async () => {
@@ -187,34 +104,7 @@ export function IntegrationCard() {
       }
     };
 
-    const fetchVoteData = async () => {
-      try {
-        const response = await fetch("/api/integration/vote", {
-          method: "GET",
-          credentials: "include",
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          const counts = data.counts as Record<string, number>;
-          const userVotes = data.userVotes as string[];
-
-          setRemainingVotes(data.remainingVotes);
-
-          setIntegrations((prev) =>
-            prev.map((integration) => ({
-              ...integration,
-              votes: counts[integration.id] || 0,
-              hasVoted: userVotes.includes(integration.id),
-            })),
-          );
-        }
-      } catch (error) {
-        console.error("Failed to fetch vote data:", error);
-      }
-    };
-
-    Promise.all([fetchIntegrationStatus(), fetchVoteData()]).finally(() => {
+    fetchIntegrationStatus().finally(() => {
       setLoading(false);
     });
   }, []);
@@ -270,13 +160,11 @@ export function IntegrationCard() {
     }
   };
 
-  const handleToggle = async (id: string, currentEnabled: boolean, comingSoon?: boolean) => {
-    if (comingSoon) return;
+  const handleToggle = async (id: string) => {
     if (id === "google-calendar") {
       return;
     }
 
-    // If turning off, just update local state
     setIntegrations((prev) =>
       prev.map((integration) =>
         integration.id === id
@@ -290,67 +178,12 @@ export function IntegrationCard() {
     );
   };
 
-  const handleVote = async (id: string) => {
-    if (isVoting) return;
-
-    const integration = integrations.find((i) => i.id === id);
-    if (!integration?.comingSoon) return;
-
-    // Check if user can vote (hasn't reached limit and hasn't voted for this)
-    if (!integration.hasVoted && remainingVotes <= 0) {
-      toast.error("You've used all 3 votes. Unvote an integration to vote for another.");
-      return;
-    }
-
-    setIsVoting(id);
-
-    try {
-      const response = await fetch("/api/integration/vote", {
-        method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ integrationId: id }),
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-
-        setRemainingVotes(data.remainingVotes);
-        setIntegrations((prev) =>
-          prev.map((i) =>
-            i.id === id
-              ? {
-                  ...i,
-                  votes: data.count,
-                  hasVoted: data.voted,
-                }
-              : i,
-          ),
-        );
-
-        if (data.voted) {
-          toast.success(`Voted for ${integration.name}!`);
-        } else {
-          toast.info(`Removed vote from ${integration.name}`);
-        }
-      } else {
-        const errorData = await response.json().catch(() => ({}));
-        toast.error(errorData.error || "Failed to vote");
-      }
-    } catch (error) {
-      console.error("Vote error:", error);
-      toast.error("Failed to vote. Please try again.");
-    } finally {
-      setIsVoting(null);
-    }
-  };
-
   const getStatusBadge = (status: Integration["status"]) => {
     switch (status) {
       case "connected":
         return <Badge variant="primary">Connected</Badge>;
       case "disconnected":
-        return <Badge variant="default">Disconnected</Badge>;
+        return <Badge variant="default">Not connected</Badge>;
       case "error":
         return <Badge variant="destructive">Error</Badge>;
       default:
@@ -358,8 +191,32 @@ export function IntegrationCard() {
     }
   };
 
-  const available = integrations.filter((i) => !i.comingSoon);
-  const comingSoon = integrations.filter((i) => i.comingSoon);
+  const googleIntegration = integrations.find((i) => i.id === "google-calendar");
+  const whatsappIntegration = integrations.find((i) => i.id === "whatsapp");
+
+  const openGoogleDialog = () => {
+    setNewAccountLabel("");
+    setGoogleDialogOpen(true);
+  };
+
+  const submitGoogleOAuth = async () => {
+    const label = newAccountLabel.trim();
+    if (!label) {
+      toast.error("Add a short name so you can tell accounts apart (for example Work or Personal).");
+      return;
+    }
+    setOauthSubmitting(true);
+    try {
+      await startGoogleOAuth(label);
+    } catch (e) {
+      console.error(e);
+      toast.error(e instanceof Error ? e.message : "Could not start Google sign-in");
+      setIntegrations((prev) =>
+        prev.map((i) => (i.id === "google-calendar" ? { ...i, status: "error" as const } : i)),
+      );
+      setOauthSubmitting(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -371,117 +228,172 @@ export function IntegrationCard() {
   }
 
   return (
-    <div className="space-y-6">
-      {/* ── Available ── */}
-      {available.length > 0 && (
-        <div className="space-y-3">
-          <h2 className="text-xs font-semibold text-[#9a8070] uppercase tracking-widest">Available</h2>
-          <div className="flex flex-col gap-2">
-            {available.map((integration) => (
-              <Card key={integration.id} className="overflow-hidden bg-white/80 border-[#ede5da]">
-                <CardHeader className="p-3">
-                  <div className="flex items-center gap-3">
-                    <div className="flex size-10 shrink-0 items-center justify-center rounded-xl border bg-white">{integration.icon}</div>
-                    <div className="min-w-0 flex-1">
-                      <CardTitle className="text-sm font-semibold truncate">{integration.name}</CardTitle>
-                      {integration.description && <p className="text-xs text-muted-foreground line-clamp-1 mt-0.5">{integration.description}</p>}
-                    </div>
-                    <div className="flex shrink-0 items-center gap-2">
-                      {getStatusBadge(integration.status)}
-                      {integration.id === "whatsapp" && (
-                        <Switch checked={integration.enabled} onCheckedChange={() => handleToggle(integration.id, integration.enabled, integration.comingSoon)} />
-                      )}
-                    </div>
-                  </div>
-                  {integration.id === "google-calendar" && (
-                    <div className="mt-3 space-y-2 border-t border-[#ede5da] pt-3">
-                      {googleAccounts.length > 0 && (
-                        <ul className="space-y-2">
-                          {googleAccounts.map((a) => (
-                            <li key={a.credentialId} className="flex items-center justify-between gap-2 rounded-lg bg-[#faf7f2] px-2 py-1.5 text-xs">
-                              <div className="min-w-0">
-                                <p className="font-medium truncate">{a.displayName || "Google account"}</p>
-                                {a.googleEmail && <p className="text-muted-foreground truncate">{a.googleEmail}</p>}
-                              </div>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className="h-7 shrink-0 text-xs"
-                                onClick={async () => {
-                                  try {
-                                    await disconnectGoogleAccount(a.credentialId);
-                                  } catch (e) {
-                                    toast.error(e instanceof Error ? e.message : "Disconnect failed");
-                                  }
-                                }}
-                              >
-                                Disconnect
-                              </Button>
-                            </li>
-                          ))}
-                        </ul>
-                      )}
+    <div className="space-y-8">
+      {/* Google suite — OAuth, multiple accounts */}
+      <section className="space-y-3">
+        <h2 className="text-xs font-semibold uppercase tracking-widest text-[#9a8070]">Google</h2>
+        <Card className="overflow-hidden border-[#ede5da] bg-gradient-to-b from-white to-[#faf7f2] shadow-sm">
+          <CardHeader className="space-y-4 p-4">
+            <div className="flex gap-3">
+              <div className="flex size-12 shrink-0 items-center justify-center rounded-2xl border border-[#ede5da] bg-white shadow-sm">
+                <Image src="/assets/icons/google-calendar-icon.svg" alt="" width={28} height={28} className="size-7 object-contain" />
+              </div>
+              <div className="min-w-0 flex-1 space-y-1">
+                <div className="flex flex-wrap items-center gap-2">
+                  <CardTitle className="text-base font-semibold text-[#3d2e22]">Google suite</CardTitle>
+                  {googleIntegration && getStatusBadge(googleIntegration.status)}
+                </div>
+                <p className="text-xs leading-relaxed text-[#7a6a5a]">
+                  Connect each Google identity once with OAuth. Lofy stores tokens per account so Calendar stays in sync today; Gmail, Drive, and other Google tools will reuse the same connection as they ship.
+                </p>
+              </div>
+            </div>
+
+            <div className="grid gap-2 rounded-xl border border-[#ede5da] bg-white/90 p-3">
+              <div className="flex items-start gap-2 text-xs text-[#3d2e22]">
+                <Shield className="mt-0.5 size-3.5 shrink-0 text-[#c97a5c]" aria-hidden />
+                <span>
+                  <span className="font-medium text-[#3d2e22]">Standard OAuth 2.0.</span> You approve scopes on Google; we never see your password.
+                </span>
+              </div>
+              <div className="flex items-start gap-2 text-xs text-[#3d2e22]">
+                <Calendar className="mt-0.5 size-3.5 shrink-0 text-[#c97a5c]" aria-hidden />
+                <span>
+                  <span className="font-medium text-[#3d2e22]">Calendar</span> is available now. Add separate connections for work, personal, or shared mailboxes.
+                </span>
+              </div>
+              <div className="flex items-start gap-2 text-xs text-[#7a6a5a]">
+                <CircleDot className="mt-0.5 size-3.5 shrink-0 text-[#c4b5a8]" aria-hidden />
+                <span>Gmail, Drive, and the rest of the suite will light up here without a second sign-in flow.</span>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <p className="text-xs font-medium uppercase tracking-wide text-[#9a8070]">Connected accounts</p>
+              {googleAccounts.length === 0 ? (
+                <p className="rounded-lg border border-dashed border-[#e5d9ce] bg-[#faf7f2] px-3 py-3 text-center text-xs text-[#7a6a5a]">
+                  No Google accounts yet. Connect one to sync Calendar and use your Google identities with Lofy.
+                </p>
+              ) : (
+                <ul className="space-y-2">
+                  {googleAccounts.map((a) => (
+                    <li
+                      key={a.credentialId}
+                      className="flex items-center justify-between gap-3 rounded-xl border border-[#ede5da] bg-white px-3 py-2.5"
+                    >
+                      <div className="flex min-w-0 items-start gap-2">
+                        <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-emerald-600" aria-hidden />
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-medium text-[#3d2e22]">{a.displayName || "Google account"}</p>
+                          {a.googleEmail && <p className="truncate text-xs text-[#7a6a5a]">{a.googleEmail}</p>}
+                        </div>
+                      </div>
                       <Button
-                        variant="default"
+                        variant="outline"
                         size="sm"
-                        className="w-full h-8 text-xs"
+                        className="h-8 shrink-0 text-xs"
                         onClick={async () => {
-                          const name = window.prompt("Name this Google connection (e.g. Work, Personal):");
-                          if (!name?.trim()) {
-                            toast.error("A name is required to add a Google account.");
-                            return;
-                          }
                           try {
-                            await startGoogleOAuth(name.trim());
+                            await disconnectGoogleAccount(a.credentialId);
                           } catch (e) {
-                            console.error(e);
-                            toast.error(e instanceof Error ? e.message : "Could not start Google sign-in");
-                            setIntegrations((prev) =>
-                              prev.map((i) => (i.id === "google-calendar" ? { ...i, status: "error" as const } : i)),
-                            );
+                            toast.error(e instanceof Error ? e.message : "Disconnect failed");
                           }
                         }}
                       >
-                        Add Google account
+                        Disconnect
                       </Button>
-                    </div>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+
+            <Button className="h-10 w-full text-sm font-medium" onClick={openGoogleDialog}>
+              Connect Google account
+            </Button>
+          </CardHeader>
+        </Card>
+      </section>
+
+      {/* WhatsApp */}
+      {whatsappIntegration && (
+        <section className="space-y-3">
+          <h2 className="text-xs font-semibold uppercase tracking-widest text-[#9a8070]">Messaging</h2>
+          <Card className="overflow-hidden border-[#ede5da] bg-white/80">
+            <CardHeader className="p-3">
+              <div className="flex items-center gap-3">
+                <div className="flex size-10 shrink-0 items-center justify-center rounded-xl border bg-white">{whatsappIntegration.icon}</div>
+                <div className="min-w-0 flex-1">
+                  <CardTitle className="truncate text-sm font-semibold">{whatsappIntegration.name}</CardTitle>
+                  {whatsappIntegration.description && (
+                    <p className="mt-0.5 line-clamp-2 text-xs text-muted-foreground">{whatsappIntegration.description}</p>
                   )}
-                </CardHeader>
-              </Card>
-            ))}
-          </div>
-        </div>
+                </div>
+                <div className="flex shrink-0 items-center gap-2">
+                  {getStatusBadge(whatsappIntegration.status)}
+                  <Switch
+                    checked={whatsappIntegration.enabled}
+                    onCheckedChange={() => handleToggle(whatsappIntegration.id)}
+                  />
+                </div>
+              </div>
+            </CardHeader>
+          </Card>
+        </section>
       )}
 
-      {/* ── Coming soon ── */}
-      {comingSoon.length > 0 && (
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <h2 className="text-xs font-semibold text-[#9a8070] uppercase tracking-widest">Coming soon</h2>
-            <p className="text-xs text-muted-foreground">
-              {remainingVotes} vote{remainingVotes !== 1 ? "s" : ""} remaining
-            </p>
+      <Dialog
+        open={googleDialogOpen}
+        onOpenChange={(open) => {
+          setGoogleDialogOpen(open);
+          if (!open) setNewAccountLabel("");
+        }}
+      >
+        <DialogContent className="border-[#ede5da] sm:max-w-md" showCloseButton={!oauthSubmitting}>
+          <DialogHeader>
+            <DialogTitle className="text-[#3d2e22]">Connect a Google account</DialogTitle>
+            <DialogDescription>
+              Choose a label you will recognize in the dashboard. You will be sent to Google to sign in and approve access.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2">
+            <label htmlFor="google-account-label" className="text-xs font-medium text-[#3d2e22]">
+              Account label
+            </label>
+            <Input
+              id="google-account-label"
+              placeholder="e.g. Work, Personal, Shared inbox"
+              value={newAccountLabel}
+              onChange={(e) => setNewAccountLabel(e.target.value)}
+              disabled={oauthSubmitting}
+              className="border-[#ede5da]"
+              onKeyDown={(e) => {
+                if (e.key === "Enter") void submitGoogleOAuth();
+              }}
+            />
           </div>
-          <div className="grid grid-cols-2 gap-2">
-            {comingSoon
-              .sort((a, b) => (b.votes || 0) - (a.votes || 0))
-              .map((integration) => (
-                <Card key={integration.id} className="overflow-hidden bg-white/80 border-[#ede5da] flex flex-col gap-0">
-                  <div className="flex flex-1 flex-col items-center justify-center gap-2 px-3 pt-6 pb-2">
-                    <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-white">{integration.icon}</div>
-                    <p className="text-xs font-semibold leading-tight line-clamp-1 w-full text-center">{integration.name}</p>
-                  </div>
-                  <div className="px-3 pb-3 mt-auto">
-                    <Button variant={integration.hasVoted ? "default" : "outline"} size="sm" onClick={() => handleVote(integration.id)} disabled={isVoting === integration.id} className="w-full h-7 text-xs gap-1">
-                      {integration.hasVoted ? <IconCheck className="size-3" /> : <IconArrowBigUp className="size-3" />}
-                      {integration.votes || 0} vote{(integration.votes || 0) !== 1 ? "s" : ""}
-                    </Button>
-                  </div>
-                </Card>
-              ))}
-          </div>
-        </div>
-      )}
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => setGoogleDialogOpen(false)} disabled={oauthSubmitting}>
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              className="gap-2"
+              onClick={() => void submitGoogleOAuth()}
+              disabled={oauthSubmitting}
+            >
+              {oauthSubmitting ? (
+                <>
+                  <Loader2 className="size-4 shrink-0 animate-spin" />
+                  Opening Google…
+                </>
+              ) : (
+                "Continue with Google"
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

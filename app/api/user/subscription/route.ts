@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { verifySession } from "@/lib/session";
 import { prisma } from "@/lib/database";
-import { plans } from "@/lib/stripe-plans";
+import { planUsesStripePriceId, stripeSubscriptionPlans } from "@/lib/stripe-plans";
 
 interface SubscriptionResponse {
   subscription: {
@@ -11,7 +11,7 @@ interface SubscriptionResponse {
     priceId: string;
     currentPeriodEnd: string;
     cancelAtPeriodEnd: boolean;
-    billingCycle: "monthly" | "yearly" | null;
+    billingCycle: "monthly" | "quarterly" | "yearly" | null;
     planLabel: string;
     totalTokensUsed: number;
   } | null;
@@ -57,7 +57,9 @@ export async function GET() {
       return NextResponse.json<SubscriptionResponse>({ subscription: null });
     }
 
-    const matchedPlan = plans.find((p) => p.priceId === record.stripe_price_id);
+    const matchedPlan = stripeSubscriptionPlans.find((p) =>
+      record.stripe_price_id ? planUsesStripePriceId(p, record.stripe_price_id) : false
+    );
 
     // cancel_at_period_end is reflected as status "active" in Stripe until the
     // period ends, so we read it directly from Stripe only when needed. For
@@ -78,8 +80,14 @@ export async function GET() {
         cancelAtPeriodEnd: isCancelingAtPeriodEnd,
         billingCycle: matchedPlan?.billingCycle ?? null,
         planLabel: matchedPlan
-          ? `Pro (${matchedPlan.billingCycle === "monthly" ? "Monthly" : "Annual"})`
-          : "Pro",
+          ? `${matchedPlan.tierName} (${
+              matchedPlan.billingCycle === "monthly"
+                ? "Monthly"
+                : matchedPlan.billingCycle === "quarterly"
+                  ? "Quarterly"
+                  : "Annual"
+            })`
+          : "Paid plan",
         totalTokensUsed,
       },
     });
