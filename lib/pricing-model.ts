@@ -1,8 +1,9 @@
 /**
  * Three-tier pricing: Pro (self-serve), Premium (self-serve when Stripe is configured),
  * Enterprise (contact sales). List prices are marketing display; Stripe charges the
- * Price IDs you attach in stripe-plans.ts. Pro uses three Stripe products
- * (monthly, quarterly, yearly), each with its own default price (see stripe-plans.ts).
+ * List prices are marketing only. Stripe billing uses one Price id per plan in
+ * stripe-plans.ts (Pro: monthly, quarterly, yearly products). Checkout may still
+ * show RM vs $ on this site from geo; Stripe handles charge currency for that price.
  */
 
 export const TRIAL_DAYS = 14;
@@ -127,7 +128,7 @@ export const PRICING_PAGE_COPY = {
     "Pro is the fast start on WhatsApp. Premium adds recipes and an execution agent. Enterprise is built for teams that need governance and a white-glove rollout.",
   trialBadge: `${TRIAL_DAYS} Days Free Trial`,
   trialDetail: "Trial starts after your first message with Lofy",
-  cta: "Start free trial",
+  cta: "Subscribe",
   ctaUnavailable: "Coming soon",
   ctaEnterprise: "Contact us",
   enterprisePriceLabel: "Custom",

@@ -3,7 +3,7 @@ import Stripe from "stripe";
 import { cookies } from "next/headers";
 import { verifySession } from "@/lib/session";
 import { prisma } from '@/lib/database';
-import { stripeSubscriptionPlans, resolveCurrencyFromIP, type BillingCycle } from "@/lib/stripe-plans";
+import { getStripeSubscriptionPlans, type BillingCycle } from "@/lib/stripe-plans";
 import type { SubscriptionTierId } from "@/lib/pricing-model";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
@@ -37,11 +37,6 @@ export async function POST(req: NextRequest) {
         : rawTier === "business"
           ? "premium"
           : "pro";
-    const country =
-      body.country ??
-      req.headers.get("x-vercel-ip-country")?.toUpperCase() ??
-      undefined;
-
     let customerEmail: string | undefined;
     let userId: string | undefined;
     let existingStripeCustomerId: string | undefined;
@@ -95,7 +90,7 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    const plan = stripeSubscriptionPlans.find(
+    const plan = getStripeSubscriptionPlans().find(
       (p) => p.billingCycle === billingCycle && p.tierId === tierId
     );
     if (!plan) {
@@ -106,9 +101,7 @@ export async function POST(req: NextRequest) {
     }
 
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL;
-    const currency = resolveCurrencyFromIP(country);
-    const priceId =
-      currency === "myr" && plan.priceIdMyr ? plan.priceIdMyr : plan.priceId;
+    const priceId = plan.priceId;
 
     // Apple Pay and Google Pay are automatically enabled with "card"
     const paymentMethodTypes: Stripe.Checkout.SessionCreateParams.PaymentMethodType[] = ["card", "link"];

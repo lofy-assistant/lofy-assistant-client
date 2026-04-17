@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { verifySession } from "@/lib/session";
 import { prisma } from "@/lib/database";
-import { planUsesStripePriceId, stripeSubscriptionPlans } from "@/lib/stripe-plans";
+import { getStripeSubscriptionPlans, planUsesStripePriceId } from "@/lib/stripe-plans";
 
 interface SubscriptionResponse {
   subscription: {
@@ -57,7 +57,7 @@ export async function GET() {
       return NextResponse.json<SubscriptionResponse>({ subscription: null });
     }
 
-    const matchedPlan = stripeSubscriptionPlans.find((p) =>
+    const matchedPlan = getStripeSubscriptionPlans().find((p) =>
       record.stripe_price_id ? planUsesStripePriceId(p, record.stripe_price_id) : false
     );
 

@@ -20,8 +20,8 @@ async function main() {
   const stripe = new Stripe(key);
   const isLive = key.startsWith("sk_live");
   const refPriceId = isLive
-    ? process.env.STRIPE_PRICE_PRO_MONTHLY || "price_1TNKMUPXWy5Z5igtzipoeYLU"
-    : process.env.STRIPE_PRICE_PRO_MONTHLY || "price_1StNzuBSILEw5PUUDdMQudxW";
+    ? "price_1TNKMUPXWy5Z5igtzipoeYLU"
+    : "price_1StNzuBSILEw5PUUDdMQudxW";
 
   const ref = await stripe.prices.retrieve(refPriceId);
   const product =
@@ -37,7 +37,7 @@ async function main() {
   });
 
   console.log("Created MYR price:", created.id);
-  console.log("Add to .env: STRIPE_PRICE_PRO_MONTHLY_MYR=" + created.id);
+  console.log("Created price id (app uses a single catalog price per plan):", created.id);
 }
 
 main().catch((e) => {

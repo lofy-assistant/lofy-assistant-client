@@ -31,7 +31,6 @@ export default function PricingPage() {
   const [billingCycle, setBillingCycle] = useState<BillingCycle>("monthly");
   const [loadingTier, setLoadingTier] = useState<SubscriptionTierId | null>(null);
   const [displayCurrency, setDisplayCurrency] = useState<"usd" | "myr">("usd");
-  const [countryForCheckout, setCountryForCheckout] = useState<string | undefined>(undefined);
 
   const pctQuarterly = tabDiscountPercent("quarterly");
   const pctYearly = tabDiscountPercent("yearly");
@@ -42,7 +41,6 @@ export default function PricingPage() {
     const applyGeo = (country: string | null, currency: "usd" | "myr") => {
       if (!cancelled) {
         setDisplayCurrency(currency);
-        if (country) setCountryForCheckout(country);
       }
     };
 
@@ -73,10 +71,7 @@ export default function PricingPage() {
     const plan = getStripePlan(tierId, billingCycle);
     if (!plan) return;
 
-    const useHostedCheckoutApi =
-      countryForCheckout === "MY" && Boolean(plan.priceIdMyr);
-
-    if (!useHostedCheckoutApi && plan.link.startsWith("https://")) {
+    if (plan.link.startsWith("https://")) {
       setLoadingTier(tierId);
       globalThis.location.assign(plan.link);
       return;
@@ -90,7 +85,6 @@ export default function PricingPage() {
         body: JSON.stringify({
           billingCycle,
           tierId,
-          ...(countryForCheckout && { country: countryForCheckout }),
         }),
       });
 
