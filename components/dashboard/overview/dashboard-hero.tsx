@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import useSWR from "swr";
@@ -24,10 +25,16 @@ const profileFetcher = (url: string) =>
     .then((r) => r.json())
     .then((d) => d.user as UserProfile);
 
-function getGreeting(): string {
-  const hour = new Date().getHours();
-  if (hour < 12) return "Good morning";
-  if (hour < 17) return "Good afternoon";
+/** Greeting buckets use the runtime's local timezone (the user's device). */
+function getGreeting(date: Date): string {
+  const totalMinutes = date.getHours() * 60 + date.getMinutes();
+  const at5am = 5 * 60;
+  const at12pm = 12 * 60;
+  const at5pm = 17 * 60;
+  const at9pm = 21 * 60;
+  if (totalMinutes >= at9pm || totalMinutes < at5am) return "Good night";
+  if (totalMinutes < at12pm) return "Good morning";
+  if (totalMinutes < at5pm) return "Good afternoon";
   return "Good evening";
 }
 
@@ -66,12 +73,28 @@ const bottomActions = [
 ];
 
 export function DashboardHero() {
+  /** null until mount so greeting uses the user's local timezone (avoids SSR UTC mismatch). */
+  const [now, setNow] = useState<Date | null>(null);
   const weather = useWeather();
   const { data: profile } = useSWR("/api/user/profile", profileFetcher, {
     revalidateOnFocus: false,
   });
 
-  const firstName = profile?.name?.split(" ")[0] ?? null;
+  useEffect(() => {
+    const tick = () => setNow(new Date());
+    tick();
+    const id = window.setInterval(tick, 60_000);
+    const onVisible = () => {
+      if (document.visibilityState === "visible") tick();
+    };
+    document.addEventListener("visibilitychange", onVisible);
+    return () => {
+      window.clearInterval(id);
+      document.removeEventListener("visibilitychange", onVisible);
+    };
+  }, []);
+
+  const displayName = profile?.name?.trim() || null;
   const initials = getInitials(profile?.name);
 
   return (
@@ -125,7 +148,8 @@ export function DashboardHero() {
         {/* ── Greeting & weather (above grain) ── */}
         <div className="relative z-20 mt-auto px-6 pt-4 pb-3 text-center">
           <h1 className="text-sm font-semibold text-[#3d2e22]">
-            {getGreeting()}{firstName ? `, ${firstName}` : ""}
+            {now ? getGreeting(now) : "Hello"}
+            {displayName ? `, ${displayName}` : ""}
           </h1>
           <p className="mt-1 text-xs text-[#9a8070]">
             {weather.isLoading
