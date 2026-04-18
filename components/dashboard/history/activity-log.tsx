@@ -6,7 +6,7 @@ import { AlertCircle, Bell, Brain, Calendar, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export type ActivityEntity = "event" | "reminder" | "memory";
-export type ActivityAction = "created" | "updated" | "deleted";
+export type ActivityAction = "created" | "updated" | "deleted" | "sync";
 export type ActivityPartyKind = "from" | "for";
 
 export interface ActivityParty {
@@ -22,10 +22,13 @@ export interface ActivityItem {
   detail: string;
   at: Date;
   party: ActivityParty | null;
+  /** Google Calendar connection display name when known */
+  integrationDisplayName: string | null;
 }
 
 type ActivityApiItem = Omit<ActivityItem, "at"> & {
   at: string;
+  integrationDisplayName?: string | null;
 };
 
 type FilterId = "all" | ActivityEntity;
@@ -34,6 +37,7 @@ const ACTION_VERB: Record<ActivityAction, string> = {
   created: "Created",
   updated: "Updated",
   deleted: "Deleted",
+  sync: "Synced",
 };
 
 const ENTITY_LABEL: Record<ActivityEntity, string> = {
@@ -77,6 +81,7 @@ const ACTION_BADGE_STYLES: Record<ActivityAction, string> = {
   created: "border-primary/15 bg-primary/8 text-primary",
   updated: "border-sky-200/60 bg-sky-50/75 text-sky-700",
   deleted: "border-destructive/15 bg-destructive/8 text-destructive",
+  sync: "border-emerald-200/70 bg-emerald-50/80 text-emerald-800",
 };
 
 const CREATED_ENTITY_BADGE_STYLES: Partial<Record<ActivityEntity, string>> = {
@@ -89,7 +94,13 @@ const PARTY_BADGE_STYLES: Record<ActivityPartyKind, string> = {
   from: "border-violet-200/80 bg-violet-50/80 text-violet-400",
 };
 
+const INTEGRATION_BADGE_STYLES =
+  "border-[#e5d8cf]/90 bg-[#fffdfb]/90 text-[#6b5b4f] shadow-[inset_0_1px_0_rgba(255,255,255,0.65)]";
+
 function getActionBadgeStyle(action: ActivityAction, entity: ActivityEntity): string {
+  if (action === "sync") {
+    return ACTION_BADGE_STYLES.sync;
+  }
   if (action === "created") {
     return CREATED_ENTITY_BADGE_STYLES[entity] ?? ACTION_BADGE_STYLES.created;
   }
@@ -118,9 +129,16 @@ function normalizeActivity(item: ActivityApiItem): ActivityItem | null {
     return null;
   }
 
+  const rawIntegration = item.integrationDisplayName;
+  const integrationDisplayName =
+    typeof rawIntegration === "string" && rawIntegration.trim().length > 0
+      ? rawIntegration.trim()
+      : null;
+
   return {
     ...item,
     at,
+    integrationDisplayName,
   };
 }
 
@@ -307,6 +325,7 @@ export function ActivityLog() {
             );
             const ItemIcon = ENTITY_ICON[item.entity];
             const iconStyle = ENTITY_ICON_STYLES[item.entity];
+            const showIntegrationBadge = item.entity === "event" && item.integrationDisplayName;
 
             return (
               <li key={item.id} className="group">
@@ -329,8 +348,25 @@ export function ActivityLog() {
                               getActionBadgeStyle(item.action, item.entity)
                             )}
                           >
-                            {ACTION_VERB[item.action]} {ENTITY_LABEL[item.entity]}
+                            {item.action === "sync" ? (
+                              <>Synced event</>
+                            ) : (
+                              <>
+                                {ACTION_VERB[item.action]} {ENTITY_LABEL[item.entity]}
+                              </>
+                            )}
                           </span>
+                          {showIntegrationBadge ? (
+                            <span
+                              className={cn(
+                                "inline-flex max-w-full items-center truncate rounded-full border px-2.5 py-1 text-[10px] font-medium tabular-nums",
+                                INTEGRATION_BADGE_STYLES
+                              )}
+                              title={item.integrationDisplayName ?? undefined}
+                            >
+                              [{item.integrationDisplayName}]
+                            </span>
+                          ) : null}
                           {item.party ? (
                             <span
                               className={cn(

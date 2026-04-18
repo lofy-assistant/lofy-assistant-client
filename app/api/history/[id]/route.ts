@@ -7,7 +7,7 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 type ActivityEntity = "event" | "reminder" | "memory";
-type ActivityAction = "created" | "updated" | "deleted";
+type ActivityAction = "created" | "updated" | "deleted" | "sync";
 type ActivityPartyKind = "from" | "for";
 
 type HistoryItem = {
@@ -21,6 +21,8 @@ type HistoryItem = {
 		kind: ActivityPartyKind;
 		label: string;
 	} | null;
+	/** Google Calendar integration display name when the event is tied to a credential */
+	integrationDisplayName: string | null;
 };
 
 type EventDocument = {
@@ -36,6 +38,7 @@ const SUPPORTED_EVENT_TYPES = [
 	"event.created",
 	"event.updated",
 	"event.deleted",
+	"event.sync",
 	"reminder.created",
 	"reminder.updated",
 	"reminder.deleted",
@@ -239,6 +242,9 @@ function buildReminderDetailLines(fields: Record<string, unknown>): string[] {
 
 function normalizeEventType(eventType: string): { entity: ActivityEntity; action: ActivityAction } | null {
 	const [entity, action] = eventType.split(".");
+	if (entity === "event" && action === "sync") {
+		return { entity: "event", action: "sync" };
+	}
 	if (
 		(entity === "event" || entity === "reminder" || entity === "memory") &&
 		(action === "created" || action === "updated" || action === "deleted")
@@ -249,7 +255,18 @@ function normalizeEventType(eventType: string): { entity: ActivityEntity; action
 	return null;
 }
 
+function resolveEventIntegrationDisplayName(data: Record<string, unknown>): string | null {
+	return toCleanText(data.integration_display_name) ?? toCleanText(data.integration_label) ?? null;
+}
+
 function buildLabel(entity: ActivityEntity, action: ActivityAction, data: Record<string, unknown>): string {
+	if (entity === "event" && action === "sync") {
+		const calendar = toCleanText(data.calendar_display_name);
+		if (calendar) {
+			return calendar.length > 90 ? `${calendar.slice(0, 87)}...` : calendar;
+		}
+		return "Calendar sync";
+	}
 	const changes = isRecord(data.changes) ? data.changes : null;
 	const primary =
 		toCleanText(data.title) ??
@@ -281,6 +298,32 @@ function buildDetail(
 	const changes = isRecord(data.changes) ? data.changes : null;
 	const source = toCleanText(metadata.source);
 	const sourceText = source ? ` Source: ${source.replaceAll("_", " ")}.` : "";
+
+	if (entity === "event" && action === "sync") {
+		const integration = resolveEventIntegrationDisplayName(data);
+		const calendar = toCleanText(data.calendar_display_name);
+		const created = toInteger(data.created) ?? 0;
+		const updated = toInteger(data.updated) ?? 0;
+		const deleted = toInteger(data.deleted) ?? 0;
+		const bits: string[] = [];
+		if (created > 0) {
+			bits.push(`${created} new`);
+		}
+		if (updated > 0) {
+			bits.push(`${updated} updated`);
+		}
+		if (deleted > 0) {
+			bits.push(`${deleted} removed`);
+		}
+		const summary = bits.length > 0 ? bits.join(", ") : "No net changes";
+		return [
+			calendar ? `Calendar: ${calendar}.` : null,
+			integration ? `Integration: ${integration}.` : null,
+			`Synced: ${summary}.`,
+		]
+			.filter((line): line is string => line !== null)
+			.join("\n");
+	}
 
 	if (entity === "event") {
 		if (action === "created") {
@@ -399,6 +442,9 @@ function normalizeHistoryItem(
 	const data = isRecord(event.data) ? event.data : {};
 	const metadata = isRecord(event.event_metadata) ? event.event_metadata : {};
 
+	const integrationDisplayName =
+		normalizedType.entity === "event" ? resolveEventIntegrationDisplayName(data) : null;
+
 	return {
 		id: event.event_id,
 		entity: normalizedType.entity,
@@ -410,6 +456,7 @@ function normalizeHistoryItem(
 			normalizedType.entity === "reminder"
 				? buildReminderParty(event, viewerUserId, data, remindersById, userNamesById)
 				: null,
+		integrationDisplayName,
 	};
 }
 

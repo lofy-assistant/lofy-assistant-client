@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
-import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -205,24 +204,6 @@ export function IntegrationCard() {
     }
   };
 
-  const handleToggle = async (id: string) => {
-    if (id === "google-calendar") {
-      return;
-    }
-
-    setIntegrations((prev) =>
-      prev.map((integration) =>
-        integration.id === id
-          ? {
-              ...integration,
-              enabled: !integration.enabled,
-              status: !integration.enabled ? "connected" : "disconnected",
-            }
-          : integration,
-      ),
-    );
-  };
-
   const getStatusBadge = (status: Integration["status"]) => {
     switch (status) {
       case "connected":
@@ -332,7 +313,10 @@ export function IntegrationCard() {
                           <p className="flex flex-wrap items-center gap-2 truncate text-sm font-medium text-[#3d2e22]">
                             <span className="truncate">{a.displayName || "Google account"}</span>
                             {a.isDefault ? (
-                              <Badge variant="primary" className="shrink-0 text-[10px] font-semibold uppercase">
+                              <Badge
+                                variant="primary"
+                                className="shrink-0 px-1.5 py-0.5 text-[9px] font-semibold uppercase leading-none tracking-wide"
+                              >
                                 Default
                               </Badge>
                             ) : null}
@@ -399,13 +383,7 @@ export function IntegrationCard() {
                     <p className="mt-0.5 line-clamp-2 text-xs text-muted-foreground">{whatsappIntegration.description}</p>
                   )}
                 </div>
-                <div className="flex shrink-0 items-center gap-2">
-                  {getStatusBadge(whatsappIntegration.status)}
-                  <Switch
-                    checked={whatsappIntegration.enabled}
-                    onCheckedChange={() => handleToggle(whatsappIntegration.id)}
-                  />
-                </div>
+                <div className="shrink-0">{getStatusBadge(whatsappIntegration.status)}</div>
               </div>
             </CardHeader>
           </Card>
