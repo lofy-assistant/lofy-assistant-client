@@ -254,10 +254,13 @@ export function ActivityLog() {
         <div
           role="tablist"
           aria-label="Filter activity"
-          className="flex flex-wrap items-center justify-between gap-1 rounded-2xl border border-[#f0e7df] bg-[#fcf8f4] px-1.5 py-1.5"
+          className="flex flex-row flex-nowrap items-center gap-2 rounded-2xl border border-[#f0e7df] bg-[#fcf8f4] px-1.5 py-1.5 gap-1 flex-wrap justify-between"
         >
         {FILTERS.map(({ id, label }) => {
           const selected = filter === id;
+          const isEntity = id !== "all";
+          const FilterIcon = isEntity ? ENTITY_ICON[id] : null;
+
           return (
             <button
               key={id}
@@ -266,13 +269,23 @@ export function ActivityLog() {
               aria-selected={selected}
               onClick={() => setFilter(id)}
               className={cn(
-                "inline-flex min-w-[calc(50%-0.125rem)] flex-1 items-center justify-center gap-1 rounded-full border px-2.5 py-1.5 text-[10px] font-medium transition-colors sm:min-w-0",
+                "inline-flex items-center justify-center border font-medium transition-colors",
+                isEntity
+                  ? "h-11 min-w-0 flex-1 rounded-2xl text-[#8a7769] sm:h-auto sm:min-w-0 sm:flex-1 sm:rounded-full sm:px-2.5 sm:py-1.5 sm:text-[10px]"
+                  : "h-11 min-w-0 flex-1 rounded-2xl px-2 text-sm sm:h-auto sm:flex-1 sm:rounded-full sm:px-2.5 sm:py-1.5 sm:text-[10px]",
                 selected
                   ? "border-[#e7d9cb] bg-white text-[#4a392c] shadow-[0_6px_18px_rgba(84,58,33,0.05)]"
                   : "border-transparent text-[#8a7769] hover:border-[#efe4db] hover:bg-white/70"
               )}
             >
-              {label}
+              {isEntity && FilterIcon ? (
+                <>
+                  <FilterIcon className="size-5 sm:hidden" strokeWidth={2} aria-hidden />
+                  <span className="sr-only sm:not-sr-only sm:inline">{label}</span>
+                </>
+              ) : (
+                label
+              )}
             </button>
           );
         })}
