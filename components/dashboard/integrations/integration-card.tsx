@@ -305,13 +305,13 @@ export function IntegrationCard() {
                   {googleAccounts.map((a) => (
                     <li
                       key={a.credentialId}
-                      className="flex items-center justify-between gap-3 rounded-xl border border-[#ede5da] bg-white px-3 py-2.5"
+                      className="flex flex-col gap-3 rounded-xl border border-[#ede5da] bg-white px-3 py-3"
                     >
                       <div className="flex min-w-0 items-start gap-2">
                         <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-emerald-600" aria-hidden />
-                        <div className="min-w-0">
-                          <p className="flex flex-wrap items-center gap-2 truncate text-sm font-medium text-[#3d2e22]">
-                            <span className="truncate">{a.displayName || "Google account"}</span>
+                        <div className="min-w-0 flex-1">
+                          <p className="flex flex-wrap items-center gap-2 text-sm font-medium text-[#3d2e22]">
+                            <span className="min-w-0 break-words">{a.displayName || "Google account"}</span>
                             {a.isDefault ? (
                               <Badge
                                 variant="primary"
@@ -321,15 +321,17 @@ export function IntegrationCard() {
                               </Badge>
                             ) : null}
                           </p>
-                          {a.googleEmail && <p className="truncate text-xs text-[#7a6a5a]">{a.googleEmail}</p>}
+                          {a.googleEmail ? (
+                            <p className="mt-0.5 break-all text-xs text-[#7a6a5a]">{a.googleEmail}</p>
+                          ) : null}
                         </div>
                       </div>
-                      <div className="flex shrink-0 flex-col items-end gap-1.5 sm:flex-row sm:items-center">
+                      <div className="flex w-full flex-col gap-2">
                         {!a.isDefault && a.isActive ? (
                           <Button
                             variant="secondary"
                             size="sm"
-                            className="h-8 text-xs"
+                            className="h-9 w-full text-xs"
                             onClick={async () => {
                               try {
                                 await setDefaultGoogleAccount(a.credentialId);
@@ -344,7 +346,7 @@ export function IntegrationCard() {
                         <Button
                           variant="outline"
                           size="sm"
-                          className="h-8 shrink-0 text-xs"
+                          className="h-9 w-full text-xs"
                           onClick={async () => {
                             try {
                               await disconnectGoogleAccount(a.credentialId);
