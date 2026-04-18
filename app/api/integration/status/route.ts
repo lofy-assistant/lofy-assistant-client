@@ -34,11 +34,13 @@ export async function GET(request: NextRequest) {
       {
         isActive: boolean;
         status: "connected" | "disconnected" | "error";
+        defaultGoogleCredentialId?: number | null;
         accounts?: Array<{
           credentialId: number;
           displayName: string | null;
           googleEmail: string | null;
           isActive: boolean;
+          isDefault: boolean;
         }>;
       }
     > = {};
@@ -48,6 +50,7 @@ export async function GET(request: NextRequest) {
       displayName: string | null;
       googleEmail: string | null;
       isActive: boolean;
+      isDefault: boolean;
     }> = [];
 
     for (const cred of credentials) {
@@ -68,13 +71,49 @@ export async function GET(request: NextRequest) {
         displayName: cred.display_name ?? (typeof settings?.label === "string" ? settings.label : null),
         googleEmail,
         isActive: calendarIntegration.is_active,
+        isDefault: false,
       });
+    }
+
+    const userRow = await prisma.users.findUnique({
+      where: { id: session.userId },
+      select: { default_google_credential_id: true },
+    });
+
+    let defaultGoogleCredentialId = userRow?.default_google_credential_id ?? null;
+    const allIds = googleAccounts.map((a) => a.credentialId);
+    const activeIds = googleAccounts.filter((a) => a.isActive).map((a) => a.credentialId);
+    const pool = activeIds.length > 0 ? activeIds : allIds;
+
+    if (pool.length === 0) {
+      if (defaultGoogleCredentialId != null) {
+        await prisma.users.update({
+          where: { id: session.userId },
+          data: { default_google_credential_id: null },
+        });
+        defaultGoogleCredentialId = null;
+      }
+    } else if (
+      defaultGoogleCredentialId == null ||
+      !pool.includes(defaultGoogleCredentialId)
+    ) {
+      const pick = Math.min(...pool);
+      await prisma.users.update({
+        where: { id: session.userId },
+        data: { default_google_credential_id: pick },
+      });
+      defaultGoogleCredentialId = pick;
+    }
+
+    for (const a of googleAccounts) {
+      a.isDefault = a.credentialId === defaultGoogleCredentialId;
     }
 
     const anyGoogleActive = googleAccounts.some((a) => a.isActive);
     integrationStatuses["google-calendar"] = {
       isActive: anyGoogleActive,
       status: anyGoogleActive ? "connected" : googleAccounts.length ? "disconnected" : "disconnected",
+      defaultGoogleCredentialId,
       accounts: googleAccounts,
     };
 
