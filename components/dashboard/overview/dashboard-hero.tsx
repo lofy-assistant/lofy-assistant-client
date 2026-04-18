@@ -4,7 +4,10 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import useSWR from "swr";
+import heroDawnArt from "../../../public/assets/images/cropped-art-dawn.webp";
 import heroMorningArt from "../../../public/assets/images/cropped-art-morning.webp";
+import heroNightArt from "../../../public/assets/images/cropped-art-night.webp";
+import heroSunsetArt from "../../../public/assets/images/cropped-art-sunset.webp";
 import {
   Brain,
   Plug,
@@ -56,6 +59,22 @@ function getInitials(name: string | null | undefined): string {
     .slice(0, 2);
 }
 
+/** Hero art rotates by local time to match the mood of the day. */
+function getHeroArt(date: Date | null) {
+  if (!date) return heroMorningArt;
+
+  const totalMinutes = date.getHours() * 60 + date.getMinutes();
+  const at5am = 5 * 60;
+  const at9am = 9 * 60;
+  const at3pm = 15 * 60;
+  const at7pm = 19 * 60;
+
+  if (totalMinutes >= at7pm || totalMinutes < at5am) return heroNightArt;
+  if (totalMinutes < at9am) return heroDawnArt;
+  if (totalMinutes < at3pm) return heroMorningArt;
+  return heroSunsetArt;
+}
+
 const topActions = [
   { label: "History", icon: History, href: "/dashboard/history" },
   { label: "Memories", icon: Brain, href: "/dashboard/memories" },
@@ -96,6 +115,7 @@ export function DashboardHero() {
 
   const displayName = profile?.name?.trim() || null;
   const initials = getInitials(profile?.name);
+  const heroArt = getHeroArt(now);
 
   return (
     /* ── Outer wrapper
@@ -136,7 +156,7 @@ export function DashboardHero() {
         {/* ── Hero art (below grain) ── */}
         <div className="relative z-0 mt-12 md:mt-4 w-full flex-1 min-h-[min(52vh,26rem)] md:min-h-88 overflow-hidden rounded-2xl bg-[#faf6f2]">
           <Image
-            src={heroMorningArt}
+            src={heroArt}
             alt=""
             fill
             className="object-contain object-[center_65%] md:object-cover md:object-top scale-110 md:scale-80 md:origin-center"
