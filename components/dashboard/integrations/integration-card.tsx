@@ -326,12 +326,12 @@ export function IntegrationCard() {
                           ) : null}
                         </div>
                       </div>
-                      <div className="flex w-full flex-col gap-2">
+                      <div className="flex w-full min-w-0 flex-row gap-2">
                         {!a.isDefault && a.isActive ? (
                           <Button
                             variant="secondary"
                             size="sm"
-                            className="h-9 w-full text-xs"
+                            className="h-9 min-w-0 flex-1 cursor-pointer text-xs"
                             onClick={async () => {
                               try {
                                 await setDefaultGoogleAccount(a.credentialId);
@@ -346,7 +346,7 @@ export function IntegrationCard() {
                         <Button
                           variant="outline"
                           size="sm"
-                          className="h-9 w-full text-xs"
+                          className="h-9 min-w-0 flex-1 text-xs"
                           onClick={async () => {
                             try {
                               await disconnectGoogleAccount(a.credentialId);
