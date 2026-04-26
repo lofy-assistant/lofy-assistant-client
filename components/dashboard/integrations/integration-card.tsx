@@ -14,7 +14,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Calendar, CheckCircle2, CircleDot, Loader2, Shield } from "lucide-react";
+import { Calendar, CheckCircle2, CircleDot, FileSpreadsheet, Loader2, Shield, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 
 export interface Integration {
@@ -33,6 +33,8 @@ type GoogleAccountRow = {
   isActive: boolean;
   isDefault?: boolean;
 };
+
+const GOOGLE_SHEETS_FEATURE = "google_sheets" as const;
 
 export function IntegrationCard() {
   const [integrations, setIntegrations] = useState<Integration[]>([
@@ -58,17 +60,24 @@ export function IntegrationCard() {
   const [googleDialogOpen, setGoogleDialogOpen] = useState(false);
   const [newAccountLabel, setNewAccountLabel] = useState("");
   const [oauthSubmitting, setOauthSubmitting] = useState(false);
+  const [sheetsModalOpen, setSheetsModalOpen] = useState(false);
+  const [sheetsModalView, setSheetsModalView] = useState<"offer" | "pending">("offer");
+  const [googleSheetsWaitlist, setGoogleSheetsWaitlist] = useState(false);
+  const [joinWaitlistSubmitting, setJoinWaitlistSubmitting] = useState(false);
 
   useEffect(() => {
-    const fetchIntegrationStatus = async () => {
+    const run = async () => {
       try {
-        const response = await fetch("/api/integration/status", {
-          method: "GET",
-          credentials: "include",
-        });
+        const [statusRes, waitlistRes] = await Promise.all([
+          fetch("/api/integration/status", { method: "GET", credentials: "include" }),
+          fetch(`/api/waitlist?feature=${encodeURIComponent(GOOGLE_SHEETS_FEATURE)}`, {
+            method: "GET",
+            credentials: "include",
+          }),
+        ]);
 
-        if (response.ok) {
-          const data = await response.json();
+        if (statusRes.ok) {
+          const data = await statusRes.json();
           const statuses = data.integrations as Record<
             string,
             {
@@ -104,14 +113,19 @@ export function IntegrationCard() {
             }),
           );
         }
+
+        if (waitlistRes.ok) {
+          const w = (await waitlistRes.json()) as { enrolled?: boolean };
+          setGoogleSheetsWaitlist(Boolean(w.enrolled));
+        }
       } catch (error) {
         console.error("Failed to fetch integration status:", error);
+      } finally {
+        setLoading(false);
       }
     };
 
-    fetchIntegrationStatus().finally(() => {
-      setLoading(false);
-    });
+    void run();
   }, []);
 
   const startGoogleOAuth = async (integrationLabel: string) => {
@@ -223,6 +237,34 @@ export function IntegrationCard() {
   const openGoogleDialog = () => {
     setNewAccountLabel("");
     setGoogleDialogOpen(true);
+  };
+
+  const openSheetsModal = () => {
+    setSheetsModalView(googleSheetsWaitlist ? "pending" : "offer");
+    setSheetsModalOpen(true);
+  };
+
+  const joinSheetsBetaWaitlist = async () => {
+    setJoinWaitlistSubmitting(true);
+    try {
+      const response = await fetch("/api/waitlist", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ feature: GOOGLE_SHEETS_FEATURE }),
+      });
+      if (!response.ok) {
+        const err = (await response.json().catch(() => ({}))) as { error?: string };
+        throw new Error(err.error || "Could not join the waitlist");
+      }
+      setGoogleSheetsWaitlist(true);
+      setSheetsModalView("pending");
+      toast.success("You are on the list. We will notify you when you are approved.");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Something went wrong");
+    } finally {
+      setJoinWaitlistSubmitting(false);
+    }
   };
 
   const submitGoogleOAuth = async () => {
@@ -364,6 +406,39 @@ export function IntegrationCard() {
               )}
             </div>
 
+            <button
+              type="button"
+              onClick={openSheetsModal}
+              className="w-full rounded-xl border border-[#ede5da] bg-white/90 p-3 text-left outline-none transition hover:border-[#e0d0c4] focus-visible:ring-2 focus-visible:ring-[#c97a5c] focus-visible:ring-offset-2"
+            >
+              <div className="flex items-start gap-3">
+                <FileSpreadsheet className="mt-0.5 size-5 shrink-0 text-[#0f9d58]" aria-hidden />
+                <div className="min-w-0 flex-1 space-y-1">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="text-sm font-semibold text-[#3d2e22]">Google Sheets</span>
+                    <Badge
+                      variant="default"
+                      className="bg-amber-50 px-1.5 py-0.5 text-[9px] font-semibold uppercase leading-none tracking-wide text-amber-900 border-amber-200/80"
+                    >
+                      <Sparkles className="mr-0.5 inline size-2.5" aria-hidden />
+                      Beta
+                    </Badge>
+                    {googleSheetsWaitlist ? (
+                      <Badge
+                        variant="default"
+                        className="px-1.5 py-0.5 text-[9px] font-semibold uppercase leading-none tracking-wide"
+                      >
+                        On waitlist
+                      </Badge>
+                    ) : null}
+                  </div>
+                  <p className="text-xs leading-relaxed text-[#7a6a5a]">
+                    Coming soon — tap for early access and the beta waitlist.
+                  </p>
+                </div>
+              </div>
+            </button>
+
             <Button className="h-10 w-full text-sm font-medium" onClick={openGoogleDialog}>
               Connect Google account
             </Button>
@@ -442,6 +517,69 @@ export function IntegrationCard() {
               )}
             </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={sheetsModalOpen}
+        onOpenChange={(open) => {
+          setSheetsModalOpen(open);
+          if (!open) setSheetsModalView(googleSheetsWaitlist ? "pending" : "offer");
+        }}
+      >
+        <DialogContent className="border-[#ede5da] sm:max-w-md" showCloseButton={!joinWaitlistSubmitting}>
+          {sheetsModalView === "offer" ? (
+            <>
+              <DialogHeader>
+                <DialogTitle className="text-[#3d2e22]">Google Sheets is in beta</DialogTitle>
+                <DialogDescription className="text-pretty text-[#7a6a5a]">
+                  This integration is only available to beta users for now. Would you like to join our beta program
+                  and get access when we turn it on for your account?
+                </DialogDescription>
+              </DialogHeader>
+              <DialogFooter className="flex-col gap-2 sm:flex-row sm:justify-end">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setSheetsModalOpen(false)}
+                  disabled={joinWaitlistSubmitting}
+                  className="w-full sm:w-auto"
+                >
+                  Not now
+                </Button>
+                <Button
+                  type="button"
+                  className="w-full gap-2 sm:w-auto"
+                  onClick={() => void joinSheetsBetaWaitlist()}
+                  disabled={joinWaitlistSubmitting}
+                >
+                  {joinWaitlistSubmitting ? (
+                    <>
+                      <Loader2 className="size-4 shrink-0 animate-spin" />
+                      Joining…
+                    </>
+                  ) : (
+                    "Yes, join the beta"
+                  )}
+                </Button>
+              </DialogFooter>
+            </>
+          ) : (
+            <>
+              <DialogHeader>
+                <DialogTitle className="text-[#3d2e22]">Thanks — you are on the list</DialogTitle>
+                <DialogDescription className="text-pretty text-[#7a6a5a]">
+                  Your request is in our queue. Please wait while we review and approve your access. We will reach out
+                  when Google Sheets is ready for your account.
+                </DialogDescription>
+              </DialogHeader>
+              <DialogFooter>
+                <Button type="button" onClick={() => setSheetsModalOpen(false)} className="w-full sm:w-auto">
+                  Close
+                </Button>
+              </DialogFooter>
+            </>
+          )}
         </DialogContent>
       </Dialog>
     </div>
