@@ -27,6 +27,9 @@ import {
   PERSONA_OPTIONS,
   normalizePersonaFromDb,
 } from "@/lib/persona";
+import { cn } from "@/lib/utils";
+import { useDashboardNight } from "@/components/dashboard/shared/dashboard-night-provider";
+import { dnc } from "@/lib/dashboard-night";
 
 const CUSTOM_INSTRUCTION_MAX_LENGTH = 1000;
 
@@ -40,6 +43,7 @@ interface UserProfile {
 }
 
 export function ProfileSettings() {
+  const { isNight: night } = useDashboardNight();
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -119,17 +123,36 @@ export function ProfileSettings() {
 
   if (isLoading) {
     return (
-       <Card className="py-4 text-sm">
+       <Card
+         className={cn(
+           "py-4 text-sm",
+           night && "border-white/10 bg-white/5"
+         )}
+       >
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-sm">
+          <CardTitle
+            className={cn(
+              "flex items-center gap-2 text-sm",
+              night && "text-[#e8ddd4]"
+            )}
+          >
             <User className="w-5 h-5" />
             Profile Information
           </CardTitle>
-          <CardDescription className="text-xs">Manage your personal information</CardDescription>
+          <CardDescription
+            className={cn("text-xs", night && "text-[#9a8f85]")}
+          >
+            Manage your personal information
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex items-center justify-center py-8">
-            <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+            <Loader2
+              className={cn(
+                "h-6 w-6 animate-spin",
+                dnc.settingsHelp(night)
+              )}
+            />
           </div>
         </CardContent>
       </Card>
@@ -137,47 +160,85 @@ export function ProfileSettings() {
   }
 
   return (
-    <Card className="py-4 text-sm">
+    <Card
+      className={cn(
+        "py-4 text-sm",
+        night && "border-white/10 bg-white/5"
+      )}
+    >
       <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-sm">
+        <CardTitle
+          className={cn(
+            "flex items-center gap-2 text-sm",
+            night && "text-[#e8ddd4]"
+          )}
+        >
           <User className="w-5 h-5" />
           Profile Information
         </CardTitle>
-        <CardDescription className="text-xs">Manage your personal information</CardDescription>
+        <CardDescription
+          className={cn("text-xs", night && "text-[#9a8f85]")}
+        >
+          Manage your personal information
+        </CardDescription>
       </CardHeader>
       <CardContent className="text-sm">
         <form onSubmit={handleUpdateProfile} className="space-y-6">
           <div className="space-y-2">
-            <Label htmlFor="name">Name</Label>
+            <Label
+              htmlFor="name"
+              className={dnc.settingsLabel(night)}
+            >
+              Name
+            </Label>
             <Input
               id="name"
               placeholder="Your name"
               value={name}
               onChange={(e) => setName(e.target.value)}
+              className={dnc.settingsInput(night)}
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
+            <Label
+              htmlFor="email"
+              className={dnc.settingsLabel(night)}
+            >
+              Email
+            </Label>
             <Input
               id="email"
               type="email"
               value={profile?.email || "Not set"}
               disabled
-              className="bg-muted"
+              className={cn(dnc.settingsInputDisabled(night))}
             />
-            <p className="text-xs text-muted-foreground">
+            <p
+              className={cn(
+                "text-xs",
+                dnc.settingsHelp(night)
+              )}
+            >
               Email cannot be changed
             </p>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="type">Lofy&apos;s Persona</Label>
+            <Label
+              htmlFor="type"
+              className={dnc.settingsLabel(night)}
+            >
+              Lofy&apos;s Persona
+            </Label>
             <Select
               value={type}
               onValueChange={(value) => setType(value as Persona)}
             >
-              <SelectTrigger id="type">
+              <SelectTrigger
+                id="type"
+                className={dnc.settingsSelect(night)}
+              >
                 <SelectValue placeholder="Select persona" />
               </SelectTrigger>
               <SelectContent>
@@ -191,26 +252,41 @@ export function ProfileSettings() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="custom-instruction">Custom Instruction</Label>
+            <Label
+              htmlFor="custom-instruction"
+              className={dnc.settingsLabel(night)}
+            >
+              Custom Instruction
+            </Label>
             <Textarea
               id="custom-instruction"
               value={customInstruction}
               onChange={(e) => setCustomInstruction(e.target.value)}
               placeholder="Example: Keep replies brief, use bullet points for plans, and ask before making assumptions."
               maxLength={CUSTOM_INSTRUCTION_MAX_LENGTH}
-              className="min-h-32"
+              className={cn("min-h-32", dnc.settingsTextarea(night))}
               disabled={isSaving}
             />
-            <p className="text-xs text-muted-foreground">
+            <p
+              className={cn(
+                "text-xs",
+                dnc.settingsHelp(night)
+              )}
+            >
               This preference is injected with your conversation context to guide how Lofy responds. It helps steer style and behavior, but it won&apos;t override safety rules or your current request.
             </p>
-            <p className="text-xs text-muted-foreground text-right">
+            <p
+              className={cn(
+                "text-right text-xs",
+                dnc.settingsHelp(night)
+              )}
+            >
               {customInstruction.length}/{CUSTOM_INSTRUCTION_MAX_LENGTH}
             </p>
           </div>
 
           <div className="space-y-2">
-            <Label>Account Created</Label>
+            <Label className={dnc.settingsLabel(night)}>Account Created</Label>
             <Input
               value={new Date(profile?.created_at || "").toLocaleDateString(
                 "en-US",
@@ -221,11 +297,13 @@ export function ProfileSettings() {
                 }
               )}
               disabled
-              className="bg-muted"
+              className={cn(dnc.settingsInputDisabled(night))}
             />
           </div>
 
-          <Separator />
+          <Separator
+            className={night ? "bg-white/10" : undefined}
+          />
 
           <Button type="submit" disabled={isSaving}>
             {isSaving && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}

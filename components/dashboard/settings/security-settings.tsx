@@ -14,8 +14,12 @@ import {
 import { toast } from "sonner";
 import { Loader2, Lock } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
+import { cn } from "@/lib/utils";
+import { useDashboardNight } from "@/components/dashboard/shared/dashboard-night-provider";
+import { dnc } from "@/lib/dashboard-night";
 
 export function SecuritySettings() {
+  const { isNight: night } = useDashboardNight();
   const [isChangingPin, setIsChangingPin] = useState(false);
   const [pinData, setPinData] = useState({
     currentPin: "",
@@ -72,21 +76,47 @@ export function SecuritySettings() {
   };
 
   return (
-    <Card className="py-4 text-sm">
+    <Card
+      className={cn(
+        "py-4 text-sm",
+        night && "border-white/10 bg-white/5"
+      )}
+    >
       <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-sm">
+        <CardTitle
+          className={cn(
+            "flex items-center gap-2 text-sm",
+            night && "text-[#e8ddd4]"
+          )}
+        >
           <Lock className="w-5 h-5" />
           Security
         </CardTitle>
-        <CardDescription className="text-xs">Manage your account security settings</CardDescription>
+        <CardDescription
+          className={cn("text-xs", night && "text-[#9a8f85]")}
+        >
+          Manage your account security settings
+        </CardDescription>
       </CardHeader>
       <CardContent className="text-sm">
         <form onSubmit={handleChangePIN} className="space-y-6">
           <div>
-            <h3 className="text-sm font-medium mb-4">Change PIN</h3>
+            <h3
+              className={cn(
+                "mb-4 text-sm font-medium",
+                dnc.settingsSectionTitle(night)
+              )}
+            >
+              Change PIN
+            </h3>
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="currentPin">Current PIN</Label>
+                <Label
+                  htmlFor="currentPin"
+                  className={dnc.settingsLabel(night)}
+                >
+                  Current PIN
+                </Label>
                 <Input
                   id="currentPin"
                   type="password"
@@ -95,12 +125,18 @@ export function SecuritySettings() {
                   onChange={(e) =>
                     setPinData({ ...pinData, currentPin: e.target.value })
                   }
+                  className={dnc.settingsInput(night)}
                   required
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="newPin">New PIN</Label>
+                <Label
+                  htmlFor="newPin"
+                  className={dnc.settingsLabel(night)}
+                >
+                  New PIN
+                </Label>
                 <Input
                   id="newPin"
                   type="password"
@@ -109,12 +145,18 @@ export function SecuritySettings() {
                   onChange={(e) =>
                     setPinData({ ...pinData, newPin: e.target.value })
                   }
+                  className={dnc.settingsInput(night)}
                   required
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="confirmPin">Confirm New PIN</Label>
+                <Label
+                  htmlFor="confirmPin"
+                  className={dnc.settingsLabel(night)}
+                >
+                  Confirm New PIN
+                </Label>
                 <Input
                   id="confirmPin"
                   type="password"
@@ -123,13 +165,16 @@ export function SecuritySettings() {
                   onChange={(e) =>
                     setPinData({ ...pinData, confirmPin: e.target.value })
                   }
+                  className={dnc.settingsInput(night)}
                   required
                 />
               </div>
             </div>
           </div>
 
-          <Separator />
+          <Separator
+            className={night ? "bg-white/10" : undefined}
+          />
 
           <Button type="submit" disabled={isChangingPin}>
             {isChangingPin && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}

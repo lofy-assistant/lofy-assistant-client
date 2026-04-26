@@ -2,6 +2,8 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { cn } from "@/lib/utils";
+import { useDashboardNight } from "@/components/dashboard/shared/dashboard-night-provider";
 import {
   BarChart3,
   Bug,
@@ -57,17 +59,38 @@ const SECONDARY_LINKS: AboutRow[] = [
   },
 ];
 
-function LinkRow({ href, label, external, icon: Icon }: AboutRow) {
-  const className =
-    "flex items-center gap-3 px-4 py-3.5 md:py-2.5 text-sm text-[#1a1a1a] hover:bg-neutral-50 active:bg-neutral-100/80 transition-colors";
+function LinkRow({
+  href,
+  label,
+  external,
+  icon: Icon,
+  night,
+}: AboutRow & { night: boolean }) {
+  const className = cn(
+    "flex items-center gap-3 px-4 py-3.5 text-sm transition-colors md:py-2.5",
+    night
+      ? "text-[#e8ddd4] hover:bg-white/5 active:bg-white/10"
+      : "text-[#1a1a1a] hover:bg-neutral-50 active:bg-neutral-100/80"
+  );
 
   const content = (
     <>
-      <span className="flex h-9 w-9 shrink-0 items-center justify-center text-neutral-400">
+      <span
+        className={cn(
+          "flex h-9 w-9 shrink-0 items-center justify-center",
+          night ? "text-[#7a8a9a]" : "text-neutral-400"
+        )}
+      >
         <Icon className="h-5 w-5" strokeWidth={1.75} />
       </span>
       <span className="min-w-0 flex-1 font-medium">{label}</span>
-      <ChevronRight className="h-4 w-4 shrink-0 text-neutral-300" aria-hidden />
+      <ChevronRight
+        className={cn(
+          "h-4 w-4 shrink-0",
+          night ? "text-white/20" : "text-neutral-300"
+        )}
+        aria-hidden
+      />
     </>
   );
 
@@ -91,12 +114,21 @@ function LinkRow({ href, label, external, icon: Icon }: AboutRow) {
   );
 }
 
-function LinkGroup({ rows }: { rows: AboutRow[] }) {
+function LinkGroup({ rows, night }: { rows: AboutRow[]; night: boolean }) {
   return (
-    <div className="overflow-hidden rounded-2xl border border-neutral-200 bg-white">
-      <div className="divide-y divide-neutral-100">
+    <div
+      className={cn(
+        "overflow-hidden rounded-2xl border",
+        night
+          ? "border-white/10 bg-white/5"
+          : "border-neutral-200 bg-white"
+      )}
+    >
+      <div
+        className={cn("divide-y", night ? "divide-white/10" : "divide-neutral-100")}
+      >
         {rows.map((row) => (
-          <LinkRow key={row.label} {...row} />
+          <LinkRow key={row.label} {...row} night={night} />
         ))}
       </div>
     </div>
@@ -104,12 +136,26 @@ function LinkGroup({ rows }: { rows: AboutRow[] }) {
 }
 
 export function LofyAboutScreen() {
+  const { isNight: night } = useDashboardNight();
+
   return (
-    <div className="fixed inset-0 z-0 flex flex-col bg-white">
-      <header className="flex shrink-0 justify-end px-4 pt-4 pb-2">
+    <div
+      className={cn(
+        "fixed inset-0 z-0 flex flex-col",
+        night
+          ? "bg-[#0a1524] md:bg-[linear-gradient(160deg,#0c1a2e_0%,#0a1526_45%,#07121e_100%)]"
+          : "bg-white"
+      )}
+    >
+      <header className="flex shrink-0 justify-end px-4 pb-2 pt-4">
         <Link
           href="/dashboard"
-          className="rounded-full p-2 text-neutral-500 transition-colors hover:bg-neutral-100 hover:text-neutral-900"
+          className={cn(
+            "rounded-full p-2 transition-colors",
+            night
+              ? "text-[#9a8f85] hover:bg-white/10 hover:text-[#e8ddd4]"
+              : "text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900"
+          )}
           aria-label="Close"
         >
           <X className="h-5 w-5" strokeWidth={2} />
@@ -117,7 +163,7 @@ export function LofyAboutScreen() {
       </header>
 
       <div className="scrollbar-hidden mx-auto flex w-full max-w-md flex-1 flex-col overflow-y-auto px-5 pb-10">
-        <div className="flex flex-col items-center pt-2 pb-8">
+        <div className="flex flex-col items-center pb-8 pt-2">
           <div className="relative h-20 w-20">
             <Image
               src="/assets/icons/lofy-logo-1.png"
@@ -128,22 +174,37 @@ export function LofyAboutScreen() {
               priority
             />
           </div>
-          <h1 className="mt-4 text-lg font-semibold tracking-tight text-neutral-900">
+          <h1
+            className={cn(
+              "mt-4 text-lg font-semibold tracking-tight",
+              night ? "text-[#e8ddd4]" : "text-neutral-900"
+            )}
+          >
             Lofy AI
           </h1>
         </div>
 
         <div className="flex flex-col gap-3">
-          <LinkGroup rows={PRIMARY_LINKS} />
-          <LinkGroup rows={SECONDARY_LINKS} />
+          <LinkGroup rows={PRIMARY_LINKS} night={night} />
+          <LinkGroup rows={SECONDARY_LINKS} night={night} />
         </div>
 
-        <p className="mt-10 text-center text-xs leading-relaxed text-neutral-400">
+        <p
+          className={cn(
+            "mt-10 text-center text-xs leading-relaxed",
+            night ? "text-[#6a7380]" : "text-neutral-400"
+          )}
+        >
           Made with love, Malaysia 🇲🇾
           <br />
           <Link
             href="/"
-            className="text-neutral-500 underline-offset-4 hover:text-neutral-700 hover:underline"
+            className={cn(
+              "underline-offset-4 hover:underline",
+              night
+                ? "text-[#8a9ab0] hover:text-[#b8c4d4]"
+                : "text-neutral-500 hover:text-neutral-700"
+            )}
           >
             lofy.ai
           </Link>

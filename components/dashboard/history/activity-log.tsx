@@ -4,6 +4,8 @@ import { useEffect, useMemo, useState } from "react";
 import { formatDistanceToNow } from "date-fns";
 import { AlertCircle, Bell, Brain, Calendar, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { dnc } from "@/lib/dashboard-night";
+import { useDashboardNight } from "@/components/dashboard/shared/dashboard-night-provider";
 
 export type ActivityEntity = "event" | "reminder" | "memory";
 export type ActivityAction = "created" | "updated" | "deleted" | "sync";
@@ -94,8 +96,10 @@ const PARTY_BADGE_STYLES: Record<ActivityPartyKind, string> = {
   from: "border-violet-200/80 bg-violet-50/80 text-violet-400",
 };
 
-const INTEGRATION_BADGE_STYLES =
+const INTEGRATION_BADGE_STYLES_LIGHT =
   "border-[#e5d8cf]/90 bg-[#fffdfb]/90 text-[#6b5b4f] shadow-[inset_0_1px_0_rgba(255,255,255,0.65)]";
+const INTEGRATION_BADGE_STYLES_NIGHT =
+  "border-white/15 bg-white/8 text-[#c4b8ae] shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]";
 
 function getActionBadgeStyle(action: ActivityAction, entity: ActivityEntity): string {
   if (action === "sync") {
@@ -157,7 +161,14 @@ function formatActivityDetail(detail: string, entity: ActivityEntity): string {
   return detail;
 }
 
+const ENTITY_ICON_STYLES_NIGHT: Record<ActivityEntity, { wrapper: string; icon: string }> = {
+  event: { wrapper: "bg-white/10", icon: "text-zinc-300" },
+  reminder: { wrapper: "bg-white/10", icon: "text-zinc-300" },
+  memory: { wrapper: "bg-white/10", icon: "text-zinc-300" },
+};
+
 export function ActivityLog() {
+  const { isNight: night } = useDashboardNight();
   const [allItems, setAllItems] = useState<ActivityItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -242,7 +253,12 @@ export function ActivityLog() {
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center gap-3 py-10 text-[#7a6a5a]">
+      <div
+        className={cn(
+          "flex flex-col items-center justify-center gap-3 py-10",
+          dnc.textSoft(night)
+        )}
+      >
         <Loader2 className="h-5 w-5 animate-spin" />
         <p className="text-sm">Loading activity from your domain events...</p>
       </div>
@@ -251,16 +267,35 @@ export function ActivityLog() {
 
   if (error) {
     return (
-      <div className="flex flex-col items-center justify-center gap-3 rounded-xl border border-[#ead8cb] bg-[#fff9f5] px-4 py-10 text-center">
+      <div
+        className={cn(
+          "flex flex-col items-center justify-center gap-3 rounded-xl border px-4 py-10 text-center",
+          night
+            ? "border-amber-500/25 bg-amber-950/25"
+            : "border-[#ead8cb] bg-[#fff9f5]"
+        )}
+      >
         <AlertCircle className="h-5 w-5 text-[#b45309]" />
-        <p className="text-sm text-[#7a6a5a]">{error}</p>
+        <p
+          className={cn(
+            "text-sm",
+            night ? "text-[#9a8f85]" : "text-[#7a6a5a]"
+          )}
+        >
+          {error}
+        </p>
       </div>
     );
   }
 
   if (allItems.length === 0) {
     return (
-      <p className="text-center text-sm text-[#9a8070] py-10 px-4">
+      <p
+        className={cn(
+          "px-4 py-10 text-center text-sm",
+          dnc.textMuted(night)
+        )}
+      >
         No activity yet. When Lofy creates or changes something, it will show up here.
       </p>
     );
@@ -272,7 +307,12 @@ export function ActivityLog() {
         <div
           role="tablist"
           aria-label="Filter activity"
-          className="flex flex-row flex-nowrap items-center gap-2 rounded-2xl border border-[#f0e7df] bg-[#fcf8f4] px-1.5 py-1.5 gap-1 flex-wrap justify-between"
+          className={cn(
+            "flex flex-row flex-wrap items-center justify-between gap-2 rounded-2xl border px-1.5 py-1.5",
+            night
+              ? "border-white/10 bg-white/5"
+              : "border-[#f0e7df] bg-[#fcf8f4]"
+          )}
         >
         {FILTERS.map(({ id, label }) => {
           const selected = filter === id;
@@ -292,8 +332,12 @@ export function ActivityLog() {
                   ? "h-11 min-w-0 flex-1 rounded-2xl text-[#8a7769] sm:h-auto sm:min-w-0 sm:flex-1 sm:rounded-full sm:px-2.5 sm:py-1.5 sm:text-[10px]"
                   : "h-11 min-w-0 flex-1 rounded-2xl px-2 text-sm sm:h-auto sm:flex-1 sm:rounded-full sm:px-2.5 sm:py-1.5 sm:text-[10px]",
                 selected
-                  ? "border-[#e7d9cb] bg-white text-[#4a392c] shadow-[0_6px_18px_rgba(84,58,33,0.05)]"
-                  : "border-transparent text-[#8a7769] hover:border-[#efe4db] hover:bg-white/70"
+                  ? night
+                    ? "border-white/15 bg-white/10 text-[#e8ddd4] shadow-[0_6px_18px_rgba(0,0,0,0.25)]"
+                    : "border-[#e7d9cb] bg-white text-[#4a392c] shadow-[0_6px_18px_rgba(84,58,33,0.05)]"
+                  : night
+                    ? "border-transparent text-[#9a8f85] hover:border-white/10 hover:bg-white/5"
+                    : "border-transparent text-[#8a7769] hover:border-[#efe4db] hover:bg-white/70"
               )}
             >
               {isEntity && FilterIcon ? (
@@ -312,7 +356,12 @@ export function ActivityLog() {
 
       <ul className="flex flex-col gap-2.5 pb-2">
         {items.length === 0 ? (
-          <li className="text-center text-sm text-[#9a8070] py-8">
+          <li
+            className={cn(
+              "py-8 text-center text-sm",
+              dnc.textMuted(night)
+            )}
+          >
             Nothing in this category yet.
           </li>
         ) : (
@@ -324,12 +373,21 @@ export function ActivityLog() {
               item.entity
             );
             const ItemIcon = ENTITY_ICON[item.entity];
-            const iconStyle = ENTITY_ICON_STYLES[item.entity];
+            const iconStyle = night
+              ? ENTITY_ICON_STYLES_NIGHT[item.entity]
+              : ENTITY_ICON_STYLES[item.entity];
             const showIntegrationBadge = item.entity === "event" && item.integrationDisplayName;
 
             return (
               <li key={item.id} className="group">
-                <div className="rounded-[1.35rem] border border-[#eee3da] bg-[linear-gradient(180deg,#fffefd_0%,#fdf8f4_100%)] px-4 py-4 shadow-[0_8px_24px_rgba(84,58,33,0.045)] transition-all duration-200 group-hover:-translate-y-0.5 group-hover:shadow-[0_12px_28px_rgba(84,58,33,0.06)]">
+                <div
+                  className={cn(
+                    "rounded-[1.35rem] border px-4 py-4 transition-all duration-200 group-hover:-translate-y-0.5",
+                    night
+                      ? "border-white/10 bg-[linear-gradient(180deg,rgba(24,24,28,0.98)_0%,rgba(17,18,22,0.98)_100%)] shadow-[0_8px_24px_rgba(0,0,0,0.2)] group-hover:shadow-[0_12px_28px_rgba(0,0,0,0.28)]"
+                      : "border-[#eee3da] bg-[linear-gradient(180deg,#fffefd_0%,#fdf8f4_100%)] shadow-[0_8px_24px_rgba(84,58,33,0.045)] group-hover:shadow-[0_12px_28px_rgba(84,58,33,0.06)]"
+                  )}
+                >
                   <div className="flex gap-3.5">
                     <div
                       className={cn(
@@ -360,7 +418,9 @@ export function ActivityLog() {
                             <span
                               className={cn(
                                 "inline-flex max-w-full items-center truncate rounded-full border px-2.5 py-1 text-[10px] font-medium tabular-nums",
-                                INTEGRATION_BADGE_STYLES
+                                night
+                                  ? INTEGRATION_BADGE_STYLES_NIGHT
+                                  : INTEGRATION_BADGE_STYLES_LIGHT
                               )}
                               title={item.integrationDisplayName ?? undefined}
                             >
@@ -378,18 +438,48 @@ export function ActivityLog() {
                             </span>
                           ) : null}
                         </div>
-                        <h3 className="mt-2 text-sm font-semibold leading-snug text-[#3d2e22] sm:text-[15px]">
+                        <h3
+                          className={cn(
+                            "mt-2 text-sm font-semibold leading-snug sm:text-[15px]",
+                            dnc.textPrimary(night)
+                          )}
+                        >
                           {item.label}
                         </h3>
                       </div>
 
-                      <p className="mt-2.5 whitespace-pre-line text-[13px] leading-relaxed text-[#76695f] sm:text-[13.5px]">
+                      <p
+                        className={cn(
+                          "mt-2.5 whitespace-pre-line text-[13px] leading-relaxed sm:text-[13.5px]",
+                          night ? "text-[#b0a69c]" : "text-[#76695f]"
+                        )}
+                      >
                         {detail}
                       </p>
 
-                      <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2 border-t border-[#f2e9e1] pt-3 text-xs text-[#938174]">
-                        <span className="font-medium text-[#776659]">{when}</span>
-                        <span className="h-1 w-1 rounded-full bg-[#dcc8b8]" aria-hidden="true" />
+                      <div
+                        className={cn(
+                          "mt-3 flex flex-wrap items-center gap-x-3 gap-y-2 border-t pt-3 text-xs",
+                          night
+                            ? "border-white/10 text-[#9a8f85]"
+                            : "border-[#f2e9e1] text-[#938174]"
+                        )}
+                      >
+                        <span
+                          className={cn(
+                            "font-medium",
+                            night ? "text-[#b8a99a]" : "text-[#776659]"
+                          )}
+                        >
+                          {when}
+                        </span>
+                        <span
+                          className={cn(
+                            "h-1 w-1 rounded-full",
+                            night ? "bg-white/20" : "bg-[#dcc8b8]"
+                          )}
+                          aria-hidden="true"
+                        />
                         <span>{absoluteWhen}</span>
                       </div>
                     </div>

@@ -27,8 +27,11 @@ import {
 import { XAxis, YAxis, CartesianGrid, Area, AreaChart } from "recharts";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useAnalytics } from "@/hooks/use-analytics";
+import { cn } from "@/lib/utils";
+import { useDashboardNight } from "@/components/dashboard/shared/dashboard-night-provider";
 
 export function MongoAnalytics() {
+  const { isNight: night } = useDashboardNight();
   const isMobile = useIsMobile();
   const { messages: analytics, isLoading: loading, error, isValidating, isCached, refresh } = useAnalytics();
 
@@ -37,7 +40,13 @@ export function MongoAnalytics() {
       <div className="space-y-6">
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 items-stretch">
           {[...Array(4)].map((_, i) => (
-            <Card key={i} className="h-full">
+            <Card
+              key={i}
+              className={cn(
+                "h-full",
+                night && "border-white/10 bg-white/5"
+              )}
+            >
               <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
                 <Skeleton className="w-24 h-4" />
                 <Skeleton className="w-8 h-8 rounded-full" />
@@ -49,7 +58,9 @@ export function MongoAnalytics() {
             </Card>
           ))}
         </div>
-        <Card>
+        <Card
+          className={night ? "border-white/10 bg-white/5" : undefined}
+        >
           <CardHeader>
             <Skeleton className="w-48 h-5" />
             <Skeleton className="w-64 h-4" />
@@ -64,9 +75,16 @@ export function MongoAnalytics() {
 
   if (error || !analytics) {
     return (
-      <Card>
+      <Card
+        className={night ? "border-white/10 bg-white/5" : undefined}
+      >
         <CardContent className="pt-6">
-          <p className="text-sm text-muted-foreground">
+          <p
+            className={cn(
+              "text-sm",
+              night ? "text-[#9a8f85]" : "text-muted-foreground"
+            )}
+          >
             Failed to load message analytics
           </p>
         </CardContent>
@@ -128,7 +146,12 @@ export function MongoAnalytics() {
       {/* Stats Grid - 4 Cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 items-stretch">
         {/* Card 1: Total Conversations */}
-        <Card className="h-full py-4 transition-all hover:shadow-md flex flex-col">
+        <Card
+          className={cn(
+            "flex h-full flex-col py-4 transition-all hover:shadow-md",
+            night && "border-white/10 bg-white/5"
+          )}
+        >
           <CardHeader className="flex flex-row items-center space-y-0">
             <div className="p-2 rounded-full bg-indigo-500/10">
               <MessageSquare className="w-4 h-4 text-indigo-500" />
@@ -163,7 +186,12 @@ export function MongoAnalytics() {
         </Card>
 
         {/* Card 2: Messages This Week */}
-        <Card className="h-full py-4 transition-all hover:shadow-md flex flex-col">
+        <Card
+          className={cn(
+            "flex h-full flex-col py-4 transition-all hover:shadow-md",
+            night && "border-white/10 bg-white/5"
+          )}
+        >
           <CardHeader className="flex flex-row items-center space-y-0">
             <div className="p-2 rounded-full bg-green-500/10">
               <CalendarDays className="w-4 h-4 text-green-500" />
@@ -183,7 +211,12 @@ export function MongoAnalytics() {
         </Card>
 
         {/* Card 3: Average Messages Per Day */}
-        <Card className="h-full py-4 transition-all hover:shadow-md flex flex-col">
+        <Card
+          className={cn(
+            "flex h-full flex-col py-4 transition-all hover:shadow-md",
+            night && "border-white/10 bg-white/5"
+          )}
+        >
           <CardHeader className="flex flex-row items-center space-y-0">
             <div className="p-2 rounded-full bg-purple-500/10">
               <TrendingUp className="w-4 h-4 text-purple-500" />
@@ -204,7 +237,12 @@ export function MongoAnalytics() {
         </Card>
 
         {/* Card 4: Streak Stats */}
-        <Card className="h-full py-4 transition-all hover:shadow-md flex flex-col">
+        <Card
+          className={cn(
+            "flex h-full flex-col py-4 transition-all hover:shadow-md",
+            night && "border-white/10 bg-white/5"
+          )}
+        >
           <CardHeader className="flex flex-row items-center space-y-0">
             <div className="p-2 rounded-full bg-orange-500/10">
               <Flame className="w-4 h-4 text-orange-500" />
@@ -233,7 +271,12 @@ export function MongoAnalytics() {
       </div>
 
       {/* Messages by Time of Day Chart */}
-      <Card className="transition-all hover:shadow-md py-4 flex flex-col justify-between">
+      <Card
+        className={cn(
+          "flex flex-col justify-between py-4 transition-all hover:shadow-md",
+          night && "border-white/10 bg-white/5"
+        )}
+      >
         <CardHeader className="pb-2">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
             <div>

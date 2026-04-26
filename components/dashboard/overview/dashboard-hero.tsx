@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import useSWR from "swr";
@@ -17,6 +16,9 @@ import {
 } from "lucide-react";
 import { useWeather } from "@/hooks/use-weather";
 import { GrainOverlay } from "@/components/ui/grain-overlay";
+import { cn } from "@/lib/utils";
+import { dnc } from "@/lib/dashboard-night";
+import { useDashboardNight } from "@/components/dashboard/shared/dashboard-night-provider";
 
 interface UserProfile {
   name: string | null;
@@ -92,26 +94,11 @@ const bottomActions = [
 ];
 
 export function DashboardHero() {
-  /** null until mount so greeting uses the user's local timezone (avoids SSR UTC mismatch). */
-  const [now, setNow] = useState<Date | null>(null);
+  const { now, isNight: night } = useDashboardNight();
   const weather = useWeather();
   const { data: profile } = useSWR("/api/user/profile", profileFetcher, {
     revalidateOnFocus: false,
   });
-
-  useEffect(() => {
-    const tick = () => setNow(new Date());
-    tick();
-    const id = window.setInterval(tick, 60_000);
-    const onVisible = () => {
-      if (document.visibilityState === "visible") tick();
-    };
-    document.addEventListener("visibilitychange", onVisible);
-    return () => {
-      window.clearInterval(id);
-      document.removeEventListener("visibilitychange", onVisible);
-    };
-  }, []);
 
   const displayName = profile?.name?.trim() || null;
   const initials = getInitials(profile?.name);
@@ -120,18 +107,37 @@ export function DashboardHero() {
   return (
     /* ── Outer wrapper
          mobile : plain #faf6f2 (same as card); no visible background
-         desktop: warm peach gradient behind the centred card            ── */
-    <div className="relative flex items-start md:items-stretch justify-center w-full min-h-[calc(100dvh-var(--header-height))] bg-[#faf6f2] md:bg-[linear-gradient(160deg,#bde0f0_0%,#a4d4ed_30%,#8ec5e8_60%,#a8d8f0_100%)]">
+         desktop: warm peach gradient behind the centred card
+         night  : dark blue page (card sits on top)                     ── */
+    <div
+      className={cn(
+        "relative flex items-start md:items-stretch justify-center w-full min-h-[calc(100dvh-var(--header-height))]",
+        dnc.pageBg(night),
+        !night &&
+          "bg-[#faf6f2] md:bg-[linear-gradient(160deg,#bde0f0_0%,#a4d4ed_30%,#8ec5e8_60%,#a8d8f0_100%)]"
+      )}
+    >
       {/* ── Card
            mobile : full-width, no radius, no shadow, no margin (seamless)
            desktop: max-w-sm, large radius, shadow, vertical margin      ── */}
-      <div className="relative isolate w-full md:max-w-sm mx-auto md:my-10 bg-[#faf6f2] md:rounded-4xl md:shadow-2xl overflow-hidden flex flex-col min-h-[calc(100dvh-var(--header-height))] md:min-h-[calc(100dvh-var(--header-height)-5rem)] text-sm">
+      <div
+        className={cn(
+          "relative isolate w-full md:max-w-sm mx-auto md:my-10 overflow-hidden flex flex-col min-h-[calc(100dvh-var(--header-height))] md:min-h-[calc(100dvh-var(--header-height)-5rem)] text-sm md:rounded-4xl md:shadow-2xl",
+          dnc.card(night),
+          night && "md:shadow-black/50"
+        )}
+      >
 
         {/* ── Top bar (above grain) ── */}
         <div className="relative z-20 flex items-center justify-between px-5 pt-5 pb-2">
           <Link
             href="/dashboard/about"
-            className="w-9 h-9 rounded-xl overflow-hidden flex items-center justify-center bg-white shadow-sm hover:opacity-90 active:scale-95 transition-all"
+            className={cn(
+              "w-9 h-9 rounded-xl overflow-hidden flex items-center justify-center active:scale-95 transition-all",
+              night
+                ? "bg-white/10 ring-1 ring-white/10 shadow-none hover:opacity-90"
+                : "bg-white shadow-sm hover:opacity-90"
+            )}
             aria-label="About Lofy"
           >
             <Image
@@ -142,7 +148,12 @@ export function DashboardHero() {
               className="object-contain"
             />
           </Link>
-          <span className="text-xs font-medium text-[#7a6a5a]">
+          <span
+            className={cn(
+              "text-xs font-medium",
+              night ? "text-[#9a8f85]" : "text-[#7a6a5a]"
+            )}
+          >
             {getFormattedDate()}
           </span>
           <Link
@@ -154,7 +165,12 @@ export function DashboardHero() {
         </div>
 
         {/* ── Hero art (below grain) ── */}
-        <div className="relative z-0 mt-12 md:mt-4 w-full flex-1 min-h-[min(52vh,26rem)] md:min-h-88 overflow-hidden rounded-2xl bg-[#faf6f2]">
+        <div
+          className={cn(
+            "relative z-0 mt-12 md:mt-4 w-full flex-1 min-h-[min(52vh,26rem)] md:min-h-88 overflow-hidden rounded-2xl",
+            night ? "bg-[#111216]" : "bg-[#faf6f2]"
+          )}
+        >
           <Image
             src={heroArt}
             alt=""
@@ -167,11 +183,21 @@ export function DashboardHero() {
 
         {/* ── Greeting & weather (above grain) ── */}
         <div className="relative z-20 mt-auto px-6 pt-4 pb-3 text-center">
-          <h1 className="text-sm font-semibold text-[#3d2e22]">
+          <h1
+            className={cn(
+              "text-sm font-semibold",
+              night ? "text-[#e8ddd4]" : "text-[#3d2e22]"
+            )}
+          >
             {now ? getGreeting(now) : "Hello"}
             {displayName ? `, ${displayName}` : ""}
           </h1>
-          <p className="mt-1 text-xs text-[#9a8070]">
+          <p
+            className={cn(
+              "mt-1 text-xs",
+              night ? "text-[#9a8f85]" : "text-[#9a8070]"
+            )}
+          >
             {weather.isLoading
               ? "Fetching weather…"
               : weather.error
@@ -188,14 +214,29 @@ export function DashboardHero() {
               <Link
                 key={label}
                 href={href}
-                className="flex flex-col items-center gap-1.5 rounded-2xl border border-[#ede5da] bg-white/80 py-3.5 px-2 text-center shadow-[0_6px_20px_-4px_rgba(61,46,34,0.16),0_2px_8px_-2px_rgba(61,46,34,0.1)] transition-all hover:bg-white hover:shadow-[0_10px_28px_-4px_rgba(61,46,34,0.24),0_4px_14px_-2px_rgba(61,46,34,0.14)] active:scale-95"
+                className={cn(
+                  "flex flex-col items-center gap-1.5 rounded-2xl border py-3.5 px-2 text-center transition-all active:scale-95",
+                  night
+                    ? "border-white/10 bg-white/6 shadow-[0_6px_20px_-4px_rgba(0,0,0,0.45),0_2px_8px_-2px_rgba(0,0,0,0.3)] hover:bg-white/10 hover:shadow-[0_10px_28px_-4px_rgba(0,0,0,0.5),0_4px_14px_-2px_rgba(0,0,0,0.35)]"
+                    : "border-[#ede5da] bg-white/80 shadow-[0_6px_20px_-4px_rgba(61,46,34,0.16),0_2px_8px_-2px_rgba(61,46,34,0.1)] hover:bg-white hover:shadow-[0_10px_28px_-4px_rgba(61,46,34,0.24),0_4px_14px_-2px_rgba(61,46,34,0.14)]"
+                )}
               >
                 <Icon
-                  className="h-8 w-8 shrink-0 text-[#3d2e22]"
+                  className={cn(
+                    "h-8 w-8 shrink-0",
+                    night ? "text-[#e8ddd4]" : "text-[#3d2e22]"
+                  )}
                   strokeWidth={2}
                   aria-hidden
                 />
-                <span className="text-[11px] font-medium text-[#7a6a5a] leading-tight">{label}</span>
+                <span
+                  className={cn(
+                    "text-[11px] font-medium leading-tight",
+                    night ? "text-[#a89e94]" : "text-[#7a6a5a]"
+                  )}
+                >
+                  {label}
+                </span>
               </Link>
             ))}
           </div>
@@ -207,14 +248,29 @@ export function DashboardHero() {
                 href={href}
                 target={external ? "_blank" : undefined}
                 rel={external ? "noopener noreferrer" : undefined}
-                className="flex flex-col items-center gap-1.5 rounded-2xl border border-[#ede5da] bg-white/80 py-3.5 px-2 text-center shadow-[0_6px_20px_-4px_rgba(61,46,34,0.16),0_2px_8px_-2px_rgba(61,46,34,0.1)] transition-all hover:bg-white hover:shadow-[0_10px_28px_-4px_rgba(61,46,34,0.24),0_4px_14px_-2px_rgba(61,46,34,0.14)] active:scale-95"
+                className={cn(
+                  "flex flex-col items-center gap-1.5 rounded-2xl border py-3.5 px-2 text-center transition-all active:scale-95",
+                  night
+                    ? "border-white/10 bg-white/6 shadow-[0_6px_20px_-4px_rgba(0,0,0,0.45),0_2px_8px_-2px_rgba(0,0,0,0.3)] hover:bg-white/10 hover:shadow-[0_10px_28px_-4px_rgba(0,0,0,0.5),0_4px_14px_-2px_rgba(0,0,0,0.35)]"
+                    : "border-[#ede5da] bg-white/80 shadow-[0_6px_20px_-4px_rgba(61,46,34,0.16),0_2px_8px_-2px_rgba(61,46,34,0.1)] hover:bg-white hover:shadow-[0_10px_28px_-4px_rgba(61,46,34,0.24),0_4px_14px_-2px_rgba(61,46,34,0.14)]"
+                )}
               >
                 <Icon
-                  className="h-8 w-8 shrink-0 text-[#3d2e22]"
+                  className={cn(
+                    "h-8 w-8 shrink-0",
+                    night ? "text-[#e8ddd4]" : "text-[#3d2e22]"
+                  )}
                   strokeWidth={2}
                   aria-hidden
                 />
-                <span className="text-[11px] font-medium text-[#7a6a5a] leading-tight">{label}</span>
+                <span
+                  className={cn(
+                    "text-[11px] font-medium leading-tight",
+                    night ? "text-[#a89e94]" : "text-[#7a6a5a]"
+                  )}
+                >
+                  {label}
+                </span>
               </Link>
             ))}
           </div>

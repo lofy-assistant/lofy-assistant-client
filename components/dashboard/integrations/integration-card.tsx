@@ -6,16 +6,12 @@ import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Calendar, CheckCircle2, CircleDot, FileSpreadsheet, Loader2, Shield, Sparkles } from "lucide-react";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
+import { dnc } from "@/lib/dashboard-night";
+import { useDashboardNight } from "@/components/dashboard/shared/dashboard-night-provider";
 
 export interface Integration {
   id: string;
@@ -64,6 +60,7 @@ export function IntegrationCard() {
   const [sheetsModalView, setSheetsModalView] = useState<"offer" | "pending">("offer");
   const [googleSheetsWaitlist, setGoogleSheetsWaitlist] = useState(false);
   const [joinWaitlistSubmitting, setJoinWaitlistSubmitting] = useState(false);
+  const { isNight: night } = useDashboardNight();
 
   useEffect(() => {
     const run = async () => {
@@ -93,7 +90,7 @@ export function IntegrationCard() {
               g.accounts.map((a) => ({
                 ...a,
                 isDefault: Boolean(a.isDefault),
-              }))
+              })),
             );
           } else {
             setGoogleAccounts([]);
@@ -168,7 +165,7 @@ export function IntegrationCard() {
         (g?.accounts ?? []).map((a) => ({
           ...a,
           isDefault: Boolean(a.isDefault),
-        }))
+        })),
       );
     }
   };
@@ -202,7 +199,7 @@ export function IntegrationCard() {
         (g?.accounts ?? []).map((a) => ({
           ...a,
           isDefault: Boolean(a.isDefault),
-        }))
+        })),
       );
       setIntegrations((prev) =>
         prev.map((integration) =>
@@ -279,16 +276,19 @@ export function IntegrationCard() {
     } catch (e) {
       console.error(e);
       toast.error(e instanceof Error ? e.message : "Could not start Google sign-in");
-      setIntegrations((prev) =>
-        prev.map((i) => (i.id === "google-calendar" ? { ...i, status: "error" as const } : i)),
-      );
+      setIntegrations((prev) => prev.map((i) => (i.id === "google-calendar" ? { ...i, status: "error" as const } : i)));
       setOauthSubmitting(false);
     }
   };
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center gap-3 py-10 text-[#7a6a5a]">
+      <div
+        className={cn(
+          "flex flex-col items-center justify-center gap-3 py-10",
+          night ? "text-[#a89e94]" : "text-[#7a6a5a]"
+        )}
+      >
         <Loader2 className="h-5 w-5 animate-spin" />
         <p className="text-sm">Loading integrations...</p>
       </div>
@@ -299,47 +299,152 @@ export function IntegrationCard() {
     <div className="space-y-8">
       {/* Google suite — OAuth, multiple accounts */}
       <section className="space-y-3">
-        <h2 className="text-xs font-semibold uppercase tracking-widest text-[#9a8070]">Google</h2>
-        <Card className="overflow-hidden border-[#ede5da] bg-gradient-to-b from-white to-[#faf7f2] shadow-sm">
+        <h2
+          className={cn(
+            "text-xs font-semibold uppercase tracking-widest",
+            dnc.textMuted(night)
+          )}
+        >
+          Google
+        </h2>
+        <Card
+          className={cn(
+            "overflow-hidden border bg-gradient-to-b shadow-sm",
+            night
+              ? "border-white/10 from-white/8 to-white/4"
+              : "border-[#ede5da] from-white to-[#faf7f2]"
+          )}
+        >
           <CardHeader className="space-y-4 p-4">
             <div className="flex gap-3">
-              <div className="flex size-12 shrink-0 items-center justify-center rounded-2xl border border-[#ede5da] bg-white shadow-sm">
+              <div
+                className={cn(
+                  "flex size-12 shrink-0 items-center justify-center rounded-2xl border shadow-sm",
+                  night
+                    ? "border-white/10 bg-white/5"
+                    : "border-[#ede5da] bg-white"
+                )}
+              >
                 <Image src="/assets/icons/google-calendar-icon.svg" alt="" width={28} height={28} className="size-7 object-contain" />
               </div>
-              <div className="min-w-0 flex-1 space-y-1">
+                <div className="min-w-0 flex-1 space-y-1">
                 <div className="flex flex-wrap items-center gap-2">
-                  <CardTitle className="text-base font-semibold text-[#3d2e22]">Google suite</CardTitle>
+                  <CardTitle
+                    className={cn("text-base font-semibold", dnc.textPrimary(night))}
+                  >
+                    Google suite
+                  </CardTitle>
                   {googleIntegration && getStatusBadge(googleIntegration.status)}
                 </div>
-                <p className="text-xs leading-relaxed text-[#7a6a5a]">
+                <p
+                  className={cn("text-xs leading-relaxed", dnc.textSoft(night))}
+                >
                   Connect each Google identity once with OAuth. Lofy stores tokens per account so Calendar stays in sync today; Gmail, Drive, and other Google tools will reuse the same connection as they ship.
                 </p>
               </div>
             </div>
 
-            <div className="grid gap-2 rounded-xl border border-[#ede5da] bg-white/90 p-3">
-              <div className="flex items-start gap-2 text-xs text-[#3d2e22]">
+            <div
+              className={cn(
+                "grid gap-2 rounded-xl border p-3",
+                night ? "border-white/10 bg-white/5" : "border-[#ede5da] bg-white/90"
+              )}
+            >
+              <div
+                className={cn(
+                  "flex items-start gap-2 text-xs",
+                  dnc.textPrimary(night)
+                )}
+              >
                 <Shield className="mt-0.5 size-3.5 shrink-0 text-[#c97a5c]" aria-hidden />
                 <span>
-                  <span className="font-medium text-[#3d2e22]">Standard OAuth 2.0.</span> You approve scopes on Google; we never see your password.
+                  <span className={cn("font-medium", dnc.textPrimary(night))}>
+                    Standard OAuth 2.0.
+                  </span>{" "}
+                  You approve scopes on Google; we never see your password.
                 </span>
               </div>
-              <div className="flex items-start gap-2 text-xs text-[#3d2e22]">
+              <div
+                className={cn(
+                  "flex items-start gap-2 text-xs",
+                  dnc.textPrimary(night)
+                )}
+              >
                 <Calendar className="mt-0.5 size-3.5 shrink-0 text-[#c97a5c]" aria-hidden />
                 <span>
-                  <span className="font-medium text-[#3d2e22]">Calendar</span> is available now. Add separate connections for work, personal, or shared mailboxes. Choose which account is the default for new events and future Gmail.
+                  <span className={cn("font-medium", dnc.textPrimary(night))}>
+                    Calendar
+                  </span>{" "}
+                  is available now. Add separate connections for work, personal, or shared mailboxes. Choose which account is the default for new events and future Gmail.
                 </span>
               </div>
-              <div className="flex items-start gap-2 text-xs text-[#7a6a5a]">
+              <div
+                className={cn(
+                  "flex items-start gap-2 text-xs",
+                  dnc.textSoft(night)
+                )}
+              >
                 <CircleDot className="mt-0.5 size-3.5 shrink-0 text-[#c4b5a8]" aria-hidden />
                 <span>Gmail, Drive, and the rest of the suite will light up here without a second sign-in flow.</span>
               </div>
             </div>
 
+            <button
+              type="button"
+              onClick={openSheetsModal}
+              className={cn(
+                "w-full rounded-xl border p-3 text-left outline-none transition focus-visible:ring-2 focus-visible:ring-[#c97a5c] focus-visible:ring-offset-2",
+                night
+                  ? "border-white/10 bg-white/5 hover:border-white/20"
+                  : "border-[#ede5da] bg-white/90 hover:border-[#e0d0c4]"
+              )}
+            >
+              <div className="flex items-start gap-3">
+                <FileSpreadsheet className="mt-0.5 size-5 shrink-0 text-[#0f9d58]" aria-hidden />
+                <div className="min-w-0 flex-1 space-y-1">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span
+                      className={cn("text-sm font-semibold", dnc.textPrimary(night))}
+                    >
+                      Google Sheets
+                    </span>
+                    <Badge variant="default" className="bg-amber-50 px-1.5 py-0.5 text-[9px] font-semibold uppercase leading-none tracking-wide text-amber-900 border-amber-200/80">
+                      <Sparkles className="mr-0.5 inline size-2.5" aria-hidden />
+                      Beta
+                    </Badge>
+                    {googleSheetsWaitlist ? (
+                      <Badge variant="default" className="px-1.5 py-0.5 text-[9px] font-semibold uppercase leading-none tracking-wide">
+                        On waitlist
+                      </Badge>
+                    ) : null}
+                  </div>
+                  <p
+                    className={cn("text-xs leading-relaxed", dnc.textSoft(night))}
+                  >
+                    Coming soon — tap for early access and the beta waitlist.
+                  </p>
+                </div>
+              </div>
+            </button>
+
             <div className="space-y-2">
-              <p className="text-xs font-medium uppercase tracking-wide text-[#9a8070]">Connected accounts</p>
+              <p
+                className={cn(
+                  "text-xs font-medium uppercase tracking-wide",
+                  dnc.textMuted(night)
+                )}
+              >
+                Connected accounts
+              </p>
               {googleAccounts.length === 0 ? (
-                <p className="rounded-lg border border-dashed border-[#e5d9ce] bg-[#faf7f2] px-3 py-3 text-center text-xs text-[#7a6a5a]">
+                <p
+                  className={cn(
+                    "rounded-lg border border-dashed px-3 py-3 text-center text-xs",
+                    night
+                      ? "border-white/15 bg-white/5 text-[#a89e94]"
+                      : "border-[#e5d9ce] bg-[#faf7f2] text-[#7a6a5a]"
+                  )}
+                >
                   No Google accounts yet. Connect one to sync Calendar and use your Google identities with Lofy.
                 </p>
               ) : (
@@ -347,24 +452,38 @@ export function IntegrationCard() {
                   {googleAccounts.map((a) => (
                     <li
                       key={a.credentialId}
-                      className="flex flex-col gap-3 rounded-xl border border-[#ede5da] bg-white px-3 py-3"
+                      className={cn(
+                        "flex flex-col gap-3 rounded-xl border px-3 py-3",
+                        night
+                          ? "border-white/10 bg-white/5"
+                          : "border-[#ede5da] bg-white"
+                      )}
                     >
                       <div className="flex min-w-0 items-start gap-2">
                         <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-emerald-600" aria-hidden />
                         <div className="min-w-0 flex-1">
-                          <p className="flex flex-wrap items-center gap-2 text-sm font-medium text-[#3d2e22]">
+                          <p
+                            className={cn(
+                              "flex flex-wrap items-center gap-2 text-sm font-medium",
+                              dnc.textPrimary(night)
+                            )}
+                          >
                             <span className="min-w-0 break-words">{a.displayName || "Google account"}</span>
                             {a.isDefault ? (
-                              <Badge
-                                variant="primary"
-                                className="shrink-0 px-1.5 py-0.5 text-[9px] font-semibold uppercase leading-none tracking-wide"
-                              >
+                              <Badge variant="primary" className="shrink-0 px-1.5 py-0.5 text-[9px] font-semibold uppercase leading-none tracking-wide">
                                 Default
                               </Badge>
                             ) : null}
                           </p>
                           {a.googleEmail ? (
-                            <p className="mt-0.5 break-all text-xs text-[#7a6a5a]">{a.googleEmail}</p>
+                            <p
+                              className={cn(
+                                "mt-0.5 break-all text-xs",
+                                dnc.textSoft(night)
+                              )}
+                            >
+                              {a.googleEmail}
+                            </p>
                           ) : null}
                         </div>
                       </div>
@@ -380,8 +499,7 @@ export function IntegrationCard() {
                               } catch (e) {
                                 toast.error(e instanceof Error ? e.message : "Update failed");
                               }
-                            }}
-                          >
+                            }}>
                             Set as default
                           </Button>
                         ) : null}
@@ -395,8 +513,7 @@ export function IntegrationCard() {
                             } catch (e) {
                               toast.error(e instanceof Error ? e.message : "Disconnect failed");
                             }
-                          }}
-                        >
+                          }}>
                           Disconnect
                         </Button>
                       </div>
@@ -405,39 +522,6 @@ export function IntegrationCard() {
                 </ul>
               )}
             </div>
-
-            <button
-              type="button"
-              onClick={openSheetsModal}
-              className="w-full rounded-xl border border-[#ede5da] bg-white/90 p-3 text-left outline-none transition hover:border-[#e0d0c4] focus-visible:ring-2 focus-visible:ring-[#c97a5c] focus-visible:ring-offset-2"
-            >
-              <div className="flex items-start gap-3">
-                <FileSpreadsheet className="mt-0.5 size-5 shrink-0 text-[#0f9d58]" aria-hidden />
-                <div className="min-w-0 flex-1 space-y-1">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="text-sm font-semibold text-[#3d2e22]">Google Sheets</span>
-                    <Badge
-                      variant="default"
-                      className="bg-amber-50 px-1.5 py-0.5 text-[9px] font-semibold uppercase leading-none tracking-wide text-amber-900 border-amber-200/80"
-                    >
-                      <Sparkles className="mr-0.5 inline size-2.5" aria-hidden />
-                      Beta
-                    </Badge>
-                    {googleSheetsWaitlist ? (
-                      <Badge
-                        variant="default"
-                        className="px-1.5 py-0.5 text-[9px] font-semibold uppercase leading-none tracking-wide"
-                      >
-                        On waitlist
-                      </Badge>
-                    ) : null}
-                  </div>
-                  <p className="text-xs leading-relaxed text-[#7a6a5a]">
-                    Coming soon — tap for early access and the beta waitlist.
-                  </p>
-                </div>
-              </div>
-            </button>
 
             <Button className="h-10 w-full text-sm font-medium" onClick={openGoogleDialog}>
               Connect Google account
@@ -449,15 +533,50 @@ export function IntegrationCard() {
       {/* WhatsApp */}
       {whatsappIntegration && (
         <section className="space-y-3">
-          <h2 className="text-xs font-semibold uppercase tracking-widest text-[#9a8070]">Messaging</h2>
-          <Card className="overflow-hidden border-[#ede5da] bg-white/80">
+          <h2
+            className={cn(
+              "text-xs font-semibold uppercase tracking-widest",
+              dnc.textMuted(night)
+            )}
+          >
+            Messaging
+          </h2>
+          <Card
+            className={cn(
+              "overflow-hidden border",
+              night
+                ? "border-white/10 bg-white/5"
+                : "border-[#ede5da] bg-white/80"
+            )}
+          >
             <CardHeader className="p-3">
               <div className="flex items-center gap-3">
-                <div className="flex size-10 shrink-0 items-center justify-center rounded-xl border bg-white">{whatsappIntegration.icon}</div>
+                <div
+                  className={cn(
+                    "flex size-10 shrink-0 items-center justify-center rounded-xl border",
+                    night ? "border-white/10 bg-white/5" : "border bg-white"
+                  )}
+                >
+                  {whatsappIntegration.icon}
+                </div>
                 <div className="min-w-0 flex-1">
-                  <CardTitle className="truncate text-sm font-semibold">{whatsappIntegration.name}</CardTitle>
+                  <CardTitle
+                    className={cn(
+                      "truncate text-sm font-semibold",
+                      night && "text-[#e8ddd4]"
+                    )}
+                  >
+                    {whatsappIntegration.name}
+                  </CardTitle>
                   {whatsappIntegration.description && (
-                    <p className="mt-0.5 line-clamp-2 text-xs text-muted-foreground">{whatsappIntegration.description}</p>
+                    <p
+                      className={cn(
+                        "mt-0.5 line-clamp-2 text-xs",
+                        night ? "text-[#9a8f85]" : "text-muted-foreground"
+                      )}
+                    >
+                      {whatsappIntegration.description}
+                    </p>
                   )}
                 </div>
                 <div className="shrink-0">{getStatusBadge(whatsappIntegration.status)}</div>
@@ -472,17 +591,31 @@ export function IntegrationCard() {
         onOpenChange={(open) => {
           setGoogleDialogOpen(open);
           if (!open) setNewAccountLabel("");
-        }}
-      >
-        <DialogContent className="border-[#ede5da] sm:max-w-md" showCloseButton={!oauthSubmitting}>
+        }}>
+        <DialogContent
+          className={cn("sm:max-w-md", night ? "border-white/10 bg-[#161922]" : "border-[#ede5da]")}
+          showCloseButton={!oauthSubmitting}
+        >
           <DialogHeader>
-            <DialogTitle className="text-[#3d2e22]">Connect a Google account</DialogTitle>
-            <DialogDescription>
+            <DialogTitle
+              className={night ? "text-[#e8ddd4]" : "text-[#3d2e22]"}
+            >
+              Connect a Google account
+            </DialogTitle>
+            <DialogDescription
+              className={night ? "text-[#9a8f85]" : undefined}
+            >
               Choose a label you will recognize in the dashboard. You will be sent to Google to sign in and approve access.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-2">
-            <label htmlFor="google-account-label" className="text-xs font-medium text-[#3d2e22]">
+            <label
+              htmlFor="google-account-label"
+              className={cn(
+                "text-xs font-medium",
+                dnc.textPrimary(night)
+              )}
+            >
               Account label
             </label>
             <Input
@@ -491,7 +624,7 @@ export function IntegrationCard() {
               value={newAccountLabel}
               onChange={(e) => setNewAccountLabel(e.target.value)}
               disabled={oauthSubmitting}
-              className="border-[#ede5da]"
+              className={night ? "border-white/10 bg-white/5" : "border-[#ede5da]"}
               onKeyDown={(e) => {
                 if (e.key === "Enter") void submitGoogleOAuth();
               }}
@@ -501,12 +634,7 @@ export function IntegrationCard() {
             <Button type="button" variant="outline" onClick={() => setGoogleDialogOpen(false)} disabled={oauthSubmitting}>
               Cancel
             </Button>
-            <Button
-              type="button"
-              className="gap-2"
-              onClick={() => void submitGoogleOAuth()}
-              disabled={oauthSubmitting}
-            >
+            <Button type="button" className="gap-2" onClick={() => void submitGoogleOAuth()} disabled={oauthSubmitting}>
               {oauthSubmitting ? (
                 <>
                   <Loader2 className="size-4 shrink-0 animate-spin" />
@@ -525,34 +653,33 @@ export function IntegrationCard() {
         onOpenChange={(open) => {
           setSheetsModalOpen(open);
           if (!open) setSheetsModalView(googleSheetsWaitlist ? "pending" : "offer");
-        }}
-      >
-        <DialogContent className="border-[#ede5da] sm:max-w-md" showCloseButton={!joinWaitlistSubmitting}>
+        }}>
+        <DialogContent
+          className={cn("sm:max-w-md", night ? "border-white/10 bg-[#161922]" : "border-[#ede5da]")}
+          showCloseButton={!joinWaitlistSubmitting}
+        >
           {sheetsModalView === "offer" ? (
             <>
               <DialogHeader>
-                <DialogTitle className="text-[#3d2e22]">Google Sheets is in beta</DialogTitle>
-                <DialogDescription className="text-pretty text-[#7a6a5a]">
-                  This integration is only available to beta users for now. Would you like to join our beta program
-                  and get access when we turn it on for your account?
+                <DialogTitle
+                  className={night ? "text-[#e8ddd4]" : "text-[#3d2e22]"}
+                >
+                  Google Sheets is in beta
+                </DialogTitle>
+                <DialogDescription
+                  className={cn(
+                    "text-pretty",
+                    dnc.textSoft(night)
+                  )}
+                >
+                  This integration is only available to beta users for now. Would you like to join our beta program and get access when we turn it on for your account?
                 </DialogDescription>
               </DialogHeader>
               <DialogFooter className="flex-col gap-2 sm:flex-row sm:justify-end">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setSheetsModalOpen(false)}
-                  disabled={joinWaitlistSubmitting}
-                  className="w-full sm:w-auto"
-                >
+                <Button type="button" variant="outline" onClick={() => setSheetsModalOpen(false)} disabled={joinWaitlistSubmitting} className="w-full sm:w-auto">
                   Not now
                 </Button>
-                <Button
-                  type="button"
-                  className="w-full gap-2 sm:w-auto"
-                  onClick={() => void joinSheetsBetaWaitlist()}
-                  disabled={joinWaitlistSubmitting}
-                >
+                <Button type="button" className="w-full gap-2 sm:w-auto" onClick={() => void joinSheetsBetaWaitlist()} disabled={joinWaitlistSubmitting}>
                   {joinWaitlistSubmitting ? (
                     <>
                       <Loader2 className="size-4 shrink-0 animate-spin" />
@@ -567,10 +694,15 @@ export function IntegrationCard() {
           ) : (
             <>
               <DialogHeader>
-                <DialogTitle className="text-[#3d2e22]">Thanks — you are on the list</DialogTitle>
-                <DialogDescription className="text-pretty text-[#7a6a5a]">
-                  Your request is in our queue. Please wait while we review and approve your access. We will reach out
-                  when Google Sheets is ready for your account.
+                <DialogTitle
+                  className={night ? "text-[#e8ddd4]" : "text-[#3d2e22]"}
+                >
+                  Thanks — you are on the list
+                </DialogTitle>
+                <DialogDescription
+                  className={cn("text-pretty", dnc.textSoft(night))}
+                >
+                  Your request is in our queue. Please wait while we review and approve your access. We will reach out when Google Sheets is ready for your account.
                 </DialogDescription>
               </DialogHeader>
               <DialogFooter>
