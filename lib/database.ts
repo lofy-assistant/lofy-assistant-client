@@ -44,7 +44,11 @@ function hasCurrentSchemaDelegates(client: PrismaClient | undefined): client is 
   }
 
   const candidate = client as PrismaClient & Record<string, unknown>
-  return typeof candidate.memories_share !== 'undefined'
+  // Require delegates for the current schema; a stale dev-time global can miss newly generated models.
+  return (
+    typeof candidate.memories_share !== 'undefined' &&
+    typeof candidate.feature_waitlist !== 'undefined'
+  )
 }
 
 export const prisma =

@@ -2,13 +2,30 @@
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import { useDashboardNight } from "@/components/dashboard/shared/dashboard-night-provider";
 
 export function ContactFounderCard() {
+  const { isNight: night } = useDashboardNight();
+
   return (
-    <Card className="rounded-2xl border border-[#ede5da] bg-white/80 py-6 shadow-sm">
+    <Card
+      className={cn(
+        "rounded-2xl border py-6 shadow-sm",
+        night
+          ? "border-white/10 bg-white/5"
+          : "border-[#ede5da] bg-white/80"
+      )}
+    >
       <CardHeader>
-        <CardTitle>Contact Our Founder</CardTitle>
-        <CardDescription>
+        <CardTitle
+          className={night ? "text-[#e8ddd4]" : undefined}
+        >
+          Contact Our Founder
+        </CardTitle>
+        <CardDescription
+          className={night ? "text-[#9a8f85]" : undefined}
+        >
           Need direct assistance? Reach out to our founder on WhatsApp
         </CardDescription>
       </CardHeader>

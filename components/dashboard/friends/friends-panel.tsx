@@ -8,6 +8,9 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { PhoneNumberInput } from "@/components/phone-number-input";
 import { Form } from "@/components/ui/form";
+import { cn } from "@/lib/utils";
+import { dnc } from "@/lib/dashboard-night";
+import { useDashboardNight } from "@/components/dashboard/shared/dashboard-night-provider";
 
 interface Friend {
   id: string;
@@ -53,6 +56,7 @@ export function FriendsPanel() {
   const [submitting, setSubmitting] = useState(false);
   const [pendingInvites, setPendingInvites] = useState<PendingInvite[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const { isNight: night } = useDashboardNight();
   const form = useForm<FriendInviteFormValues>({
     defaultValues: {
       dialCode: "60",
@@ -157,14 +161,27 @@ export function FriendsPanel() {
 
   return (
     <div className="flex flex-col gap-6 pb-4">
-      <section className="rounded-2xl border border-[#ede5da] bg-white/80 p-4 shadow-sm">
+      <section
+        className={cn(
+          "rounded-2xl border p-4 shadow-sm",
+          night
+            ? "border-white/10 bg-white/5"
+            : "border-[#ede5da] bg-white/80"
+        )}
+      >
         <div className="flex items-start gap-3">
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10">
             <UserPlus className="h-5 w-5 text-primary" />
           </div>
           <div className="min-w-0 flex-1">
-            <h2 className="text-sm font-semibold text-[#3d2e22]">Invite someone</h2>
-            <p className="mt-1 text-xs leading-relaxed text-[#9a8070]">
+            <h2
+              className={cn("text-sm font-semibold", dnc.textPrimary(night))}
+            >
+              Invite someone
+            </h2>
+            <p
+              className={cn("mt-1 text-xs leading-relaxed", dnc.textMuted(night))}
+            >
               Add a mobile number and we’ll send them an invite to join you on Lofy.
             </p>
             <Form {...form}>
@@ -176,6 +193,7 @@ export function FriendsPanel() {
                   label="Phone number"
                   phonePlaceholder="123456789"
                   disabled={submitting}
+                  isNight={night}
                 />
                 <Button type="submit" disabled={submitting || !phoneNumber?.trim()} className="w-full rounded-xl">
                   {submitting ? (
@@ -204,32 +222,77 @@ export function FriendsPanel() {
 
       <section>
         <div className="mb-3 flex items-center gap-2 px-0.5">
-          <Users className="h-4 w-4 text-[#7a6a5a]" />
-          <h2 className="text-sm font-semibold text-[#3d2e22]">Your friends</h2>
+          <Users
+            className={cn("h-4 w-4", night ? "text-[#9a8f85]" : "text-[#7a6a5a]")}
+          />
+          <h2
+            className={cn("text-sm font-semibold", dnc.textPrimary(night))}
+          >
+            Your friends
+          </h2>
         </div>
 
         {loading ? (
-          <div className="flex items-center justify-center rounded-2xl border border-[#ede5da] bg-white/60 px-4 py-10">
-            <Loader2 className="h-5 w-5 animate-spin text-[#9a8070]" />
+          <div
+            className={cn(
+              "flex items-center justify-center rounded-2xl border px-4 py-10",
+              night
+                ? "border-white/10 bg-white/5"
+                : "border-[#ede5da] bg-white/60"
+            )}
+          >
+            <Loader2
+              className={cn(
+                "h-5 w-5 animate-spin",
+                dnc.textMuted(night)
+              )}
+            />
           </div>
         ) : friends.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-[#ede5da] bg-white/50 px-4 py-10 text-center">
-            <p className="text-sm text-[#7a6a5a]">No friends yet</p>
-            <p className="mt-1 text-xs text-[#9a8070]">Invite someone above to grow your circle.</p>
+          <div
+            className={cn(
+              "rounded-2xl border border-dashed px-4 py-10 text-center",
+              night
+                ? "border-white/15 bg-white/5"
+                : "border-[#ede5da] bg-white/50"
+            )}
+          >
+            <p
+              className={cn("text-sm", dnc.textSoft(night))}
+            >
+              No friends yet
+            </p>
+            <p
+              className={cn("mt-1 text-xs", dnc.textMuted(night))}
+            >
+              Invite someone above to grow your circle.
+            </p>
           </div>
         ) : (
           <ul className="flex flex-col gap-2">
             {friends.map((friend) => (
               <li
                 key={friend.id}
-                className="flex items-center gap-3 rounded-2xl border border-[#ede5da] bg-white/80 px-3 py-3 shadow-sm"
+                className={cn(
+                  "flex items-center gap-3 rounded-2xl border px-3 py-3 shadow-sm",
+                  night
+                    ? "border-white/10 bg-white/5"
+                    : "border-[#ede5da] bg-white/80"
+                )}
               >
                 <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-linear-to-br from-emerald-50 to-emerald-200/90 text-sm font-semibold text-emerald-950">
                   {getInitials(friend.name)}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="truncate font-medium text-[#3d2e22]">{friend.name?.trim() || "Lofy user"}</p>
-                  <p className="text-xs text-[#9a8070]">
+                  <p
+                    className={cn(
+                      "truncate font-medium",
+                      dnc.textPrimary(night)
+                    )}
+                  >
+                    {friend.name?.trim() || "Lofy user"}
+                  </p>
+                  <p className={cn("text-xs", dnc.textMuted(night))}>
                     Friends since {format(new Date(friend.friendsSince), "MMM d, yyyy")}
                   </p>
                 </div>
@@ -241,23 +304,45 @@ export function FriendsPanel() {
 
       {pendingInvites.length > 0 && (
         <section>
-          <h2 className="mb-3 px-0.5 text-sm font-semibold text-[#3d2e22]">Pending invites</h2>
-          <p className="mb-2 text-xs text-[#9a8070]">
+          <h2
+            className={cn("mb-3 px-0.5 text-sm font-semibold", dnc.textPrimary(night))}
+          >
+            Pending invites
+          </h2>
+          <p className={cn("mb-2 text-xs", dnc.textMuted(night))}>
             Active invites you have already sent. They move to friends after the person accepts.
           </p>
           <ul className="flex flex-col gap-2">
             {pendingInvites.map((inv) => (
               <li
                 key={inv.id}
-                className="flex items-center justify-between rounded-2xl border border-[#ede5da] bg-white/60 px-3 py-2.5 text-sm"
+                className={cn(
+                  "flex items-center justify-between rounded-2xl border px-3 py-2.5 text-sm",
+                  night
+                    ? "border-white/10 bg-white/5"
+                    : "border-[#ede5da] bg-white/60"
+                )}
               >
                 <div className="flex flex-col gap-0.5">
-                  <span className="text-[#5c4a42]">•••• {inv.last4 || "----"}</span>
-                  <span className="text-[11px] text-[#9a8070]">
+                  <span
+                    className={night ? "text-[#c4b8ae]" : "text-[#5c4a42]"}
+                  >
+                    •••• {inv.last4 || "----"}
+                  </span>
+                  <span
+                    className={cn(
+                      "text-[11px]",
+                      dnc.textMuted(night)
+                    )}
+                  >
                     Sent {format(new Date(inv.createdAt), "MMM d")} • Expires {format(new Date(inv.expiresAt), "MMM d")}
                   </span>
                 </div>
-                <span className="text-xs text-[#9a8070]">Pending</span>
+                <span
+                  className={cn("text-xs", dnc.textMuted(night))}
+                >
+                  Pending
+                </span>
               </li>
             ))}
           </ul>

@@ -11,6 +11,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { getCountriesWithMalaysiaFirst } from "@/lib/countries";
+import { dnc } from "@/lib/dashboard-night";
 import { cn } from "@/lib/utils";
 
 interface PhoneNumberInputProps<TFieldValues extends FieldValues> {
@@ -20,6 +21,8 @@ interface PhoneNumberInputProps<TFieldValues extends FieldValues> {
   label?: string;
   phonePlaceholder?: string;
   disabled?: boolean;
+  /** Dark dashboard card (`#111216`) — matches settings form field tokens. */
+  isNight?: boolean;
 }
 
 export function PhoneNumberInput<TFieldValues extends FieldValues>({
@@ -29,6 +32,7 @@ export function PhoneNumberInput<TFieldValues extends FieldValues>({
   label = "Phone Number",
   phonePlaceholder = "123456789",
   disabled = false,
+  isNight = false,
 }: PhoneNumberInputProps<TFieldValues>) {
   const [searchValue, setSearchValue] = useState("");
   const [isOpen, setIsOpen] = useState(false);
@@ -69,7 +73,7 @@ export function PhoneNumberInput<TFieldValues extends FieldValues>({
 
   return (
     <FormItem>
-      <FormLabel>{label}</FormLabel>
+      <FormLabel className={dnc.settingsLabel(isNight)}>{label}</FormLabel>
       <div className="flex items-start gap-2">
         <FormField
           control={control}
@@ -136,17 +140,31 @@ export function PhoneNumberInput<TFieldValues extends FieldValues>({
                       onFocus={() => setIsOpen(true)}
                       onKeyDown={handleKeyDown}
                       disabled={disabled}
-                      className="w-[5.25rem]"
+                      className={cn(
+                        "w-[5.25rem]",
+                        dnc.settingsInput(isNight),
+                        disabled && dnc.settingsInputDisabled(isNight)
+                      )}
                     />
                     {selectedCountry && !searchValue && (
-                      <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none text-sm">
+                      <div
+                        className={cn(
+                          "absolute inset-y-0 left-3 flex items-center pointer-events-none text-sm",
+                          isNight && "text-[#e8ddd4]"
+                        )}
+                      >
                         {selectedCountry.flag} +{selectedCountry.dialCode}
                       </div>
                     )}
                     {isOpen && (
                       <div
                         ref={dropdownRef}
-                        className="absolute z-50 mt-1 w-full min-w-[15rem] rounded-md border bg-popover shadow-md"
+                        className={cn(
+                          "absolute z-50 mt-1 w-full min-w-[15rem] rounded-md border shadow-md",
+                          isNight
+                            ? "border-white/10 bg-[#1a1c22] text-[#e8ddd4]"
+                            : "border bg-popover"
+                        )}
                         style={{ maxHeight: '300px', overflowY: 'auto' }}
                       >
                         {filteredCountries.length > 0 ? (
@@ -154,8 +172,12 @@ export function PhoneNumberInput<TFieldValues extends FieldValues>({
                             <div
                               key={`${country.code}-${country.dialCode}`}
                               className={cn(
-                                "cursor-pointer px-2.5 py-1.5 text-xs hover:bg-accent",
-                                highlightedIndex === index && "bg-accent"
+                                "cursor-pointer px-2.5 py-1.5 text-xs",
+                                isNight
+                                  ? "hover:bg-white/10"
+                                  : "hover:bg-accent",
+                                highlightedIndex === index &&
+                                  (isNight ? "bg-white/10" : "bg-accent")
                               )}
                               onClick={() => handleSelect(String(country.dialCode))}
                               onMouseEnter={() => setHighlightedIndex(index)}
@@ -164,7 +186,12 @@ export function PhoneNumberInput<TFieldValues extends FieldValues>({
                             </div>
                           ))
                         ) : (
-                          <div className="px-2.5 py-5 text-center text-xs text-muted-foreground">
+                          <div
+                            className={cn(
+                              "px-2.5 py-5 text-center text-xs",
+                              dnc.settingsHelp(isNight)
+                            )}
+                          >
                             No countries found
                           </div>
                         )}
@@ -192,6 +219,10 @@ export function PhoneNumberInput<TFieldValues extends FieldValues>({
                       field.onChange(digits);
                     }}
                     disabled={disabled}
+                    className={cn(
+                      dnc.settingsInput(isNight),
+                      disabled && dnc.settingsInputDisabled(isNight)
+                    )}
                   />
                 </FormControl>
                 <FormMessage />

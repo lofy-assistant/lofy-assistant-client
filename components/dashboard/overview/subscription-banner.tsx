@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { X, AlertTriangle, CheckCircle2, XCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useDashboardNight } from "@/components/dashboard/shared/dashboard-night-provider";
 
 const SESSION_KEY = "sub_banner_dismissed";
 const AUTO_DISMISS_MS = 5_000;
@@ -124,7 +125,22 @@ const closeButtonStyles: Record<BannerVariant, string> = {
   red: "hover:bg-red-100 dark:hover:bg-red-900/40",
 };
 
+const variantStylesNight: Record<BannerVariant, string> = {
+  green:
+    "bg-emerald-950/50 border-emerald-700/50 text-emerald-100",
+  amber:
+    "bg-amber-950/50 border-amber-700/50 text-amber-100",
+  red: "bg-red-950/45 border-red-800/50 text-red-100",
+};
+
+const closeButtonStylesNight: Record<BannerVariant, string> = {
+  green: "hover:bg-emerald-900/50",
+  amber: "hover:bg-amber-900/50",
+  red: "hover:bg-red-900/50",
+};
+
 export function SubscriptionBanner() {
+  const { isNight: night } = useDashboardNight();
   const [banner, setBanner] = useState<BannerContent | null>(null);
   const [visible, setVisible] = useState(false);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -185,8 +201,10 @@ export function SubscriptionBanner() {
       role="status"
       aria-live="polite"
       className={cn(
-        "flex items-start gap-3 rounded-lg border px-4 py-3 text-sm transition-opacity duration-300 mb-4",
-        variantStyles[banner.variant]
+        "mb-4 flex items-start gap-3 rounded-lg border px-4 py-3 text-sm transition-opacity duration-300",
+        night
+          ? variantStylesNight[banner.variant]
+          : variantStyles[banner.variant]
       )}
     >
       {banner.icon}
@@ -196,7 +214,9 @@ export function SubscriptionBanner() {
         aria-label="Dismiss"
         className={cn(
           "rounded p-0.5 transition-colors -mt-0.5 -mr-0.5",
-          closeButtonStyles[banner.variant]
+          night
+            ? closeButtonStylesNight[banner.variant]
+            : closeButtonStyles[banner.variant]
         )}
       >
         <X className="w-4 h-4" />

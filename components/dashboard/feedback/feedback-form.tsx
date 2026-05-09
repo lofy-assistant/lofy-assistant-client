@@ -15,8 +15,11 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { useDashboardNight } from "@/components/dashboard/shared/dashboard-night-provider";
 
 export function FeedbackForm() {
+  const { isNight: night } = useDashboardNight();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     tag: "",
@@ -62,9 +65,20 @@ export function FeedbackForm() {
   };
 
   return (
-    <Card className="rounded-2xl border border-[#ede5da] bg-white/80 py-6 shadow-sm">
+    <Card
+      className={cn(
+        "rounded-2xl border py-6 shadow-sm",
+        night
+          ? "border-white/10 bg-white/5"
+          : "border-[#ede5da] bg-white/80"
+      )}
+    >
       <CardHeader>
-        <CardTitle>Submit Feedback</CardTitle>
+        <CardTitle
+          className={night ? "text-[#e8ddd4]" : undefined}
+        >
+          Submit Feedback
+        </CardTitle>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-6">

@@ -11,6 +11,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Copy, Loader2, PencilLine, Send, Trash2, Users } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { useDashboardNight } from "@/components/dashboard/shared/dashboard-night-provider";
 
 interface PersonSummary {
   id: string;
@@ -73,6 +75,7 @@ function getRecipientNames(recipients: MemoryShareRecipient[]) {
 }
 
 export function MemoryDetailModal({ memory, open, onOpenChange, onUpdate }: MemoryDetailModalProps) {
+  const { isNight: night } = useDashboardNight();
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -244,24 +247,53 @@ export function MemoryDetailModal({ memory, open, onOpenChange, onUpdate }: Memo
   const ownerName = memory.owner?.name?.trim() || "Someone in your circle";
   const sharedRecipients = memory.sharedWith ?? [];
   const isSharedByOwner = isOwner && sharedRecipients.length > 0;
-  const modalToneClasses = isOwner
-    ? "border-[#eadfd3] bg-[linear-gradient(180deg,rgba(255,252,248,0.99)_0%,rgba(250,244,238,0.98)_100%)]"
-    : "border-[#d4e8df] bg-[linear-gradient(180deg,rgba(248,253,250,0.99)_0%,rgba(240,249,245,0.98)_100%)]";
-  const heroToneClasses = isOwner
-    ? "border-[#eadfd3] bg-[linear-gradient(145deg,rgba(255,255,255,0.96)_0%,rgba(252,244,236,0.96)_54%,rgba(247,237,226,0.92)_100%)]"
-    : "border-[#d4e8df] bg-[linear-gradient(145deg,rgba(255,255,255,0.96)_0%,rgba(242,251,246,0.96)_54%,rgba(232,246,239,0.92)_100%)]";
-  const badgeToneClasses = isOwner
-    ? "border-[#e3d6c7] bg-[#fff8f1] text-[#8a6544]"
-    : "border-[#bfded0] bg-[#edf8f3] text-[#2e715d]";
-  const sectionToneClasses = isOwner
-    ? "border-[#eadfd3] bg-white/78"
-    : "border-[#d6ebe2] bg-white/82";
+  const modalToneClasses = night
+    ? isOwner
+      ? "border-white/10 bg-[linear-gradient(180deg,rgba(20,20,24,0.99)_0%,rgba(17,18,22,0.99)_100%)]"
+      : "border-emerald-500/25 bg-[linear-gradient(180deg,rgba(12,24,22,0.99)_0%,rgba(14,18,20,0.99)_100%)]"
+    : isOwner
+      ? "border-[#eadfd3] bg-[linear-gradient(180deg,rgba(255,252,248,0.99)_0%,rgba(250,244,238,0.98)_100%)]"
+      : "border-[#d4e8df] bg-[linear-gradient(180deg,rgba(248,253,250,0.99)_0%,rgba(240,249,245,0.98)_100%)]";
+  const heroToneClasses = night
+    ? isOwner
+      ? "border-white/10 bg-[linear-gradient(145deg,rgba(32,30,28,0.96)_0%,rgba(22,20,24,0.96)_100%)]"
+      : "border-emerald-500/20 bg-[linear-gradient(145deg,rgba(18,32,28,0.96)_0%,rgba(14,22,20,0.96)_100%)]"
+    : isOwner
+      ? "border-[#eadfd3] bg-[linear-gradient(145deg,rgba(255,255,255,0.96)_0%,rgba(252,244,236,0.96)_54%,rgba(247,237,226,0.92)_100%)]"
+      : "border-[#d4e8df] bg-[linear-gradient(145deg,rgba(255,255,255,0.96)_0%,rgba(242,251,246,0.96)_54%,rgba(232,246,239,0.92)_100%)]";
+  const badgeToneClasses = night
+    ? isOwner
+      ? "border-amber-400/30 bg-amber-950/40 text-amber-200/90"
+      : "border-emerald-400/30 bg-emerald-950/40 text-emerald-200/90"
+    : isOwner
+      ? "border-[#e3d6c7] bg-[#fff8f1] text-[#8a6544]"
+      : "border-[#bfded0] bg-[#edf8f3] text-[#2e715d]";
+  const sectionToneClasses = night
+    ? isOwner
+      ? "border-white/10 bg-white/5"
+      : "border-emerald-500/20 bg-emerald-950/25"
+    : isOwner
+      ? "border-[#eadfd3] bg-white/78"
+      : "border-[#d6ebe2] bg-white/82";
 
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className={`flex h-[100dvh] w-[min(100vw,26rem)] max-w-none flex-col overflow-hidden rounded-none border-0 p-0 shadow-none md:h-[95dvh] md:rounded-[2rem] md:border md:shadow-[0_28px_80px_rgba(74,55,37,0.18)] ${modalToneClasses}`}>
-          <DialogHeader className="gap-4 border-b border-white/45 bg-white/35 px-4 pb-4 pt-5 text-left backdrop-blur-sm">
+        <DialogContent
+          className={cn(
+            "flex h-[100dvh] w-[min(100vw,26rem)] max-w-none flex-col overflow-hidden rounded-none border-0 p-0 shadow-none md:h-[95dvh] md:rounded-[2rem] md:border md:shadow-[0_28px_80px_rgba(74,55,37,0.18)]",
+            night && "md:shadow-[0_28px_80px_rgba(0,0,0,0.45)]",
+            modalToneClasses
+          )}
+        >
+          <DialogHeader
+            className={cn(
+              "gap-4 border-b px-4 pb-4 pt-5 text-left backdrop-blur-sm",
+              night
+                ? "border-white/10 bg-[#111216]/80"
+                : "border-white/45 bg-white/35"
+            )}
+          >
             <div className={`rounded-[1.6rem] border p-4 shadow-[0_14px_34px_rgba(76,57,39,0.08)] ${heroToneClasses}`}>
               <div className="flex flex-wrap items-center gap-2">
                 <span className={`inline-flex rounded-full border px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] ${badgeToneClasses}`}>

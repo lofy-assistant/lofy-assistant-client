@@ -36,6 +36,7 @@ model users {
   email_verification_expires  DateTime? @db.Timestamptz(6)
   default_google_credential_id Int? @unique
   default_google_credential    integration_credentials? @relation("UserDefaultGoogleCredential", fields: [default_google_credential_id], references: [id], onDelete: SetNull, onUpdate: NoAction)
+  feature_waitlist              feature_waitlist[]
 
   @@index([email])
   @@map("users")
@@ -247,6 +248,19 @@ model upvote_counts {
   count          Int    @default(0)
 
   @@map("upvote_counts")
+}
+
+model feature_waitlist {
+  id         Int      @id @default(autoincrement())
+  user_id    String   @db.Uuid
+  feature    String
+  created_at DateTime @default(now()) @db.Timestamptz(6)
+  user       users    @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@unique([user_id, feature], map: "uq_feature_waitlist_user_feature")
+  @@index([feature], map: "idx_feature_waitlist_feature")
+  @@index([user_id], map: "idx_feature_waitlist_user_id")
+  @@map("feature_waitlist")
 }
 
 model lofy_team {

@@ -8,11 +8,15 @@ import { SecuritySettings } from "@/components/dashboard/settings/security-setti
 import { AboutSettings } from "@/components/dashboard/settings/about-settings";
 import { SubscriptionSettings } from "@/components/dashboard/settings/subscription-settings";
 import { DashboardPageShell } from "@/components/dashboard/shared/page-shell";
+import { cn } from "@/lib/utils";
+import { dnc } from "@/lib/dashboard-night";
+import { useDashboardNight } from "@/components/dashboard/shared/dashboard-night-provider";
 
 const subscribe = () => () => {};
 
 export default function SettingsPage() {
   const isMounted = useSyncExternalStore(subscribe, () => true, () => false);
+  const { isNight: night } = useDashboardNight();
 
   return (
     <DashboardPageShell
@@ -22,11 +26,30 @@ export default function SettingsPage() {
     >
       {isMounted ? (
         <Tabs defaultValue="profile" className="flex h-full flex-col gap-0 text-sm">
-          <div className="shrink-0 border-b border-[#ede5da] bg-[#faf6f2] px-4 pb-3 pt-3">
-            <p className="pb-2 text-xs text-[#9a8070]">
+          <div
+            className={cn(
+              "shrink-0 border-b px-4 pb-3 pt-3",
+              night
+                ? "border-white/10 bg-[#111216]"
+                : "border-[#ede5da] bg-[#faf6f2]"
+            )}
+          >
+            <p
+              className={cn(
+                "pb-2 text-xs",
+                dnc.textMuted(night)
+              )}
+            >
               Manage your account settings and preferences
             </p>
-            <TabsList className="grid w-full grid-cols-4 rounded-xl border border-[#ede5da] bg-[#faf6f2]/95 backdrop-blur supports-[backdrop-filter]:bg-[#faf6f2]/85">
+            <TabsList
+              className={cn(
+                "grid h-auto w-full grid-cols-4 gap-0.5 rounded-xl border p-1",
+                night
+                  ? "border-white/10 bg-[#16181e] [&_[data-slot=tabs-trigger][data-state=inactive]]:!text-[#c4bdb3] [&_[data-slot=tabs-trigger][data-state=inactive]]:hover:!text-[#e4dfd6] [&_[data-slot=tabs-trigger][data-state=active]]:border [&_[data-slot=tabs-trigger][data-state=active]]:border-white/10 [&_[data-slot=tabs-trigger][data-state=active]]:!text-[#f4f0ea] [&_[data-slot=tabs-trigger][data-state=active]]:bg-white/10 [&_[data-slot=tabs-trigger][data-state=active]]:shadow-none"
+                  : "border-[#ede5da] bg-[#faf6f2]/95 backdrop-blur supports-[backdrop-filter]:bg-[#faf6f2]/85"
+              )}
+            >
               <TabsTrigger value="profile" aria-label="Profile" title="Profile">
                 <User className="size-4" />
                 <span className="sr-only">Profile</span>
@@ -47,7 +70,10 @@ export default function SettingsPage() {
           </div>
 
           <div
-            className="scrollbar-hidden flex-1 overflow-y-auto px-4 pb-4 pt-4"
+            className={cn(
+              "scrollbar-hidden flex-1 overflow-y-auto px-4 pb-4 pt-4",
+              night && "bg-[#111216]/50"
+            )}
             style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
           >
             <TabsContent value="profile" className="mt-0">
@@ -68,7 +94,14 @@ export default function SettingsPage() {
           </div>
         </Tabs>
       ) : (
-        <div className="m-4 h-24 rounded-xl border border-[#ede5da] bg-white/60" />
+        <div
+          className={cn(
+            "m-4 h-24 rounded-xl border",
+            night
+              ? "border-white/10 bg-white/5"
+              : "border-[#ede5da] bg-white/60"
+          )}
+        />
       )}
     </DashboardPageShell>
   );

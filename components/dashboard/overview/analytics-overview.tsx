@@ -6,6 +6,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Brain, Flame, History, MessageCircle, TrendingUp, type LucideIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useAnalytics } from "@/hooks/use-analytics";
+import { cn } from "@/lib/utils";
+import { useDashboardNight } from "@/components/dashboard/shared/dashboard-night-provider";
 
 type AnalyticsStat = {
   title: string;
@@ -21,6 +23,7 @@ type AnalyticsStat = {
 };
 
 export function AnalyticsOverview() {
+  const { isNight: night } = useDashboardNight();
   const { overview, activity, messages, isLoading: loading, error } = useAnalytics();
   const router = useRouter();
 
@@ -28,7 +31,10 @@ export function AnalyticsOverview() {
     return (
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {[...Array(4)].map((_, i) => (
-          <Card key={i}>
+          <Card
+            key={i}
+            className={night ? "border-white/10 bg-white/5" : undefined}
+          >
             <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
               <Skeleton className="w-24 h-4" />
               <Skeleton className="w-8 h-8 rounded-full" />
@@ -45,9 +51,18 @@ export function AnalyticsOverview() {
 
   if (error || !overview || !activity || !messages) {
     return (
-      <Card>
+      <Card
+        className={night ? "border-white/10 bg-white/5" : undefined}
+      >
         <CardContent className="pt-6">
-          <p className="text-sm text-muted-foreground">Failed to load analytics data</p>
+          <p
+            className={cn(
+              "text-sm",
+              night ? "text-[#9a8f85]" : "text-muted-foreground"
+            )}
+          >
+            Failed to load analytics data
+          </p>
         </CardContent>
       </Card>
     );
@@ -99,7 +114,10 @@ export function AnalyticsOverview() {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {stats.map((stat) => (
           <Card
-            className="pt-2 transition-all cursor-pointer hover:shadow-md active:scale-[0.98]"
+            className={cn(
+              "cursor-pointer pt-2 transition-all hover:shadow-md active:scale-[0.98]",
+              night && "border-white/10 bg-white/5"
+            )}
             key={stat.title}
             onClick={() => {
               if (stat.external) {

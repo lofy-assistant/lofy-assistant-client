@@ -9,6 +9,8 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Plus, Server, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
+import { cn } from "@/lib/utils";
+import { useDashboardNight } from "@/components/dashboard/shared/dashboard-night-provider";
 
 interface MCPServer {
   id: string;
@@ -19,6 +21,7 @@ interface MCPServer {
 }
 
 export function ConnectMCP() {
+  const { isNight: night } = useDashboardNight();
   const [servers, setServers] = useState<MCPServer[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [newServer, setNewServer] = useState({
@@ -77,8 +80,22 @@ export function ConnectMCP() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-lg font-semibold">MCP Servers</h3>
-          <p className="text-sm text-muted-foreground">Add your own Model Context Protocol servers</p>
+          <h3
+            className={cn(
+              "text-lg font-semibold",
+              night && "text-[#e8ddd4]"
+            )}
+          >
+            MCP Servers
+          </h3>
+          <p
+            className={cn(
+              "text-sm",
+              night ? "text-[#9a8f85]" : "text-muted-foreground"
+            )}
+          >
+            Add your own Model Context Protocol servers
+          </p>
         </div>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
@@ -87,10 +104,20 @@ export function ConnectMCP() {
               Add Server
             </Button>
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent
+            className={night ? "border-white/10 bg-[#161922]" : undefined}
+          >
             <DialogHeader>
-              <DialogTitle>Add MCP Server</DialogTitle>
-              <DialogDescription>Connect a custom Model Context Protocol server to extend functionality.</DialogDescription>
+              <DialogTitle
+                className={night ? "text-[#e8ddd4]" : undefined}
+              >
+                Add MCP Server
+              </DialogTitle>
+              <DialogDescription
+                className={night ? "text-[#9a8f85]" : undefined}
+              >
+                Connect a custom Model Context Protocol server to extend functionality.
+              </DialogDescription>
             </DialogHeader>
             <div className="space-y-4 py-4">
               <div className="space-y-2">
@@ -113,7 +140,9 @@ export function ConnectMCP() {
       </div>
 
       {servers.length === 0 ? (
-        <Card>
+        <Card
+          className={night ? "border-white/10 bg-white/5" : undefined}
+        >
           <CardContent className="flex flex-col items-center justify-center py-12">
             <Server className="w-12 h-12 text-muted-foreground mb-4" />
             <p className="text-sm text-muted-foreground text-center">No MCP servers added yet. Click &quot;Add Server&quot; to get started.</p>
@@ -122,7 +151,10 @@ export function ConnectMCP() {
       ) : (
         <div className="space-y-4">
           {servers.map((server) => (
-            <Card key={server.id}>
+            <Card
+              key={server.id}
+              className={night ? "border-white/10 bg-white/5" : undefined}
+            >
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4">
