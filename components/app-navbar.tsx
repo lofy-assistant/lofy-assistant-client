@@ -1,11 +1,14 @@
 "use client";
 
-import { Menu, ChevronDown } from "lucide-react";
+import { ArrowUpRight, ChevronDown, Menu } from "lucide-react";
 import Link from "next/link";
 import { type ReactNode, useEffect, useMemo, useState } from "react";
 import Image from "next/image";
+import { usePathname } from "next/navigation";
 
 import { cn } from "@/lib/utils";
+import { BROCHURE_FEATURES } from "@/lib/brochure-features";
+import { CHANNEL_PICKER_PATH } from "@/lib/channel-entry";
 
 import { Button, buttonVariants } from "@/components/ui/button";
 import { NavbarCenter, Navbar as NavbarComponent, NavbarLeft } from "@/components/ui/navbar";
@@ -39,28 +42,39 @@ interface NavbarProps {
   className?: string;
 }
 
+const brochureFeatureLinks = BROCHURE_FEATURES.map((feature) => ({
+  text: feature.title,
+  href: feature.href,
+}));
+
+const resourceLinks = [
+  { text: "Guides", href: "/guides" },
+  { text: "About Lofy", href: "/about-us" },
+];
+
+function isExternalLink(href: string) {
+  return href.startsWith("http");
+}
+
+function matchesPath(pathname: string, href: string) {
+  if (href === "/") return pathname === href;
+  return pathname === href || pathname.startsWith(`${href}/`);
+}
+
 export default function AppNavbar({
   logo = <Image src="/assets/icons/lofy-logo-1.png" alt="Logo" width={32} height={32} className="size-8" />,
   name = "Lofy AI",
   homeUrl = "/",
   mobileLinks = [
-    { 
-      text: "Features", 
+    {
+      text: "Features",
       href: "/features",
-      children: [
-        { text: "Apps Integration", href: "/features/apps-integration" },
-        { text: "Limitless Reminder", href: "/features/limitless-reminder" },
-        { text: "Save To Memory", href: "/features/save-to-memory" },
-        { text: "Personality Modes", href: "/features/personality-modes" },
-      ]
+      children: brochureFeatureLinks,
     },
-    { 
-      text: "Resources", 
-      href: "/resources",
-      children: [
-        { text: "Guides", href: "/guides" },
-        { text: "About Us", href: "/about-us" },
-      ]
+    {
+      text: "Resources",
+      href: "/guides",
+      children: resourceLinks,
     },
     { text: "Pricing", href: "/pricing" },
   ],
@@ -71,9 +85,10 @@ export default function AppNavbar({
 }: NavbarProps) {
   const [openSections, setOpenSections] = useState<{ [key: number]: boolean }>({});
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
+  const pathname = usePathname();
 
   const toggleSection = (index: number) => {
-    setOpenSections(prev => ({ ...prev, [index]: !prev[index] }));
+    setOpenSections((prev) => ({ ...prev, [index]: !prev[index] }));
   };
 
   useEffect(() => {
@@ -101,36 +116,46 @@ export default function AppNavbar({
     return [
       isLoggedIn
         ? { text: "Dashboard", href: "/dashboard", isButton: false }
-        : { text: "Login/Register", href: "/login", isButton: false },
+        : { text: "Log in", href: "/login", isButton: false },
       {
-        text: "Chat with Lofy",
-        href: "https://wa.me/60105043846?text=Hey%2C%20I%20just%20get%20started",
+        text: "Get started",
+        href: CHANNEL_PICKER_PATH,
         isButton: true,
         variant: "default",
+        iconRight: <ArrowUpRight className="size-4" />,
       },
     ];
   }, [actions, isLoggedIn]);
 
   return (
-    <header className={cn("sticky top-0 z-50 px-4 w-full", className)}>
-      <div className="absolute left-0 w-full h-18 fade-bottom bg-foreground backdrop-blur-md" />
+    <header className={cn("sticky top-4 z-50 w-full px-4 md:px-6", className)}>
       <div className="relative mx-auto max-w-7xl">
-        <NavbarComponent>
-          <NavbarLeft>
-            <Link href={homeUrl} className="flex items-center gap-2 text-xl text-white font-bold">
+        <NavbarComponent className="rounded-[1.75rem] border border-marketing-border/50 bg-marketing-card-surface/90 px-4 py-3 shadow-[0_22px_48px_-28px_var(--marketing-shadow)] backdrop-blur-2xl md:px-5 dark:border-white/10 dark:bg-marketing-navbar-surface">
+          <NavbarLeft className="gap-4 md:gap-6">
+            <Link
+              href={homeUrl}
+              className="group flex items-center gap-3 rounded-full px-2 py-1.5 text-marketing-chat-assistant-text transition-colors"
+            >
               {logo}
-              {name}
+              <span className="hidden text-lg font-semibold tracking-tight text-marketing-chat-assistant-text sm:inline">
+                {name}
+              </span>
             </Link>
             {showNavigation && (customNavigation || <Navigation />)}
           </NavbarLeft>
-          <NavbarCenter>
+          <NavbarCenter className="gap-2 md:gap-3">
             {computedActions.map((action, index) =>
               action.isButton ? (
-                <Button key={index} variant={action.variant} className="hidden md:inline-flex" asChild>
-                  <Link 
+                <Button
+                  key={index}
+                  variant={action.variant}
+                  className="hidden rounded-full border border-white/50 bg-marketing-cta-bg px-5 text-marketing-cta-fg shadow-[0_14px_30px_-18px_var(--marketing-shadow)] transition-all hover:bg-marketing-cta-hover hover:shadow-[0_18px_34px_-18px_var(--marketing-shadow)] md:inline-flex"
+                  asChild
+                >
+                  <Link
                     href={action.href}
-                    target={action.href.startsWith('http') ? '_blank' : undefined}
-                    rel={action.href.startsWith('http') ? 'noopener noreferrer' : undefined}
+                    target={isExternalLink(action.href) ? "_blank" : undefined}
+                    rel={isExternalLink(action.href) ? "noopener noreferrer" : undefined}
                   >
                     {action.icon}
                     {action.text}
@@ -138,57 +163,93 @@ export default function AppNavbar({
                   </Link>
                 </Button>
               ) : (
-                <Link key={index} href={action.href} className="hidden text-sm font-medium underline-offset-4 hover:underline tracking-wide text-white md:block">
+                <Link
+                  key={index}
+                  href={action.href}
+                  className={cn(
+                    "hidden rounded-full px-3.5 py-2 text-sm font-medium tracking-wide transition-colors md:block",
+                    matchesPath(pathname, action.href)
+                      ? "bg-white/70 text-marketing-chat-assistant-text shadow-sm dark:bg-white/10"
+                      : "text-marketing-chip-text hover:bg-white/55 hover:text-marketing-chat-assistant-text dark:hover:bg-white/10"
+                  )}
+                >
                   {action.text}
                 </Link>
               )
             )}
             <Sheet>
-              <SheetTrigger className={cn(buttonVariants({ variant: "default", size: "icon" }), "shrink-0 md:hidden")}>
+              <SheetTrigger
+                className={cn(
+                  buttonVariants({ variant: "ghost", size: "icon" }),
+                  "shrink-0 rounded-full border border-white/50 bg-white/55 text-marketing-chat-assistant-text shadow-sm backdrop-blur-xl hover:bg-white/70 md:hidden dark:bg-white/10 dark:text-marketing-body"
+                )}
+              >
                 <Menu className="size-5" />
                 <span className="sr-only">Toggle navigation menu</span>
               </SheetTrigger>
-              <SheetContent side="left" className="w-full sm:w-96 overflow-y-auto">
+              <SheetContent
+                side="left"
+                className="w-full overflow-y-auto border-white/45 bg-[linear-gradient(180deg,var(--marketing-card-surface)_0%,var(--marketing-bg-subtle)_48%,var(--marketing-accent-soft)_100%)] px-4 backdrop-blur-2xl sm:w-96 dark:border-white/10"
+              >
                 <VisuallyHidden>
                   <SheetTitle>Navigation Menu</SheetTitle>
                 </VisuallyHidden>
                 <div className="flex flex-col h-full">
-                  <div className="flex items-center justify-between mt-3 mb-6  px-2">
-                    <Link href={homeUrl} className="flex items-center gap-2 text-2xl font-bold">
+                  <div className="mb-6 mt-3 rounded-[1.75rem] border border-white/55 bg-white/60 px-4 py-4 shadow-[0_18px_42px_-30px_var(--marketing-shadow)] dark:bg-white/10">
+                    <Link href={homeUrl} className="flex items-center gap-3 text-marketing-chat-assistant-text">
                       {logo}
-                      {name}
+                      <span className="text-xl font-semibold tracking-tight">{name}</span>
                     </Link>
                   </div>
-                  
+
                   <nav className="flex-1 px-1">
                     {mobileLinks.map((link, index) => (
-                      <div key={index} className="bg-linear-to-r from-emerald-600/30 to-indigo-600/30 my-2 rounded-xl overflow-hidden transition-all hover:bg-secondary/30">
+                      <div
+                        key={index}
+                        className="my-2 overflow-hidden rounded-[1.5rem] border border-white/55 bg-white/55 shadow-[0_18px_34px_-30px_rgba(61,46,34,0.5)] transition-all"
+                      >
                         {link.children ? (
-                          <div className="px-4 py-1">
+                          <div className="px-4 py-2">
                             <button
                               onClick={() => toggleSection(index)}
-                              className="flex items-center justify-between w-full py-3 text-lg font-medium text-foreground hover:text-primary transition-colors group"
+                              className="group flex w-full items-center justify-between py-3 text-left text-lg font-medium text-marketing-chat-assistant-text transition-colors"
                             >
                               <span>{link.text}</span>
                               <ChevronDown
                                 className={cn(
-                                  "size-5 transition-transform duration-300 text-muted-foreground group-hover:text-primary",
+                                  "size-5 text-marketing-body-muted transition-transform duration-300 group-hover:text-marketing-chat-assistant-text",
                                   openSections[index] && "rotate-180"
                                 )}
                               />
                             </button>
-                            <div 
+                            <div
                               className={cn(
                                 "grid gap-2 overflow-hidden transition-all duration-300 ease-in-out",
                                 openSections[index] ? "grid-rows-[1fr] opacity-100 pb-3" : "grid-rows-[0fr] opacity-0"
                               )}
                             >
                               <div className="min-h-0 flex flex-col gap-2">
+                                <Link
+                                  href={link.href}
+                                  className={cn(
+                                    "rounded-2xl border px-3 py-2 text-sm font-medium transition-colors",
+                                    matchesPath(pathname, link.href)
+                                      ? "border-marketing-border bg-marketing-accent-soft text-marketing-accent-soft-foreground"
+                                      : "border-white/60 bg-white/75 text-marketing-chip-text hover:bg-white dark:border-white/20 dark:bg-white/10"
+                                  )}
+                                >
+                                  View all {link.text.toLowerCase()}
+                                </Link>
                                 {link.children.map((child, childIndex) => (
                                   <Link
                                     key={childIndex}
                                     href={child.href}
-                                    className="text-base text-muted-foreground hover:text-foreground transition-colors py-2 px-2 rounded-lg hover:bg-background/50"
+                                    className={cn(
+                                      "rounded-2xl px-3 py-2 text-base transition-colors",
+                                      matchesPath(pathname, child.href)
+                                        ? "bg-marketing-chip-bg text-marketing-chat-assistant-text"
+                                        : "text-marketing-chip-text hover:bg-white/80 hover:text-marketing-chat-assistant-text dark:hover:bg-white/10"
+                                    )}
                                   >
                                     {child.text}
                                   </Link>
@@ -197,9 +258,14 @@ export default function AppNavbar({
                             </div>
                           </div>
                         ) : (
-                          <Link 
-                            href={link.href} 
-                            className="flex items-center w-full px-4 py-3.5 text-lg font-medium text-foreground hover:text-primary transition-colors"
+                          <Link
+                            href={link.href}
+                            className={cn(
+                              "flex w-full items-center px-4 py-3.5 text-lg font-medium transition-colors",
+                              matchesPath(pathname, link.href)
+                                ? "bg-marketing-chip-bg text-marketing-chat-assistant-text"
+                                : "text-marketing-chat-assistant-text hover:bg-white/70 dark:hover:bg-white/10"
+                            )}
                           >
                             {link.text}
                           </Link>
@@ -209,22 +275,31 @@ export default function AppNavbar({
                   </nav>
 
                   <div className="flex flex-col w-full">
-                    <div className="grid grid-cols-2 gap-4"> 
+                    <div className="grid grid-cols-2 gap-3">
                       {computedActions.map((action, index) => (
-                        <Button 
-                          key={index} 
-                          variant={action.isButton ? action.variant : "outline"} 
+                        <Button
+                          key={index}
+                          variant={action.isButton ? action.variant : "outline"}
                           size="lg"
-                          className="w-full text-base font-semibold shadow-sm" 
+                          className={cn(
+                            "w-full rounded-2xl text-base font-semibold shadow-sm",
+                            action.isButton
+                              ? "border border-white/45 bg-marketing-cta-bg text-marketing-cta-fg hover:bg-marketing-cta-hover"
+                              : "border-white/55 bg-white/70 text-marketing-chat-assistant-text hover:bg-white dark:bg-white/10 dark:hover:bg-white/15"
+                          )}
                           asChild
                         >
-                          <Link href={action.href}>
+                          <Link
+                            href={action.href}
+                            target={isExternalLink(action.href) ? "_blank" : undefined}
+                            rel={isExternalLink(action.href) ? "noopener noreferrer" : undefined}
+                          >
                             {action.text}
                           </Link>
                         </Button>
                       ))}
                     </div>
-                    <p className="text-center text-xs text-muted-foreground my-4">
+                    <p className="my-4 text-center text-xs text-marketing-body-muted">
                       © {new Date().getFullYear()} {name}. All rights reserved.
                     </p>
                   </div>

@@ -10,19 +10,19 @@ interface FeatureHeaderProps {
 
 export default function FeatureHeader({ badge, title, description }: FeatureHeaderProps) {
   return (
-    <div className="space-y-6 text-center">
+    <div className="space-y-5 text-center">
       {badge && (
         <Badge
           variant="default"
-          className="px-4 py-2 text-emerald-700 bg-emerald-100 border-emerald-200 hover:bg-emerald-100"
+          className="border-white/70 bg-white/80 px-4 py-2 text-marketing-accent-soft-foreground shadow-sm backdrop-blur-xl hover:bg-white/90"
         >
           <span>{badge}</span>
         </Badge>
       )}
-      <h1 className="text-4xl md:text-5xl lg:text-6xl py-2.5 font-bold text-transparent bg-linear-to-r from-emerald-700 to-indigo-700 bg-clip-text">
+      <h1 className="marketing-heading py-2 text-4xl font-bold leading-tight text-balance md:text-5xl lg:text-6xl">
         {title}
       </h1>
-      <p className="max-w-3xl mx-auto text-xl leading-relaxed text-gray-600">
+      <p className="mx-auto max-w-3xl text-lg leading-8 text-marketing-body md:text-xl">
         {description}
       </p>
     </div>

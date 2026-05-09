@@ -17,11 +17,11 @@ export default function BentoIntegration() {
   const centerX = 50;
   const centerY = 50;
 
-  // Left side nodes (3 icons, evenly distributed vertically) - WhatsApp, Slack, Telegram
+  // Left: messaging channels — equal prominence (order not tied to availability)
   const leftNodes: Node[] = [
-    { id: 1, x: 15, y: 20, iconSrc: "/assets/icons/whatsapp-icon.svg", alt: "WhatsApp" },
-    { id: 2, x: 15, y: 50, iconSrc: "/assets/icons/slack-icon.svg", alt: "Slack" },
-    { id: 3, x: 15, y: 80, iconSrc: "/assets/icons/telegram-icon.svg", alt: "Telegram" },
+    { id: 1, x: 15, y: 20, iconSrc: "/assets/icons/slack-icon.svg", alt: "Slack" },
+    { id: 2, x: 15, y: 50, iconSrc: "/assets/icons/telegram-icon.svg", alt: "Telegram" },
+    { id: 3, x: 15, y: 80, iconSrc: "/assets/icons/whatsapp-icon.svg", alt: "WhatsApp" },
   ];
 
   // Right side nodes (3 icons, evenly distributed vertically) - Outlook, Calendar, Gmail
@@ -39,9 +39,9 @@ export default function BentoIntegration() {
       <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 100 100" preserveAspectRatio="none" style={{ zIndex: 1 }}>
         <defs>
           <linearGradient id="integrationLineGradient" x1="0%" y1="0%" x2="100%" y2="0%" gradientUnits="userSpaceOnUse">
-            <stop offset="0%" stopColor="rgb(52, 211, 153)" stopOpacity="0.8" />
-            <stop offset="50%" stopColor="rgb(139, 92, 246)" stopOpacity="0.9" />
-            <stop offset="100%" stopColor="rgb(129, 140, 248)" stopOpacity="0.8" />
+            <stop offset="0%" stopColor="var(--marketing-accent)" stopOpacity="0.75" />
+            <stop offset="50%" stopColor="var(--marketing-heading-via)" stopOpacity="0.85" />
+            <stop offset="100%" stopColor="var(--marketing-chat-user-to)" stopOpacity="0.75" />
           </linearGradient>
         </defs>
 

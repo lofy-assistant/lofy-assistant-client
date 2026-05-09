@@ -27,11 +27,13 @@ export const metadata: Metadata = {
     default: "Lofy AI - Your Personal AI Assistant",
     template: "%s | Lofy AI",
   },
-  description: "Lofy AI is your intelligent personal assistant designed to help you manage tasks, memories, and daily activities seamlessly.",
-  keywords: ["AI assistant", "personal assistant", "productivity", "task management", "Lofy AI"],
+  description:
+    "Personal AI assistant for messaging, integrations, memory, and planning across the channels you use, with more messaging options coming soon.",
+  keywords: ["AI assistant", "personal assistant", "productivity", "task management", "Lofy AI", "messaging assistant"],
   openGraph: {
     title: "Lofy AI - Your Personal AI Assistant",
-    description: "Lofy AI is your intelligent personal assistant designed to help you manage tasks, memories, and daily activities seamlessly.",
+    description:
+      "Personal AI assistant for messaging, integrations, memory, and planning across the channels you use.",
     url: "/",
     siteName: "Lofy AI",
     locale: "en_US",
@@ -40,7 +42,8 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "Lofy AI - Your Personal AI Assistant",
-    description: "Lofy AI is your intelligent personal assistant designed to help you manage tasks, memories, and daily activities seamlessly.",
+    description:
+      "Personal AI assistant for messaging, integrations, memory, and planning across the channels you use.",
   },
 };
 

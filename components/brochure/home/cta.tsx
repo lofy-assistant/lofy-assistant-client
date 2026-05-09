@@ -1,8 +1,10 @@
 "use client";
 import { useRef } from "react";
+import Link from "next/link";
 import { motion } from "motion/react";
 import { Button } from "@/components/ui/button";
 import { ArrowUpRight } from "lucide-react";
+import { CHANNEL_PICKER_PATH } from "@/lib/channel-entry";
 
 type CTAProps = {
   className?: string;
@@ -18,35 +20,32 @@ const CTA = ({ className }: CTAProps) => {
   };
 
   return (
-    <section>
-      <div className="sm:py-20 py-8">
-        <div className="max-w-7xl mx-auto sm:px-16 px-4">
+    <section className={className}>
+      <div className="py-12 sm:py-20">
+        <div className="mx-auto max-w-7xl px-4 sm:px-8">
           <div
             ref={ref}
-            className="relative overflow-hidden min-h-96 flex items-center justify-center px-6 border border-border rounded-3xl before:absolute before:w-full before:h-4/5 before:bg-linear-to-r before:from-emerald-200 before:from-15% before:via-white before:via-55% before:to-indigo-200 before:to-90% before:rounded-full before:top-24 before:blur-3xl before:-z-10 dark:before:from-sky-400/10 dark:before:from-40% dark:before:via-black dark:before:via-55% dark:before:to-amber-300/10 dark:before:to-60% dark:before:rounded-full dark:before:-z-10"
+            className="relative flex min-h-80 items-center justify-center overflow-hidden rounded-lg border border-marketing-border bg-[linear-gradient(145deg,var(--marketing-card-surface)_0%,var(--marketing-accent-soft)_100%)] px-6 py-12 shadow-[0_22px_48px_-36px_var(--marketing-shadow)]"
           >
-            <motion.div
-              {...bottomAnimation}
-              className="flex flex-col gap-6 items-center mx-auto"
-            >
-              <div className="flex flex-col gap-3 items-center text-center">
-                <h2 className="text-2xl md:text-4xl font-medium">
-                  AI Assistance that feels human
+            <motion.div {...bottomAnimation} className="relative z-10 mx-auto flex max-w-xl flex-col items-center gap-6 text-center">
+              <div className="flex flex-col gap-3">
+                <h2 className="marketing-heading text-2xl font-bold md:text-4xl">
+                  AI assistance that feels human
                 </h2>
-                <p className="max-w-2xl mx-auto">
-                  Experience a smarter way to manage your life.
+                <p className="mx-auto text-marketing-body md:text-lg">
+                  Experience a calmer way to manage messages, memory, and planning. Then explore each surface in detail.
                 </p>
               </div>
-              <Button 
-                onClick={() => window.open('https://wa.me/60105043846?text=Hey%20Lofy!', '_blank')}
-                className="relative text-sm font-medium rounded-full h-12 p-1 ps-6 pe-14 group transition-all duration-500 hover:ps-14 hover:pe-6 w-fit overflow-hidden cursor-pointer"
+              <Button
+                className="group relative h-12 w-fit cursor-pointer overflow-hidden rounded-full border border-white/50 bg-marketing-cta-bg p-1 ps-6 pe-14 text-sm font-medium text-marketing-cta-fg shadow-[0_14px_30px_-18px_var(--marketing-shadow)] transition-all duration-500 hover:bg-marketing-cta-hover hover:ps-14 hover:pe-6"
+                asChild
               >
-                <span className="relative z-10 transition-all duration-500">
-                  Chat with Lofy
-                </span>
-                <div className="absolute right-1 w-10 h-10 bg-background text-foreground rounded-full flex items-center justify-center transition-all duration-500 group-hover:right-[calc(100%-44px)] group-hover:rotate-45">
-                  <ArrowUpRight size={16} />
-                </div>
+                <Link href={CHANNEL_PICKER_PATH}>
+                  <span className="relative z-10 transition-all duration-500">Get started</span>
+                  <div className="absolute right-1 flex size-10 items-center justify-center rounded-full bg-marketing-cta-fg text-marketing-cta-bg transition-all duration-500 group-hover:right-[calc(100%-44px)] group-hover:rotate-45">
+                    <ArrowUpRight size={16} />
+                  </div>
+                </Link>
               </Button>
             </motion.div>
           </div>

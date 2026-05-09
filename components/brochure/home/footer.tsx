@@ -4,12 +4,14 @@ import Link from "next/link";
 
 export default function Footer() {
   return (
-    <footer className="relative bg-background border-t border-border">
-      <div className="max-w-7xl mx-auto px-8 py-12">
+    <footer className="relative border-t border-marketing-border bg-marketing-bg-subtle">
+      <div className="mx-auto max-w-7xl px-8 py-12">
         <div className="grid grid-cols-1 gap-8 md:grid-cols-4">
           {/* Brand */}
           <div className="space-y-4">
-            <h3 className="text-2xl font-bold text-transparent bg-linear-to-r from-emerald-600 to-indigo-600 bg-clip-text">Lofy AI</h3>
+            <h3 className="bg-linear-to-r from-marketing-heading-from via-marketing-heading-via to-marketing-heading-to bg-clip-text text-2xl font-bold text-transparent">
+              Lofy AI
+            </h3>
             <p className="text-sm text-muted-foreground">Your AI-powered personal assistant to manage your life.</p>
           </div>
 
@@ -18,23 +20,28 @@ export default function Footer() {
             <h4 className="text-sm font-semibold text-foreground">Product</h4>
             <ul className="space-y-2 text-sm text-muted-foreground">
               <li>
-                <Link href="/features/apps-integration" className="hover:text-foreground transition-colors">
-                  Apps Integration
+                <Link href="/features/integrations" className="hover:text-foreground transition-colors">
+                  Integrations
                 </Link>
               </li>
               <li>
-                <Link href="/features/limitless-reminder" className="hover:text-foreground transition-colors">
-                  Limitless Reminder
+                <Link href="/features/friends" className="hover:text-foreground transition-colors">
+                  Friends
                 </Link>
               </li>
               <li>
-                <Link href="/features/save-to-memory" className="hover:text-foreground transition-colors">
-                  Save to Memory
+                <Link href="/features/history" className="hover:text-foreground transition-colors">
+                  History
                 </Link>
               </li>
               <li>
-                <Link href="/features/personality-modes" className="hover:text-foreground transition-colors">
-                  Personality Modes
+                <Link href="/features/memories" className="hover:text-foreground transition-colors">
+                  Memories
+                </Link>
+              </li>
+              <li>
+                <Link href="/features/personas" className="hover:text-foreground transition-colors">
+                  Personas
                 </Link>
               </li>
             </ul>

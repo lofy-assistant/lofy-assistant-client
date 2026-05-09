@@ -1,17 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { type ReactNode, type ComponentProps } from "react";
-import {
-  Calendar,
-  Bell,
-  Brain,
-  ListChecks,
-  Mic,
-  LucideIcon,
-} from "lucide-react";
+import type { ReactNode } from "react";
+import { ArrowUpRight, type LucideIcon } from "lucide-react";
+import { usePathname } from "next/navigation";
 
 import { cn } from "@/lib/utils";
+import { BROCHURE_FEATURES } from "@/lib/brochure-features";
 
 import {
   NavigationMenu,
@@ -46,9 +41,6 @@ interface MenuItem {
 interface NavigationProps {
   menuItems?: MenuItem[];
   components?: ComponentItem[];
-  logoTitle?: string;
-  logoDescription?: string;
-  logoHref?: string;
   introItems?: IntroItem[];
 }
 
@@ -67,82 +59,119 @@ export default function Navigation({
       isLink: true,
       href: "/pricing",
     },
-
   ],
-  introItems = [
-    {
-      title: "Apps Integration",
-      href: "/features/apps-integration",
-      description: "Connect your apps",
-      icon: Calendar,
-    },
-    {
-      title: "Limitless Reminder",
-      href: "/features/limitless-reminder",
-      description: "Never miss tasks",
-      icon: Bell,
-    },
-    {
-      title: "Save To Memory",
-      href: "/features/save-to-memory",
-      description: "Store important info",
-      icon: Brain,
-    },
-    {
-      title: "Personality Modes",
-      href: "/features/personality-modes",
-      description: "Choose how Lofy interacts",
-      icon: ListChecks,
-    },
-  ],
+  introItems = BROCHURE_FEATURES.map((feature) => ({
+    title: feature.title,
+    href: feature.href,
+    description: feature.overviewDescription,
+    icon: feature.icon,
+  })),
   components = [
     {
       title: "Guides",
       href: "/guides",
+      description: "Learn the product workflows in more detail.",
     },
     {
-      title: "About Us",
+      title: "About Lofy",
       href: "/about-us",
-      
+      description: "Read the broader story behind the assistant.",
     },
   ],
 }: NavigationProps) {
+  const pathname = usePathname();
+  const integrationHref = "/features/integrations" as const;
+  const integrationItems = introItems.filter((item) => item.href === integrationHref);
+  const otherFeatureItems = introItems.filter((item) => item.href !== integrationHref);
+
   return (
     <NavigationMenu className="hidden md:flex">
-      <NavigationMenuList>
+      <NavigationMenuList className="gap-1.5">
         {menuItems.map((item, index) => (
           <NavigationMenuItem key={index}>
             {item.isLink ? (
               <NavigationMenuLink
-                className={cn(navigationMenuTriggerStyle(), "bg-transparent text-white")}
+                className={cn(
+                  navigationMenuTriggerStyle(),
+                  "rounded-full border border-transparent bg-transparent text-[#5d4b3f] hover:border-white/55 hover:bg-white/55 hover:text-[#2f241c] focus:bg-white/60 focus:text-[#2f241c]",
+                  item.href && (pathname === item.href || pathname.startsWith(`${item.href}/`))
+                    ? "border-white/55 bg-white/70 text-[#2f241c] shadow-sm"
+                    : ""
+                )}
                 asChild
               >
                 <Link href={item.href || "#"}>{item.title}</Link>
               </NavigationMenuLink>
             ) : (
               <>
-                <NavigationMenuTrigger className="bg-transparent text-white">{item.title}</NavigationMenuTrigger>
-                <NavigationMenuContent>
+                <NavigationMenuTrigger
+                  className={cn(
+                    "rounded-full border border-transparent bg-transparent text-[#5d4b3f] hover:border-white/55 hover:bg-white/55 hover:text-[#2f241c] focus:bg-white/60 focus:text-[#2f241c]",
+                    item.title === "Features" && pathname.startsWith("/features")
+                      ? "border-white/55 bg-white/70 text-[#2f241c] shadow-sm"
+                      : "",
+                    item.title === "Resources" &&
+                      (pathname.startsWith("/guides") || pathname.startsWith("/about-us"))
+                      ? "border-white/55 bg-white/70 text-[#2f241c] shadow-sm"
+                      : ""
+                  )}
+                >
+                  {item.title}
+                </NavigationMenuTrigger>
+                <NavigationMenuContent className="rounded-[1.75rem] border border-white/55 bg-[linear-gradient(145deg,rgba(255,255,255,0.92)_0%,rgba(251,244,238,0.92)_52%,rgba(239,249,245,0.88)_100%)] p-0 shadow-[0_26px_56px_-34px_rgba(61,46,34,0.55)] backdrop-blur-2xl">
                   {item.content === "default" ? (
-                    <ul className="grid gap-3 p-6 md:w-[500px] lg:w-[600px] md:grid-cols-2">
-                      {introItems.map((intro, i) => (
-                        <FeatureItem
-                          key={i}
-                          href={intro.href}
-                          title={intro.title}
-                          icon={intro.icon}
+                    <div className="p-3 md:w-[520px]">
+                      <div className="mb-3 flex items-center justify-between gap-3 rounded-[1.2rem] border border-white/55 bg-white/58 px-3.5 py-2.5">
+                        <div>
+                          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#9a8070]">
+                            Features
+                          </p>
+                          <p className="text-sm text-[#6e5a4d]">
+                            Current product surfaces in one place.
+                          </p>
+                        </div>
+                        <Link
+                          href="/features"
+                          className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-[#e6d7ca] bg-[#fff8f1] px-3 py-1.5 text-xs font-medium text-[#5c473b] transition-colors hover:bg-white"
                         >
-                          {intro.description}
-                        </FeatureItem>
-                      ))}
-                    </ul>
+                          View all
+                          <ArrowUpRight className="size-3.5" />
+                        </Link>
+                      </div>
+                      <ul className="grid auto-rows-fr gap-2.5 md:grid-cols-2">
+                        {integrationItems.map((intro) => (
+                          <FeatureItem
+                            key={intro.href}
+                            className="md:col-span-2"
+                            href={intro.href}
+                            title={intro.title}
+                            icon={intro.icon}
+                            active={pathname === intro.href || pathname.startsWith(`${intro.href}/`)}
+                          >
+                            {intro.description}
+                          </FeatureItem>
+                        ))}
+                        {otherFeatureItems.map((intro) => (
+                          <FeatureItem
+                            key={intro.href}
+                            href={intro.href}
+                            title={intro.title}
+                            icon={intro.icon}
+                            active={pathname === intro.href || pathname.startsWith(`${intro.href}/`)}
+                          >
+                            {intro.description}
+                          </FeatureItem>
+                        ))}
+                      </ul>
+                    </div>
                   ) : item.content === "components" ? (
-                    <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px]">
+                    <ul className="grid auto-rows-fr gap-2.5 p-3 md:w-[520px] md:grid-cols-2">
                       {components.map((component) => (
                         <ListItem
                           key={component.title}
                           title={component.title}
                           href={component.href}
+                          active={pathname === component.href || pathname.startsWith(`${component.href}/`)}
                         >
                           {component.description}
                         </ListItem>
@@ -162,66 +191,90 @@ export default function Navigation({
 }
 
 function FeatureItem({
-  className,
   title,
   children,
   icon: Icon,
-  ...props
-}: ComponentProps<"a"> & { title: string; icon?: LucideIcon }) {
+  href,
+  active,
+  className,
+}: {
+  title: string;
+  children?: ReactNode;
+  icon?: LucideIcon;
+  href: string;
+  active?: boolean;
+  className?: string;
+}) {
   return (
-    <li>
+    <li className={className}>
       <NavigationMenuLink asChild>
-        <a
-          data-slot="feature-item"
+        <Link
+          href={href}
           className={cn(
-            "group block space-y-2 rounded-lg p-4 leading-none no-underline outline-hidden transition-all select-none",
-            "hover:bg-accent/50 hover:scale-105 hover:shadow-sm",
-            "focus:bg-accent focus:scale-105",
-            className
+            "group flex h-full min-h-[5.5rem] flex-col rounded-[1.1rem] border p-3 leading-none outline-hidden transition-all select-none",
+            active
+              ? "border-[#dcece7] bg-[#edf8f4] shadow-[0_16px_34px_-28px_rgba(31,72,58,0.55)]"
+              : "border-white/55 bg-white/72 hover:-translate-y-0.5 hover:bg-white hover:shadow-[0_14px_24px_-24px_rgba(61,46,34,0.4)]"
           )}
-          {...props}
         >
-          <div className="flex items-center gap-3">
+          <div className="flex min-h-0 flex-1 items-start gap-3">
             {Icon && (
-              <div className="flex items-center justify-center w-10 h-10 transition-colors rounded-md bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-foreground">
-                <Icon className="w-5 h-5" />
+              <div
+                className={cn(
+                  "flex h-9 w-9 shrink-0 items-center justify-center rounded-xl transition-colors",
+                  active
+                    ? "bg-white text-[#356e60]"
+                    : "bg-[#fff8f1] text-[#8b6e5c] group-hover:bg-[#edf8f4] group-hover:text-[#356e60]"
+                )}
+              >
+                <Icon className="w-4.5 h-4.5" />
               </div>
             )}
-            <div className="flex-1">
-              <div className="mb-1 text-sm font-semibold leading-none">
-                {title}
+            <div className="min-w-0 flex-1">
+              <div className="mb-1 flex items-center justify-between gap-2">
+                <div className="text-sm font-semibold leading-none text-[#2f241c]">
+                  {title}
+                </div>
+                <ArrowUpRight className="size-3 shrink-0 text-[#a18674] transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
               </div>
-              <p className="text-xs text-muted-foreground">{children}</p>
+              <p className="line-clamp-2 text-[11px] leading-4.5 text-[#776455]">{children}</p>
             </div>
           </div>
-        </a>
+        </Link>
       </NavigationMenuLink>
     </li>
   );
 }
 
 function ListItem({
-  className,
   title,
   children,
-  ...props
-}: ComponentProps<"a"> & { title: string }) {
+  href,
+  active,
+}: {
+  title: string;
+  children?: ReactNode;
+  href: string;
+  active?: boolean;
+}) {
   return (
-    <li>
+    <li className="min-h-0">
       <NavigationMenuLink asChild>
-        <a
-          data-slot="list-item"
+        <Link
+          href={href}
           className={cn(
-            "hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground block space-y-1 rounded-md p-3 leading-none no-underline outline-hidden transition-colors select-none",
-            className
+            "group flex h-full min-h-[5.5rem] flex-col rounded-[1.1rem] border p-3 leading-none outline-hidden transition-all select-none",
+            active
+              ? "border-[#dcece7] bg-[#edf8f4] shadow-[0_16px_34px_-28px_rgba(31,72,58,0.55)]"
+              : "border-white/55 bg-white/72 hover:-translate-y-0.5 hover:bg-white hover:shadow-[0_14px_24px_-24px_rgba(61,46,34,0.4)]"
           )}
-          {...props}
         >
-          <div className="text-sm font-medium leading-none">{title}</div>
-          <p className="text-sm leading-snug text-muted-foreground line-clamp-2">
-            {children}
-          </p>
-        </a>
+          <div className="mb-1 flex items-center justify-between gap-2">
+            <div className="text-sm font-semibold leading-none text-[#2f241c]">{title}</div>
+            <ArrowUpRight className="size-3 shrink-0 text-[#a18674] transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+          </div>
+          <p className="line-clamp-2 text-[11px] leading-4.5 text-[#776455]">{children}</p>
+        </Link>
       </NavigationMenuLink>
     </li>
   );

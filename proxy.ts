@@ -4,17 +4,18 @@ import { checkUserHasPin } from '@/lib/check-pin';
 
 const COOKIE_NAME = 'session';
 
-// Routes that don't require authentication
+// Exact routes that don't require authentication
 const PUBLIC_ROUTES = [
     '/',
     '/login',
     '/register',
     '/change-email',
     '/forgot-pin',
+    '/reset-pin',
+    '/logout',
+    '/start',
     '/pricing',
-    '/features',
     '/about-us',
-    '/guides',
     '/privacy-policy',
     '/cookie-policy',
     '/terms',
@@ -23,13 +24,21 @@ const PUBLIC_ROUTES = [
     '/api/auth/logout',
     '/api/auth/register',
     '/api/auth/check-pin',
+    '/api/auth/check-session',
     '/api/auth/forgot-pin',
     '/api/auth/reset-pin',
     '/api/auth/verify-email',
     '/api/auth/resend-verification',
     '/api/auth/change-email',
-    '/api/stripe',   // checkout, webhooks; supports guest checkout
-    '/api/geo',     // pricing geo detection
+    '/api/stripe/create-checkout-session', // supports guest checkout
+    '/api/stripe/webhook',
+    '/api/geo', // pricing geo detection
+];
+
+// Public route prefixes
+const PUBLIC_PREFIX_ROUTES = [
+    '/features',
+    '/guides',
 ];
 
 // Static file extensions to allow through
@@ -91,12 +100,9 @@ export async function proxy(request: NextRequest) {
 
     // 3. Check if route is public
     // Use exact match for static pages, and startsWith only for API endpoints or defined prefixes
-    const isPublicRoute = PUBLIC_ROUTES.some((route) => {
-        if (route.startsWith('/api/') || route === '/features' || route === '/guides') {
-            return pathname.startsWith(route);
-        }
-        return pathname === route;
-    });
+    const isPublicRoute =
+        PUBLIC_ROUTES.includes(pathname) ||
+        PUBLIC_PREFIX_ROUTES.some((route) => pathname === route || pathname.startsWith(`${route}/`));
 
     if (isPublicRoute) {
         // If authenticated user tries to access login or register, redirect to dashboard

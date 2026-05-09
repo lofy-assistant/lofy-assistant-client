@@ -16,7 +16,7 @@ interface FeatureBreadcrumbProps {
 
 export default function FeatureBreadcrumb({ featureName }: FeatureBreadcrumbProps) {
   return (
-    <Breadcrumb>
+    <Breadcrumb className="text-marketing-body-muted">
       <BreadcrumbList>
         <BreadcrumbItem>
           <BreadcrumbLink asChild>

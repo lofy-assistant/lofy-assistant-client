@@ -1,6 +1,16 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+/*
+ * Design tokens — naming convention
+ *
+ * App shell (shadcn-compatible): --background, --foreground, --primary, --muted, …
+ * Marketing / brochure-only: --marketing-* — exposed as Tailwind colors marketing-*
+ *   (e.g. bg-marketing-bg, text-marketing-body, border-marketing-border).
+ *
+ * Prefer semantic marketing tokens in brochure JSX; avoid raw hex so palette swaps stay in this file.
+ */
+
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
@@ -37,6 +47,37 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+
+  --color-marketing-bg: var(--marketing-bg);
+  --color-marketing-bg-subtle: var(--marketing-bg-subtle);
+  --color-marketing-border: var(--marketing-border);
+  --color-marketing-border-strong: var(--marketing-border-strong);
+  --color-marketing-heading-from: var(--marketing-heading-from);
+  --color-marketing-heading-via: var(--marketing-heading-via);
+  --color-marketing-heading-to: var(--marketing-heading-to);
+  --color-marketing-body: var(--marketing-body);
+  --color-marketing-body-muted: var(--marketing-body-muted);
+  --color-marketing-accent: var(--marketing-accent);
+  --color-marketing-accent-soft: var(--marketing-accent-soft);
+  --color-marketing-accent-soft-foreground: var(--marketing-accent-soft-foreground);
+  --color-marketing-navbar-surface: var(--marketing-navbar-surface);
+  --color-marketing-cta-bg: var(--marketing-cta-bg);
+  --color-marketing-cta-fg: var(--marketing-cta-fg);
+  --color-marketing-cta-hover: var(--marketing-cta-hover);
+  --color-marketing-chip-bg: var(--marketing-chip-bg);
+  --color-marketing-chip-border: var(--marketing-chip-border);
+  --color-marketing-chip-text: var(--marketing-chip-text);
+  --color-marketing-card-surface: var(--marketing-card-surface);
+  --color-marketing-chat-header: var(--marketing-chat-header);
+  --color-marketing-chat-surface: var(--marketing-chat-surface);
+  --color-marketing-chat-user-from: var(--marketing-chat-user-from);
+  --color-marketing-chat-user-to: var(--marketing-chat-user-to);
+  --color-marketing-chat-assistant-bg: var(--marketing-chat-assistant-bg);
+  --color-marketing-chat-assistant-border: var(--marketing-chat-assistant-border);
+  --color-marketing-chat-assistant-text: var(--marketing-chat-assistant-text);
+  --color-marketing-chat-meta: var(--marketing-chat-meta);
+  --color-marketing-chat-action: var(--marketing-chat-action);
+  --color-marketing-shadow: var(--marketing-shadow);
 
   --font-sans: var(--font-sans);
   --font-mono: var(--font-mono);
@@ -131,8 +172,40 @@
   --shadow-lg: 0px 1px 3px 0px hsl(0 0% 0% / 0.17), 0px 4px 6px -1px hsl(0 0% 0% / 0.17);
   --shadow-xl: 0px 1px 3px 0px hsl(0 0% 0% / 0.17), 0px 8px 10px -1px hsl(0 0% 0% / 0.17);
   --shadow-2xl: 0px 1px 3px 0px hsl(0 0% 0% / 0.43);
-  --tracking-normal: 0.025em;
+  --tracking-normal: 0;
   --spacing: 0.25rem;
+
+  /* Marketing / brochure */
+  --marketing-bg: oklch(0.992 0.006 98);
+  --marketing-bg-subtle: oklch(0.975 0.018 93);
+  --marketing-border: oklch(0.895 0.028 86);
+  --marketing-border-strong: oklch(0.82 0.04 72);
+  --marketing-heading-from: oklch(0.22 0.03 257);
+  --marketing-heading-via: oklch(0.4 0.07 41);
+  --marketing-heading-to: oklch(0.51 0.13 168);
+  --marketing-body: oklch(0.43 0.035 61);
+  --marketing-body-muted: oklch(0.52 0.028 63);
+  --marketing-accent: oklch(0.56 0.15 168);
+  --marketing-accent-soft: oklch(0.94 0.035 169);
+  --marketing-accent-soft-foreground: oklch(0.36 0.095 168);
+  --marketing-navbar-surface: oklch(0.99 0.012 95 / 0.78);
+  --marketing-cta-bg: oklch(0.25 0.035 257);
+  --marketing-cta-fg: oklch(0.98 0.015 95);
+  --marketing-cta-hover: oklch(0.2 0.03 55);
+  --marketing-chip-bg: oklch(0.99 0.01 95);
+  --marketing-chip-border: oklch(0.88 0.03 75);
+  --marketing-chip-text: oklch(0.42 0.035 55);
+  --marketing-card-surface: oklch(0.996 0.006 98);
+  --marketing-chat-header: oklch(0.23 0.035 257);
+  --marketing-chat-surface: oklch(0.945 0.018 96);
+  --marketing-chat-user-from: oklch(0.52 0.14 165);
+  --marketing-chat-user-to: oklch(0.48 0.18 275);
+  --marketing-chat-assistant-bg: oklch(1 0 0);
+  --marketing-chat-assistant-border: oklch(0.92 0.02 85);
+  --marketing-chat-assistant-text: oklch(0.28 0.035 55);
+  --marketing-chat-meta: oklch(0.55 0.02 260);
+  --marketing-chat-action: oklch(0.46 0.12 165);
+  --marketing-shadow: oklch(0.24 0.04 45 / 0.2);
 }
 
 .dark {
@@ -185,10 +258,67 @@
   --shadow-lg: 0px 1px 3px 0px hsl(0 0% 0% / 0.17), 0px 4px 6px -1px hsl(0 0% 0% / 0.17);
   --shadow-xl: 0px 1px 3px 0px hsl(0 0% 0% / 0.17), 0px 8px 10px -1px hsl(0 0% 0% / 0.17);
   --shadow-2xl: 0px 1px 3px 0px hsl(0 0% 0% / 0.43);
+
+  --marketing-bg: oklch(0.2 0.02 260);
+  --marketing-bg-subtle: oklch(0.22 0.02 260);
+  --marketing-border: oklch(0.34 0.02 260);
+  --marketing-border-strong: oklch(0.38 0.025 260);
+  --marketing-heading-from: oklch(0.94 0.02 95);
+  --marketing-heading-via: oklch(0.82 0.06 55);
+  --marketing-heading-to: oklch(0.72 0.14 165);
+  --marketing-body: oklch(0.78 0.02 95);
+  --marketing-body-muted: oklch(0.72 0.02 95);
+  --marketing-accent: oklch(0.72 0.14 165);
+  --marketing-accent-soft: oklch(0.32 0.04 165);
+  --marketing-accent-soft-foreground: oklch(0.85 0.06 165);
+  --marketing-navbar-surface: oklch(0.24 0.02 260 / 0.85);
+  --marketing-cta-bg: oklch(0.88 0.04 95);
+  --marketing-cta-fg: oklch(0.2 0.03 55);
+  --marketing-cta-hover: oklch(0.82 0.04 95);
+  --marketing-chip-bg: oklch(0.26 0.02 260);
+  --marketing-chip-border: oklch(0.4 0.02 260);
+  --marketing-chip-text: oklch(0.82 0.02 95);
+  --marketing-card-surface: oklch(0.24 0.02 260);
+  --marketing-chat-header: oklch(0.32 0.03 260);
+  --marketing-chat-surface: oklch(0.2 0.015 260);
+  --marketing-chat-user-from: oklch(0.55 0.14 165);
+  --marketing-chat-user-to: oklch(0.48 0.18 275);
+  --marketing-chat-assistant-bg: oklch(0.28 0.02 260);
+  --marketing-chat-assistant-border: oklch(0.38 0.02 260);
+  --marketing-chat-assistant-text: oklch(0.92 0.02 95);
+  --marketing-chat-meta: oklch(0.62 0.02 260);
+  --marketing-chat-action: oklch(0.72 0.12 165);
+  --marketing-shadow: oklch(0 0 0 / 0.35);
 }
 
 body {
   letter-spacing: var(--tracking-normal);
+}
+
+@layer components {
+  .marketing-hero-bg {
+    background:
+      linear-gradient(180deg, oklch(1 0 0 / 0.82), oklch(0.98 0.018 95 / 0.9) 56%, oklch(0.94 0.03 168 / 0.88)),
+      radial-gradient(circle at 16% 18%, oklch(0.72 0.12 46 / 0.26), transparent 32rem),
+      radial-gradient(circle at 84% 12%, oklch(0.68 0.13 171 / 0.24), transparent 28rem),
+      radial-gradient(circle at 50% 90%, oklch(0.56 0.11 260 / 0.1), transparent 34rem);
+  }
+
+  .marketing-section {
+    @apply border-b border-marketing-border bg-marketing-bg py-20 md:py-28;
+  }
+
+  .marketing-section-muted {
+    @apply border-b border-marketing-border bg-marketing-bg-subtle py-20 md:py-28;
+  }
+
+  .marketing-card {
+    @apply border-marketing-border bg-marketing-card-surface shadow-[0_22px_48px_-36px_var(--marketing-shadow)];
+  }
+
+  .marketing-heading {
+    @apply bg-linear-to-r from-marketing-heading-from via-marketing-heading-via to-marketing-heading-to bg-clip-text text-transparent;
+  }
 }
 
 @layer base {
