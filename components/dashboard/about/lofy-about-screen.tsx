@@ -2,15 +2,21 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { useDashboardNight } from "@/components/dashboard/shared/dashboard-night-provider";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 import {
   BarChart3,
   Bug,
   ChevronRight,
   HelpCircle,
   Info,
+  Loader2,
   Lock,
+  LogOut,
   Scale,
   X,
 } from "lucide-react";
@@ -135,6 +141,62 @@ function LinkGroup({ rows, night }: { rows: AboutRow[]; night: boolean }) {
   );
 }
 
+function AboutSignOut({ night }: { night: boolean }) {
+  const router = useRouter();
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+
+  const handleLogout = async () => {
+    setIsLoggingOut(true);
+    try {
+      const response = await fetch("/api/auth/logout", { method: "POST" });
+      if (!response.ok) throw new Error("Logout failed");
+      router.push("/");
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Could not sign out"
+      );
+      console.error(error);
+    } finally {
+      setIsLoggingOut(false);
+    }
+  };
+
+  return (
+    <div
+      className={cn(
+        "rounded-2xl border px-4 py-4",
+        night
+          ? "border-white/10 bg-white/5"
+          : "border-neutral-200 bg-white"
+      )}
+    >
+      <p
+        className={cn(
+          "mb-3 text-xs leading-relaxed",
+          night ? "text-[#6a7380]" : "text-neutral-500"
+        )}
+      >
+        Sign out of your account on this device. You will need to sign in again
+        to use the dashboard.
+      </p>
+      <Button
+        type="button"
+        variant="destructive"
+        className="w-full"
+        disabled={isLoggingOut}
+        onClick={handleLogout}
+      >
+        {isLoggingOut ? (
+          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+        ) : (
+          <LogOut className="mr-2 h-4 w-4" />
+        )}
+        Sign out
+      </Button>
+    </div>
+  );
+}
+
 export function LofyAboutScreen() {
   const { isNight: night } = useDashboardNight();
 
@@ -187,6 +249,7 @@ export function LofyAboutScreen() {
         <div className="flex flex-col gap-3">
           <LinkGroup rows={PRIMARY_LINKS} night={night} />
           <LinkGroup rows={SECONDARY_LINKS} night={night} />
+          <AboutSignOut night={night} />
         </div>
 
         <p
