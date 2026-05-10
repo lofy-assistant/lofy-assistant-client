@@ -22,14 +22,14 @@ async function hashPhone(phone: string): Promise<string> {
 async function encryptPhoneViaAPI(phone: string): Promise<string> {
   const normalizedPhone = phone.replace(/\D/g, "");
   
-  const fastApiUrl = process.env.FASTAPI_URL;
-  if (!fastApiUrl) {
-    console.error("FASTAPI_URL environment variable is not set");
-    throw new Error("FASTAPI_URL environment variable is not set");
+  const coreApiUrl = process.env.CORE_API_URL;
+  if (!coreApiUrl) {
+    console.error("CORE_API_URL environment variable is not set");
+    throw new Error("CORE_API_URL environment variable is not set");
   }
   
   try {
-    const response = await fetch(`${fastApiUrl}/encryption`, {
+    const response = await fetch(`${coreApiUrl}/encryption`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

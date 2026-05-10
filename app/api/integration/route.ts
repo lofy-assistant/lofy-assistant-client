@@ -43,8 +43,8 @@ async function startGoogleOAuth(request: NextRequest, integrationLabel: string |
       );
     }
 
-    if (!process.env.FASTAPI_URL) {
-      return NextResponse.json({ error: "FASTAPI_URL environment variable is not set" }, { status: 500 });
+    if (!process.env.CORE_API_URL) {
+      return NextResponse.json({ error: "CORE_API_URL environment variable is not set" }, { status: 500 });
     }
 
     const params = new URLSearchParams({
@@ -52,7 +52,7 @@ async function startGoogleOAuth(request: NextRequest, integrationLabel: string |
       integration_label: trimmed,
     });
 
-    const authorizeUrl = `${process.env.FASTAPI_URL}/google/authorize?${params.toString()}`;
+    const authorizeUrl = `${process.env.CORE_API_URL}/google/authorize?${params.toString()}`;
 
     const integrationsResponse = await fetch(authorizeUrl, {
       method: "GET",

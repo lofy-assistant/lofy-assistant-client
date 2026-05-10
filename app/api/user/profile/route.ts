@@ -15,9 +15,9 @@ function isValidIanaTimeZone(value: string): boolean {
 }
 
 async function invalidatePersonalityCache(userId: string) {
-  const baseUrl = process.env.FASTAPI_URL;
+  const baseUrl = process.env.CORE_API_URL;
   if (!baseUrl) {
-    console.warn("[invalidatePersonalityCache] Skipped: FASTAPI_URL not configured");
+    console.warn("[invalidatePersonalityCache] Skipped: CORE_API_URL not configured");
     return;
   }
 
@@ -39,9 +39,9 @@ async function invalidatePersonalityCache(userId: string) {
 }
 
 async function syncCustomInstructionCache(userId: string, customInstruction: string | null | undefined) {
-  const baseUrl = process.env.FASTAPI_URL;
+  const baseUrl = process.env.CORE_API_URL;
   if (!baseUrl) {
-    console.warn("[syncCustomInstructionCache] Skipped: FASTAPI_URL not configured");
+    console.warn("[syncCustomInstructionCache] Skipped: CORE_API_URL not configured");
     return;
   }
 

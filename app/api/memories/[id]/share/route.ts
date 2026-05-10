@@ -18,9 +18,9 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       return NextResponse.json({ error: "Unauthorized - invalid session" }, { status: 401 });
     }
 
-    const fastApiUrl = process.env.FASTAPI_URL;
-    if (!fastApiUrl) {
-      return NextResponse.json({ error: "FASTAPI_URL environment variable is not set" }, { status: 500 });
+    const coreApiUrl = process.env.CORE_API_URL;
+    if (!coreApiUrl) {
+      return NextResponse.json({ error: "CORE_API_URL environment variable is not set" }, { status: 500 });
     }
 
     const { id } = await params;
@@ -35,7 +35,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     }
 
     const response = await fetch(
-      `${fastApiUrl}/web/memories/${memoryId}/share?user_id=${encodeURIComponent(userId)}`,
+      `${coreApiUrl}/web/memories/${memoryId}/share?user_id=${encodeURIComponent(userId)}`,
       {
         method: "POST",
         headers: {

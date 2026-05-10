@@ -20,15 +20,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "credentialId is required" }, { status: 400 });
     }
 
-    if (!process.env.FASTAPI_URL) {
-      return NextResponse.json({ error: "FASTAPI_URL not set" }, { status: 500 });
+    if (!process.env.CORE_API_URL) {
+      return NextResponse.json({ error: "CORE_API_URL not set" }, { status: 500 });
     }
 
     const params = new URLSearchParams({
       user_id: session.userId,
       credential_id: String(credentialId),
     });
-    const url = `${process.env.FASTAPI_URL}/google/disconnect?${params.toString()}`;
+    const url = `${process.env.CORE_API_URL}/google/disconnect?${params.toString()}`;
     const res = await fetch(url, { method: "GET" });
     const data = await res.json().catch(() => ({}));
     if (!res.ok) {

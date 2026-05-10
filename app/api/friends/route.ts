@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { prisma } from "@/lib/database";
-import { decryptContent, hash } from "@/lib/encryption";
+import { decryptContent } from "@/lib/encryption";
 import { getRequestUserId } from "@/lib/session";
 
 type CoreCreateFriendResponse = {
@@ -12,37 +12,24 @@ type CoreCreateFriendResponse = {
   warning?: string;
 };
 
-function normalizePhoneNumber(phoneNumber: string): string {
-  const digits = phoneNumber.replace(/\D/g, "");
-
-  if (!digits) {
-    throw new Error("Phone number is invalid");
-  }
-
-  return digits;
+/** Core: `WebController` → `@Controller('web')` + `@Post('friends/requests')` → `POST /web/friends/requests?user_id=` */
+function coreCreateFriendRequestUrl(coreBaseUrl: string, userId: string): string {
+  const root = coreBaseUrl.trim().replace(/\/+$/, "");
+  const url = new URL("web/friends/requests", `${root}/`);
+  url.searchParams.set("user_id", userId);
+  return url.href;
 }
 
 function getErrorMessage(data: unknown, status: number): string {
-  return typeof data === "object" && data !== null && "detail" in data
-    ? String((data as { detail: unknown }).detail)
-    : typeof data === "object" && data !== null && "error" in data
-      ? String((data as { error: unknown }).error)
-      : `Failed to create friend request (${status})`;
-}
-
-async function findPendingInvitation(userId: string, phoneNumber: string) {
-  const hashedPhone = hash(normalizePhoneNumber(phoneNumber));
-
-  return prisma.friend_invitations.findFirst({
-    where: {
-      inviter_user_id: userId,
-      invitee_hashed_phone: hashedPhone,
-      status: "pending",
-    },
-    orderBy: {
-      created_at: "desc",
-    },
-  });
+  if (typeof data === "object" && data !== null) {
+    if ("detail" in data) return String((data as { detail: unknown }).detail);
+    if ("message" in data) {
+      const m = (data as { message: unknown }).message;
+      return Array.isArray(m) ? m.join(", ") : String(m);
+    }
+    if ("error" in data) return String((data as { error: unknown }).error);
+  }
+  return `Failed to create friend request (${status})`;
 }
 
 function getMaskedLast4(encryptedPhone: string): string {
@@ -152,9 +139,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized - invalid session" }, { status: 401 });
     }
 
-    const fastApiUrl = process.env.FASTAPI_URL;
-    if (!fastApiUrl) {
-      return NextResponse.json({ error: "FASTAPI_URL environment variable is not set" }, { status: 500 });
+    const coreApiUrl = process.env.CORE_API_URL;
+    if (!coreApiUrl) {
+      return NextResponse.json({ error: "CORE_API_URL environment variable is not set" }, { status: 500 });
     }
 
     const body = (await request.json()) as { phone_number?: string };
@@ -164,16 +151,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "phone_number is required" }, { status: 400 });
     }
 
-    const response = await fetch(
-      `${fastApiUrl}/web/friends/requests?user_id=${encodeURIComponent(userId)}`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ phone_number: phoneNumber }),
+    const response = await fetch(coreCreateFriendRequestUrl(coreApiUrl, userId), {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
       },
-    );
+      body: JSON.stringify({ phone_number: phoneNumber }),
+    });
 
     const raw = await response.text();
     let data: unknown = null;
@@ -186,24 +170,6 @@ export async function POST(request: NextRequest) {
 
     if (!response.ok) {
       const errorMessage = getErrorMessage(data, response.status);
-
-      if (response.status === 502) {
-        const invitation = await findPendingInvitation(userId, phoneNumber);
-
-        if (invitation) {
-          return NextResponse.json(
-            {
-              invitation_id: invitation.id,
-              status: invitation.status,
-              already_exists: false,
-              message_sent: false,
-              warning: errorMessage,
-            } satisfies CoreCreateFriendResponse,
-            { status: 200 },
-          );
-        }
-      }
-
       return NextResponse.json({ error: errorMessage }, { status: response.status });
     }
 

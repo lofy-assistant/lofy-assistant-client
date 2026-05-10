@@ -58,7 +58,7 @@ export async function POST(request: NextRequest) {
     
     try {
       const whatsappResponse = await fetch(
-        `${process.env.FASTAPI_URL}/whatsapp/send-message`,
+        `${process.env.CORE_API_URL}/whatsapp/send-message`,
         {
           method: "POST",
           headers: {
