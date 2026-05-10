@@ -24,6 +24,7 @@ model users {
   feedbacks               feedbacks[]
   integration_credentials integration_credentials[]
   memories                memories[]
+  knowledge_items         knowledge_items[]
   reminders               reminders[]
   subscriptions           subscriptions[]
   sent_friend_invitations friend_invitations[]      @relation("friend_invitations_inviter")
@@ -112,6 +113,22 @@ model memories {
 
   @@index([user_id])
   @@map("memories")
+}
+
+model knowledge_items {
+  id          BigInt   @id @default(autoincrement())
+  user_id     String   @db.Uuid
+  kind        String   @default("general")
+  content     String   @default("")
+  importance  Int      @db.SmallInt
+  embedding   Unsupported("vector")?
+  created_at  DateTime @default(now()) @db.Timestamptz(6)
+  updated_at  DateTime @updatedAt @db.Timestamptz(6)
+  user        users    @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@unique([user_id, kind], map: "knowledge_items_user_id_kind_key")
+  @@index([user_id], map: "knowledge_items_user_id_idx")
+  @@map("knowledge_items")
 }
 
 model memories_share {
