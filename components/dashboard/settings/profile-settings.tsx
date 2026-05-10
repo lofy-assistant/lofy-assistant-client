@@ -40,6 +40,7 @@ interface UserProfile {
   created_at: string;
   ai_persona: string | null;
   custom_instruction: string | null;
+  timezone: string | null;
 }
 
 export function ProfileSettings() {
@@ -50,6 +51,7 @@ export function ProfileSettings() {
   const [name, setName] = useState("");
   const [type, setType] = useState<Persona>("atlas");
   const [customInstruction, setCustomInstruction] = useState("");
+  const [timezone, setTimezone] = useState("");
 
   useEffect(() => {
     fetchProfile();
@@ -65,6 +67,7 @@ export function ProfileSettings() {
       setName(data.user.name || "");
       setType(normalizePersonaFromDb(data.user.ai_persona));
       setCustomInstruction(data.user.custom_instruction || "");
+      setTimezone(data.user.timezone || "");
     } catch (error) {
       toast.error("Failed to load profile");
       console.error(error);
@@ -96,6 +99,7 @@ export function ProfileSettings() {
           name,
           type,
           customInstruction: trimmedInstruction || null,
+          timezone: timezone.trim() || null,
         }),
       });
 
@@ -110,6 +114,7 @@ export function ProfileSettings() {
         setName(data.user.name || "");
         setType(normalizePersonaFromDb(data.user.ai_persona));
         setCustomInstruction(data.user.custom_instruction || "");
+        setTimezone(data.user.timezone || "");
       }
     } catch (error) {
       toast.error(
@@ -249,6 +254,31 @@ export function ProfileSettings() {
                 ))}
               </SelectContent>
             </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label
+              htmlFor="timezone"
+              className={dnc.settingsLabel(night)}
+            >
+              Timezone
+            </Label>
+            <Input
+              id="timezone"
+              placeholder="Asia/Kuala_Lumpur"
+              value={timezone}
+              onChange={(e) => setTimezone(e.target.value)}
+              className={dnc.settingsInput(night)}
+              disabled={isSaving}
+            />
+            <p
+              className={cn(
+                "text-xs",
+                dnc.settingsHelp(night)
+              )}
+            >
+              Used by WhatsApp reminders and calendar actions.
+            </p>
           </div>
 
           <div className="space-y-2">

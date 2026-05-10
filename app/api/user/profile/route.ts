@@ -5,6 +5,15 @@ import { normalizePersonaFromRequest } from "@/lib/persona";
 
 const CUSTOM_INSTRUCTION_MAX_LENGTH = 1000;
 
+function isValidIanaTimeZone(value: string): boolean {
+  try {
+    Intl.DateTimeFormat(undefined, { timeZone: value });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 async function invalidatePersonalityCache(userId: string) {
   const baseUrl = process.env.FASTAPI_URL;
   if (!baseUrl) {
@@ -85,6 +94,7 @@ export async function GET(request: NextRequest) {
         created_at: true,
         ai_persona: true,
         custom_instruction: true,
+        timezone: true,
       },
     });
 
@@ -121,12 +131,13 @@ export async function PATCH(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { name, type, customInstruction } = body;
+    const { name, type, customInstruction, timezone } = body;
 
     const updateData: {
       name?: string | null;
       ai_persona?: string | null;
       custom_instruction?: string | null;
+      timezone?: string | null;
     } = {};
 
     if (name !== undefined) {
@@ -166,6 +177,25 @@ export async function PATCH(request: NextRequest) {
       updateData.custom_instruction = trimmedInstruction || null;
     }
 
+    if (timezone !== undefined) {
+      if (timezone !== null && typeof timezone !== "string") {
+        return NextResponse.json(
+          { error: "timezone must be a valid IANA timezone string or null" },
+          { status: 400 }
+        );
+      }
+
+      const trimmedTimezone = timezone?.trim() ?? "";
+      if (trimmedTimezone && !isValidIanaTimeZone(trimmedTimezone)) {
+        return NextResponse.json(
+          { error: "Enter a valid IANA timezone, such as Asia/Kuala_Lumpur." },
+          { status: 400 }
+        );
+      }
+
+      updateData.timezone = trimmedTimezone || null;
+    }
+
     const existingUser = await prisma.users.findFirst({
       where: {
         id: session.userId,
@@ -193,6 +223,7 @@ export async function PATCH(request: NextRequest) {
         created_at: true,
         ai_persona: true,
         custom_instruction: true,
+        timezone: true,
       },
     });
 

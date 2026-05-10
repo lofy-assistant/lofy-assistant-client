@@ -20,6 +20,7 @@ model users {
   updated_at              DateTime                  @default(dbgenerated("(now() AT TIME ZONE 'utc'::text)")) @updatedAt @db.Timestamptz(6)
   ai_persona              String?
   custom_instruction      String?
+  timezone                String?
   calendar_events         calendar_events[]
   feedbacks               feedbacks[]
   integration_credentials integration_credentials[]
