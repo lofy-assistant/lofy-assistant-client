@@ -11,6 +11,27 @@ export function hash(data: string): string {
 }
 
 /**
+ * Encrypt content using Fernet encryption.
+ * This mirrors the core service so client-side registration can complete
+ * WhatsApp-created partial users without calling core for encryption.
+ */
+export function encryptContent(content: string): string {
+  const encryptionKey = process.env.ENCRYPTION_KEY;
+
+  if (!encryptionKey) {
+    throw new Error("ENCRYPTION_KEY environment variable is not set");
+  }
+
+  const secret = new fernet.Secret(encryptionKey);
+  const token = new fernet.Token({
+    secret,
+    time: Date.now() / 1000,
+  });
+
+  return token.encode(content);
+}
+
+/**
  * Decrypt content that was encrypted using Fernet encryption.
  * @param encryptedContent The encrypted content string.
  * @returns The decrypted content string, or the original content if decryption fails.

@@ -3,6 +3,8 @@ import { prisma } from '@/lib/database';
 import { randomUUID } from "crypto";
 import { parsePhoneNumber, isValidPhoneNumber } from "libphonenumber-js";
 import { sendVerificationEmail } from "@/lib/email";
+import { encryptContent } from "@/lib/encryption";
+import { hashPhone } from "@/lib/hash-phone";
 
 export const runtime = "nodejs";
 
@@ -12,50 +14,6 @@ async function hashData(data: string): Promise<string> {
   const hashBuffer = await crypto.subtle.digest("SHA-256", encodedData);
   const hashArray = Array.from(new Uint8Array(hashBuffer));
   return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
-}
-
-async function hashPhone(phone: string): Promise<string> {
-  const normalizedPhone = phone.replace(/\D/g, "");
-  return hashData(normalizedPhone);
-}
-
-async function encryptPhoneViaAPI(phone: string): Promise<string> {
-  const normalizedPhone = phone.replace(/\D/g, "");
-  
-  const coreApiUrl = process.env.CORE_API_URL;
-  if (!coreApiUrl) {
-    console.error("CORE_API_URL environment variable is not set");
-    throw new Error("CORE_API_URL environment variable is not set");
-  }
-  
-  try {
-    const response = await fetch(`${coreApiUrl}/encryption`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ phone_number: normalizedPhone }),
-    });
-    
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      console.error("FastAPI encryption failed:", errorData);
-      throw new Error(errorData.error || `Failed to encrypt phone number: ${response.status}`);
-    }
-    
-    const data = await response.json();
-    const encryptedPhone = data.encrypted_phone || data.encryptedPhone || data.encrypted;
-    
-    if (!encryptedPhone) {
-      console.error("No encrypted phone in response:", data);
-      throw new Error("Invalid response from encryption service");
-    }
-    
-    return encryptedPhone;
-  } catch (error) {
-    console.error("Error calling encryption API:", error);
-    throw error;
-  }
 }
 
 async function generateOtp(): Promise<string> {
@@ -149,7 +107,7 @@ export async function POST(request: NextRequest) {
     }
 
     const hashedPhone = await hashPhone(normalizedPhone);
-    const encryptedPhone = await encryptPhoneViaAPI(normalizedPhone);
+    const encryptedPhone = encryptContent(normalizedPhone);
 
     // Check for existing user by hashed_phone
     const existingUser = await prisma.users.findFirst({
@@ -179,10 +137,12 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: "User already registered with this phone number" }, { status: 409 });
       }
 
+      const normalizedEmail = email?.toLowerCase() || null;
+
       // Check if email is being changed and if it's already taken by another user
-      if (email && email !== existingUser.email) {
+      if (normalizedEmail && normalizedEmail !== existingUser.email) {
         const emailExists = await prisma.users.findUnique({
-          where: { email: email },
+          where: { email: normalizedEmail },
         });
         if (emailExists && emailExists.id !== existingUser.id) {
           return NextResponse.json({ error: "Email already in use" }, { status: 409 });
@@ -194,7 +154,7 @@ export async function POST(request: NextRequest) {
         name,
         pin: hashedPin,
         encrypted_phone: encryptedPhone,
-        email: email || existingUser.email,
+        email: normalizedEmail || existingUser.email,
         email_verified: false,
         ...(metadata && { metadata }),
       };
@@ -204,7 +164,7 @@ export async function POST(request: NextRequest) {
         data: updateData,
       });
 
-      const userEmail = email || existingUser.email;
+      const userEmail = normalizedEmail || existingUser.email;
       if (userEmail) {
         await sendOtpForUser(updatedUser.id, userEmail, name);
       }
@@ -214,10 +174,12 @@ export async function POST(request: NextRequest) {
         { status: 200 },
       );
     } else {
+      const normalizedEmail = email?.toLowerCase() || null;
+
       // Check if email already exists
-      if (email) {
+      if (normalizedEmail) {
         const emailExists = await prisma.users.findUnique({
-          where: { email: email },
+          where: { email: normalizedEmail },
         });
         if (emailExists) {
           return NextResponse.json({ error: "Email already in use" }, { status: 409 });
@@ -232,19 +194,19 @@ export async function POST(request: NextRequest) {
           hashed_phone: hashedPhone,
           encrypted_phone: encryptedPhone,
           pin: hashedPin,
-          email: email || null,
+          email: normalizedEmail,
           role: 1,
           email_verified: false,
           ...(metadata && { metadata }),
         },
       });
 
-      if (email) {
-        await sendOtpForUser(user.id, email, name);
+      if (normalizedEmail) {
+        await sendOtpForUser(user.id, normalizedEmail, name);
       }
 
       return NextResponse.json(
-        { success: true, requiresEmailVerification: true, userId: user.id, email: email || null, isNewUser: true },
+        { success: true, requiresEmailVerification: true, userId: user.id, email: normalizedEmail, isNewUser: true },
         { status: 201 },
       );
     }
