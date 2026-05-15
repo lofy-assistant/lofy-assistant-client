@@ -26,7 +26,6 @@ export async function POST(request: NextRequest) {
         id: credentialId,
         user_id: session.userId,
         provider_name: "google",
-        deleted_at: null,
       },
       include: { integrations: true },
     });
@@ -38,7 +37,6 @@ export async function POST(request: NextRequest) {
     const hasCalendar = cred.integrations.some(
       (i) =>
         i.integration_type === "google_calendar" &&
-        i.deleted_at == null &&
         i.is_active
     );
     if (!hasCalendar) {

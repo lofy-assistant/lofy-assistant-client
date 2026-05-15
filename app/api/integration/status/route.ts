@@ -54,21 +54,19 @@ export async function GET(request: NextRequest) {
     }> = [];
 
     for (const cred of credentials) {
-      if (cred.provider_name !== "google" || cred.deleted_at) continue;
+      if (cred.provider_name !== "google") continue;
       const calendarIntegration = cred.integrations.find(
-        (i) => i.integration_type === "google_calendar" && !i.deleted_at
+        (i) => i.integration_type === "google_calendar"
       );
       if (!calendarIntegration) continue;
 
-      const settings = calendarIntegration.settings as Record<string, unknown> | null;
       const credJson = cred.credentials as Record<string, unknown> | null;
       const googleEmail =
-        (typeof credJson?.google_email === "string" ? credJson.google_email : null) ??
-        (typeof settings?.google_email === "string" ? settings.google_email : null);
+        typeof credJson?.google_email === "string" ? credJson.google_email : null;
 
       googleAccounts.push({
         credentialId: cred.id,
-        displayName: cred.display_name ?? (typeof settings?.label === "string" ? settings.label : null),
+        displayName: cred.display_name ?? (typeof credJson?.label === "string" ? credJson.label : null),
         googleEmail,
         isActive: calendarIntegration.is_active,
         isDefault: false,

@@ -225,7 +225,6 @@ model integration_credentials {
   credentials   Json           @default("{}")
   created_at    DateTime       @default(now()) @db.Timestamptz(6)
   updated_at    DateTime       @updatedAt @db.Timestamptz(6)
-  deleted_at    DateTime?      @db.Timestamptz(6)
   user                   users   @relation(fields: [user_id], references: [id], onDelete: Cascade)
   integrations           integrations[]
   user_default_for_google users? @relation("UserDefaultGoogleCredential")
@@ -239,11 +238,9 @@ model integrations {
   id               Int                     @id @default(autoincrement())
   credential_id    Int
   integration_type String
-  settings         Json                    @default("{}")
   is_active        Boolean                 @default(true)
   created_at       DateTime                @default(now()) @db.Timestamptz(6)
   updated_at       DateTime                @updatedAt @db.Timestamptz(6)
-  deleted_at       DateTime?               @db.Timestamptz(6)
   credential       integration_credentials @relation(fields: [credential_id], references: [id], onDelete: Cascade)
 
   @@index([credential_id])
