@@ -69,7 +69,7 @@ export async function GET(request: NextRequest) {
         displayName: cred.display_name ?? (typeof credJson?.label === "string" ? credJson.label : null),
         googleEmail,
         isActive: calendarIntegration.is_active,
-        isDefault: false,
+        isDefault: cred.is_default,
       });
     }
 
@@ -78,28 +78,48 @@ export async function GET(request: NextRequest) {
       select: { default_google_credential_id: true },
     });
 
-    let defaultGoogleCredentialId = userRow?.default_google_credential_id ?? null;
-    const allIds = googleAccounts.map((a) => a.credentialId);
     const activeIds = googleAccounts.filter((a) => a.isActive).map((a) => a.credentialId);
-    const pool = activeIds.length > 0 ? activeIds : allIds;
+    const activeDefaultIds = googleAccounts
+      .filter((a) => a.isActive && a.isDefault)
+      .map((a) => a.credentialId);
+    const legacyDefaultId = userRow?.default_google_credential_id ?? null;
+    let defaultGoogleCredentialId: number | null = activeDefaultIds[0] ?? null;
 
-    if (pool.length === 0) {
-      if (defaultGoogleCredentialId != null) {
-        await prisma.users.update({
-          where: { id: session.userId },
-          data: { default_google_credential_id: null },
-        });
-        defaultGoogleCredentialId = null;
+    if (activeIds.length === 0) {
+      if (googleAccounts.some((a) => a.isDefault) || legacyDefaultId != null) {
+        await prisma.$transaction([
+          prisma.integration_credentials.updateMany({
+            where: { user_id: session.userId, provider_name: "google", is_default: true },
+            data: { is_default: false },
+          }),
+          prisma.users.update({
+            where: { id: session.userId },
+            data: { default_google_credential_id: null },
+          }),
+        ]);
       }
+      defaultGoogleCredentialId = null;
     } else if (
-      defaultGoogleCredentialId == null ||
-      !pool.includes(defaultGoogleCredentialId)
+      activeDefaultIds.length !== 1 ||
+      legacyDefaultId !== activeDefaultIds[0]
     ) {
-      const pick = Math.min(...pool);
-      await prisma.users.update({
-        where: { id: session.userId },
-        data: { default_google_credential_id: pick },
-      });
+      const legacyActiveDefault =
+        legacyDefaultId != null && activeIds.includes(legacyDefaultId) ? legacyDefaultId : null;
+      const pick = activeDefaultIds[0] ?? legacyActiveDefault ?? Math.min(...activeIds);
+      await prisma.$transaction([
+        prisma.integration_credentials.updateMany({
+          where: { user_id: session.userId, provider_name: "google", id: { not: pick } },
+          data: { is_default: false },
+        }),
+        prisma.integration_credentials.update({
+          where: { id: pick },
+          data: { is_default: true },
+        }),
+        prisma.users.update({
+          where: { id: session.userId },
+          data: { default_google_credential_id: pick },
+        }),
+      ]);
       defaultGoogleCredentialId = pick;
     }
 

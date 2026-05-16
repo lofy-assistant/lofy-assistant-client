@@ -1,11 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from '@/lib/database';
+import { prisma } from "@/lib/database";
 import { createSession } from "@/lib/session";
 import { hashPhone } from "@/lib/hash-phone";
 import { parsePhoneNumber, isValidPhoneNumber } from "libphonenumber-js";
 import { sendVerificationEmail } from "@/lib/email";
 
 export const runtime = "nodejs";
+
+const EMAIL_VERIFICATION_LAUNCHED_AT = new Date("2026-03-17T11:31:34.000Z");
 
 async function hashData(data: string): Promise<string> {
   const encoder = new TextEncoder();
@@ -15,36 +17,53 @@ async function hashData(data: string): Promise<string> {
   return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 
+function generateOtp(): string {
+  const array = new Uint32Array(1);
+  crypto.getRandomValues(array);
+  return String(array[0] % 1_000_000).padStart(6, "0");
+}
+
+async function issueVerificationOtp(user: {
+  id: string;
+  email: string;
+  name: string | null;
+}): Promise<void> {
+  const otp = generateOtp();
+  const hashedOtp = await hashData(otp);
+  const expires = new Date(Date.now() + 10 * 60 * 1000);
+
+  await prisma.users.update({
+    where: { id: user.id },
+    data: {
+      email_verification_token: hashedOtp,
+      email_verification_expires: expires,
+    },
+  });
+
+  await sendVerificationEmail(user.email, user.name ?? "there", otp);
+}
+
 export async function POST(request: NextRequest) {
   try {
     const { phone: rawPhone, pin }: { phone: string; pin: string } = await request.json();
 
-    console.log("🔍 Login attempt:", { rawPhone, pinLength: pin?.length });
-
-    // Basic validation
     if (!rawPhone || !pin || !/^\d{6}$/.test(pin)) {
-      console.log("❌ Validation failed:", { hasPhone: !!rawPhone, hasPin: !!pin, pinValid: !/^\d{6}$/.test(pin) });
       return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
     }
 
-    // Validate and normalize phone using libphonenumber-js
-    // Phone comes in as dial code + national number (e.g., "919789497050")
     let normalizedPhone: string;
     try {
       const phoneWithPlus = `+${rawPhone}`;
 
       if (!isValidPhoneNumber(phoneWithPlus)) {
-        console.log("❌ Invalid phone number format");
         return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
       }
 
       const parsedPhone = parsePhoneNumber(phoneWithPlus);
       if (!parsedPhone) {
-        console.log("❌ Could not parse phone number");
         return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
       }
 
-      // Get normalized phone number (E.164 format without +)
       normalizedPhone = parsedPhone.number.slice(1);
     } catch (error) {
       console.error("Phone parsing error:", error);
@@ -52,7 +71,6 @@ export async function POST(request: NextRequest) {
     }
 
     const hashedPhone = await hashPhone(normalizedPhone);
-    console.log("🔐 Hashed phone:", hashedPhone);
 
     const user = await prisma.users.findFirst({
       where: {
@@ -60,57 +78,43 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    console.log("👤 User found:", !!user, user ? { id: user.id, hasPin: !!user.pin } : null);
-
-    if (!user || !user.pin) {
-      console.log("❌ No user found or no PIN set");
+    if (!user?.pin) {
       return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
     }
 
-    // Verify PIN using SHA-256 hash comparison
     const hashedInputPin = await hashData(pin);
-    const pinMatch = hashedInputPin === user.pin;
-
-    console.log("🔑 PIN match:", pinMatch);
-    console.log("   Input hash:", hashedInputPin);
-    console.log("   Stored hash:", user.pin);
-
-    if (!pinMatch) {
-      console.log("❌ PIN mismatch");
+    if (hashedInputPin !== user.pin) {
       return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
     }
 
-    // Block login if user has an email that hasn't been verified yet
     if (user.email && !user.email_verified) {
-      // Auto-issue a fresh OTP so they can verify immediately
-      const array = new Uint32Array(1);
-      crypto.getRandomValues(array);
-      const otp = String(array[0] % 1_000_000).padStart(6, "0");
-      const encoder = new TextEncoder();
-      const hashBuffer = await crypto.subtle.digest("SHA-256", encoder.encode(otp));
-      const hashedOtp = Array.from(new Uint8Array(hashBuffer))
-        .map((b) => b.toString(16).padStart(2, "0"))
-        .join("");
-      const expires = new Date(Date.now() + 10 * 60 * 1000);
+      const isLegacyAccount = user.created_at < EMAIL_VERIFICATION_LAUNCHED_AT;
 
+      if (!isLegacyAccount) {
+        await issueVerificationOtp({
+          id: user.id,
+          email: user.email,
+          name: user.name,
+        });
+
+        return NextResponse.json(
+          { needs_email_verification: true, userId: user.id, email: user.email },
+          { status: 403 },
+        );
+      }
+
+      // Legacy accounts predate email verification. Once a user proves account
+      // ownership with phone + PIN, backfill verification instead of locking
+      // them out behind a new OTP flow they did not start.
       await prisma.users.update({
         where: { id: user.id },
         data: {
-          email_verification_token: hashedOtp,
-          email_verification_expires: expires,
+          email_verified: true,
+          updated_at: new Date(),
         },
       });
-
-      await sendVerificationEmail(user.email, user.name ?? "there", otp);
-
-      console.log("📧 Email verification required for user:", user.id);
-      return NextResponse.json(
-        { needs_email_verification: true, userId: user.id, email: user.email },
-        { status: 403 }
-      );
     }
 
-    // Update last login
     await prisma.users.update({
       where: { id: user.id },
       data: { updated_at: new Date() },
@@ -118,13 +122,15 @@ export async function POST(request: NextRequest) {
 
     const token = await createSession(user.id);
 
-    const response = NextResponse.json({ success: true, user: { id: user.id, name: user.name } }, { status: 200 });
+    const response = NextResponse.json(
+      { success: true, user: { id: user.id, name: user.name } },
+      { status: 200 },
+    );
 
     response.cookies.set("session", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      // Needed for OAuth flows: allows cookie on top-level cross-site redirects back to our app
-      // (e.g. Google -> lofy-ai.com). `strict` would drop the cookie and middleware would redirect to /login.
+      // Needed for OAuth flows: allows cookie on top-level cross-site redirects back to our app.
       sameSite: "lax",
       maxAge: 60 * 60 * 24,
       path: "/",

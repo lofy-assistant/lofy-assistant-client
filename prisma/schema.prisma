@@ -222,6 +222,7 @@ model integration_credentials {
   provider_name String
   external_id   String?
   display_name  String?
+  is_default    Boolean        @default(false) @map("default")
   credentials   Json           @default("{}")
   created_at    DateTime       @default(now()) @db.Timestamptz(6)
   updated_at    DateTime       @updatedAt @db.Timestamptz(6)

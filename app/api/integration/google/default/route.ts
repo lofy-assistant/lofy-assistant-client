@@ -4,7 +4,7 @@ import { prisma } from "@/lib/database";
 
 export const dynamic = "force-dynamic";
 
-/** Set which connected Google account is the default for Calendar (and future Gmail). */
+/** Set which connected Google credential is the default Calendar target. */
 export async function POST(request: NextRequest) {
   try {
     if (!getRequestSessionToken(request)) {
@@ -46,10 +46,20 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    await prisma.users.update({
-      where: { id: session.userId },
-      data: { default_google_credential_id: credentialId },
-    });
+    await prisma.$transaction([
+      prisma.integration_credentials.updateMany({
+        where: { user_id: session.userId, provider_name: "google", id: { not: credentialId } },
+        data: { is_default: false },
+      }),
+      prisma.integration_credentials.update({
+        where: { id: credentialId },
+        data: { is_default: true },
+      }),
+      prisma.users.update({
+        where: { id: session.userId },
+        data: { default_google_credential_id: credentialId },
+      }),
+    ]);
 
     return NextResponse.json({
       status: "ok",

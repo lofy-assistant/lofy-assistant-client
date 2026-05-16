@@ -154,7 +154,7 @@ export function IntegrationCard() {
       const err = (await response.json().catch(() => ({}))) as { error?: string };
       throw new Error(err.error || "Could not update default account");
     }
-    toast.success("Default Google account updated");
+    toast.success("Default Google Calendar updated");
     const statusRes = await fetch("/api/integration/status", { method: "GET", credentials: "include" });
     if (statusRes.ok) {
       const data = (await statusRes.json()) as {
@@ -375,7 +375,7 @@ export function IntegrationCard() {
                   <span className={cn("font-medium", dnc.textPrimary(night))}>
                     Calendar
                   </span>{" "}
-                  is available now. Add separate connections for work, personal, or shared mailboxes. Choose which account is the default for new events and future Gmail.
+                  is available now. Add separate connections for work, personal, or shared mailboxes. Choose which calendar is the default for new events.
                 </span>
               </div>
               <div
@@ -500,7 +500,7 @@ export function IntegrationCard() {
                                 toast.error(e instanceof Error ? e.message : "Update failed");
                               }
                             }}>
-                            Set as default
+                            Set default calendar
                           </Button>
                         ) : null}
                         <Button
