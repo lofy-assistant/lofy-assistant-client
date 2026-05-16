@@ -55,10 +55,6 @@ export async function POST(request: NextRequest) {
         where: { id: credentialId },
         data: { is_default: true },
       }),
-      prisma.users.update({
-        where: { id: session.userId },
-        data: { default_google_credential_id: credentialId },
-      }),
     ]);
 
     return NextResponse.json({

@@ -38,6 +38,7 @@ async function issueVerificationOtp(user: {
       email_verification_token: hashedOtp,
       email_verification_expires: expires,
     },
+    select: { id: true },
   });
 
   await sendVerificationEmail(user.email, user.name ?? "there", otp);
@@ -120,12 +121,14 @@ export async function POST(request: NextRequest) {
           email_verified: true,
           updated_at: new Date(),
         },
+        select: { id: true },
       });
     }
 
     await prisma.users.update({
       where: { id: user.id },
       data: { updated_at: new Date() },
+      select: { id: true },
     });
 
     const token = await createSession(user.id);
