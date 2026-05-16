@@ -76,6 +76,14 @@ export async function POST(request: NextRequest) {
       where: {
         hashed_phone: hashedPhone,
       },
+      select: {
+        id: true,
+        pin: true,
+        name: true,
+        email: true,
+        email_verified: true,
+        created_at: true,
+      },
     });
 
     if (!user?.pin) {
